@@ -1,166 +1,177 @@
-import React, { useState } from 'react';
-import { getUser, getUserRepositories, searchUsers } from './api/github.js';
-import ProfileCard from './components/ProfileCard.jsx';
-import RepositoryList from './components/RepositoryList.jsx';
-import SearchBar from './components/SearchBar.jsx';
-import UserSearchResults from './components/UserSearchResults.jsx';
-
-const RESULTS_PER_PAGE = 10;
-const GITHUB_SEARCH_LIMIT = 1000;
+import React, { useEffect, useRef, useState } from 'react';
+import { getCurrentUser } from './api/auth.js';
+import { getUserRepositories } from './api/github.js';
+import OverviewDashboard from './pages/OverviewDashboard.jsx';
+import ProjectsPage from './pages/ProjectsPage.jsx';
+import SessionsPage from './pages/SessionsPage.jsx';
+import SessionDetailPage from './pages/SessionDetailPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
+import SettingsPage from './pages/SettingsPage.jsx';
+import AppShell from './components/layout/AppShell.jsx';
+import { getDailySessionActivity, getProjectsWithSessions, getSessionById, getSessionListItems, getSessions, getWeeklySummary } from './dummydata/index.js';
 
 export default function App() {
-  const [query, setQuery] = useState('');
-  const [users, setUsers] = useState([]);
-  const [totalCount, setTotalCount] = useState(null);
-  const [incompleteResults, setIncompleteResults] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [profileError, setProfileError] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [view, setView] = useState('Overview');
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [identity, setIdentity] = useState(null);
+  const [identityStatus, setIdentityStatus] = useState('loading');
+  const [identityError, setIdentityError] = useState('');
   const [repositories, setRepositories] = useState([]);
+  const [repositoriesLoading, setRepositoriesLoading] = useState(false);
+  const [repositoriesError, setRepositoriesError] = useState('');
+  const [activeSession, setActiveSession] = useState(null);
+  const [sessionNotice, setSessionNotice] = useState('');
+  const [now, setNow] = useState(Date.now());
+  const loadId = useRef(0);
+  const allDummySessions = getSessions();
+  const dummySessionItems = getSessionListItems(allDummySessions);
+  const dummyProjects = getProjectsWithSessions();
+  const weeklySummary = getWeeklySummary(allDummySessions);
+  const activityDays = getDailySessionActivity(allDummySessions);
 
-  async function handleSearch(event) {
-    event.preventDefault();
-    setSelectedUser(null);
-    setRepositories([]);
-    setProfileError('');
-    setUsers([]);
-    setTotalCount(null);
-    setIncompleteResults(false);
-    setPage(1);
-    setHasMore(false);
-    setError('');
+  function openSession(sessionId) {
+    setSelectedSessionId(sessionId);
+    setView('Session Detail');
+  }
 
-    if (!query.trim()) {
-      setError('Enter a search term to find GitHub users.');
-      return;
-    }
-
-    setSearchLoading(true);
+  async function loadRepositories(username) {
+    const requestId = ++loadId.current;
+    setRepositoriesLoading(true);
+    setRepositoriesError('');
     try {
-      const results = await searchUsers(query, 1, RESULTS_PER_PAGE);
-      const firstPage = results.items || [];
-      setUsers(firstPage);
-      setTotalCount(results.total_count);
-      setIncompleteResults(Boolean(results.incomplete_results));
-      setHasMore(firstPage.length > 0 && firstPage.length < results.total_count && firstPage.length < GITHUB_SEARCH_LIMIT);
-    } catch (requestError) {
-      setError(requestError.message || 'Something went wrong while searching GitHub.');
+      const result = await getUserRepositories(username);
+      if (requestId === loadId.current) setRepositories(result);
+    } catch {
+      if (requestId === loadId.current) setRepositoriesError('Couldn’t load your repositories. GitHub may be temporarily unavailable.');
     } finally {
-      setSearchLoading(false);
+      if (requestId === loadId.current) setRepositoriesLoading(false);
     }
   }
 
-  async function handleShowMore() {
-    if (loadingMore || !hasMore) return;
-
-    const nextPage = page + 1;
-    setLoadingMore(true);
-    setError('');
-    try {
-      const results = await searchUsers(query, nextPage, RESULTS_PER_PAGE);
-      const nextUsers = results.items || [];
-      setUsers((currentUsers) => [...currentUsers, ...nextUsers]);
-      setPage(nextPage);
-      setIncompleteResults((currentValue) => currentValue || Boolean(results.incomplete_results));
-      const loadedCount = users.length + nextUsers.length;
-      setHasMore(nextUsers.length > 0 && loadedCount < totalCount && loadedCount < GITHUB_SEARCH_LIMIT);
-    } catch (requestError) {
-      setError(requestError.message || 'Could not load more users. Please try again.');
-    } finally {
-      setLoadingMore(false);
-    }
-  }
-
-  async function handleSelectUser(username) {
-    setProfileLoading(true);
-    setProfileError('');
-    setSelectedUser(null);
+  async function loadWorkspace() {
+    const requestId = ++loadId.current;
+    setIdentityStatus('loading');
+    setIdentityError('');
     setRepositories([]);
-    setError('');
+    setRepositoriesError('');
     try {
-      const profile = await getUser(username);
-      setSelectedUser(profile);
-      const repos = await getUserRepositories(username);
-      setRepositories(repos);
-    } catch (requestError) {
-      setProfileError(requestError.message || 'Could not load this GitHub profile.');
-    } finally {
-      setProfileLoading(false);
+      const user = await getCurrentUser();
+      if (requestId !== loadId.current) return;
+      if (!user) {
+        setIdentity(null);
+        setIdentityStatus('unauthenticated');
+        setRepositoriesLoading(false);
+        return;
+      }
+
+      setIdentity(user);
+      setIdentityStatus('authenticated');
+      setRepositoriesLoading(true);
+      try {
+        const result = await getUserRepositories(user.username);
+        if (requestId === loadId.current) setRepositories(result);
+      } catch {
+        if (requestId === loadId.current) setRepositoriesError('Couldn’t load your repositories. GitHub may be temporarily unavailable.');
+      } finally {
+        if (requestId === loadId.current) setRepositoriesLoading(false);
+      }
+    } catch {
+      if (requestId === loadId.current) {
+        setIdentity(null);
+        setIdentityStatus('error');
+        setIdentityError('GitHub is temporarily unavailable. Check your connection and try again.');
+        setRepositoriesLoading(false);
+      }
     }
   }
 
-  function returnToSearch() {
-    setSelectedUser(null);
-    setRepositories([]);
-    setProfileError('');
+  useEffect(() => {
+    loadWorkspace();
+    return () => { loadId.current += 1; };
+  }, []);
+
+  useEffect(() => {
+    if (!activeSession) return undefined;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [activeSession]);
+
+  function startSession({ repository, goal, targetMinutes }) {
+    setSessionNotice('');
+    setNow(Date.now());
+    setActiveSession({ repository, goal, targetMinutes, startedAt: Date.now() });
   }
 
-  const showingProfile = Boolean(selectedUser) || profileLoading || Boolean(profileError);
+  function finishSession() {
+    setActiveSession(null);
+    setSessionNotice('Local session preview ended. It wasn’t saved or synced.');
+  }
+
+  function handleLogout() {
+    setIdentity(null);
+    setIdentityStatus('unauthenticated');
+    setRepositories([]);
+    setActiveSession(null);
+    setView('Overview');
+  }
+
+  const identityProps = {
+    identity,
+    identityStatus,
+    identityError,
+    repositories,
+    repositoriesLoading,
+    repositoriesError,
+    onRetryIdentity: loadWorkspace,
+    onRetryRepositories: () => identity && loadRepositories(identity.username),
+  };
 
   return (
-    <main className="app-shell">
-      <header className="site-header">
-        <a className="brand-mark" href="#top" aria-label="GitHub API Playground home"><span aria-hidden="true">⌘</span></a>
-        <div>
-          <h1>GitHub API Playground</h1>
-          <p>Just playing around with the GitHub API.</p>
-        </div>
-        <span className="header-tag"><i aria-hidden="true" />PUBLIC API</span>
-      </header>
-
-      {!showingProfile && (
-        <>
-          <section className="search-panel panel" id="top" aria-labelledby="search-heading">
-            <div className="search-intro">
-              <div className="search-icon" aria-hidden="true">⌕</div>
-              <div>
-                <p className="eyebrow">USER SEARCH</p>
-                <h2 id="search-heading">Search GitHub users</h2>
-              </div>
-            </div>
-            <SearchBar username={query} onUsernameChange={setQuery} onSubmit={handleSearch} loading={searchLoading} disabled={loadingMore} />
-            <p className="search-hint">Try a username, name, or GitHub search query like <code>lanix in:login</code>.</p>
-          </section>
-
-          {searchLoading && <div className="status-message loading-message" role="status"><span className="loader" aria-hidden="true" /> Searching GitHub...</div>}
-          {error && users.length === 0 && <div className="status-message error-message" role="alert"><span aria-hidden="true">!</span><p>{error}</p></div>}
-          {!searchLoading && !error && totalCount === null && <div className="initial-note"><span aria-hidden="true">↳</span> Enter a query to explore public GitHub users.</div>}
-          {!searchLoading && totalCount !== null && (
-            <UserSearchResults
-              query={query}
-              users={users}
-              totalCount={totalCount}
-              incompleteResults={incompleteResults}
-              hasMore={hasMore}
-              loadingMore={loadingMore}
-              onSelect={handleSelectUser}
-              onShowMore={handleShowMore}
-            />
-          )}
-          {error && users.length > 0 && <div className="status-message error-message" role="alert"><span aria-hidden="true">!</span><p>{error}</p></div>}
-        </>
-      )}
-
-      {showingProfile && (
-        <>
-          <button className="back-button" type="button" onClick={returnToSearch}>← Back to user results</button>
-          {profileLoading && <div className="status-message loading-message" role="status"><span className="loader" aria-hidden="true" /> Fetching public profile and repositories…</div>}
-          {profileError && <div className="status-message error-message" role="alert"><span aria-hidden="true">!</span><p>{profileError}</p></div>}
-          {selectedUser && !profileLoading && (
-            <div className="results">
-              <ProfileCard user={selectedUser} />
-              <RepositoryList repositories={repositories} />
-            </div>
-          )}
-        </>
-      )}
-
-      <footer className="site-footer"><span>EXPERIMENTAL PROJECT</span><span>Data from the GitHub REST API</span></footer>
-    </main>
+    <AppShell
+      identity={identity}
+      identityStatus={identityStatus}
+      view={view}
+      onNavigate={setView}
+      activeSession={activeSession}
+      now={now}
+      onLogout={handleLogout}
+    >
+        {view === 'Overview' && (
+          <OverviewDashboard
+            {...identityProps}
+            activeSession={activeSession}
+            now={now}
+            onStartSession={startSession}
+            onFinishSession={finishSession}
+            sessionNotice={sessionNotice}
+            onViewSessions={() => setView('Sessions')}
+            recentSessions={dummySessionItems.slice(0, 4)}
+            weeklySummary={weeklySummary}
+            activityDays={activityDays}
+            onSelectSession={openSession}
+          />
+        )}
+        {view === 'Sessions' && (
+          identityStatus === 'authenticated'
+            ? <SessionsPage sessions={dummySessionItems} weeklySummary={weeklySummary} onSelectSession={openSession} onStart={() => setView('Overview')} activeSession={activeSession} now={now} onFinish={finishSession} />
+            : <OverviewDashboard {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
+        )}
+        {view === 'Projects' && (
+          identityStatus === 'authenticated'
+            ? <ProjectsPage identity={identity} repositories={repositories} loading={repositoriesLoading} error={repositoriesError} onRetry={() => identity && loadRepositories(identity.username)} dummyProjects={dummyProjects} onSelectSession={openSession} />
+            : <OverviewDashboard {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
+        )}
+        {view === 'Profile' && (
+          identityStatus === 'authenticated' && identity
+            ? <ProfilePage identity={identity} hasSessions={Boolean(activeSession)} onStart={() => setView('Overview')} />
+            : <OverviewDashboard {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
+        )}
+        {view === 'Settings' && <SettingsPage />}
+        {view === 'Session Detail' && (
+          getSessionById(selectedSessionId)
+            ? <SessionDetailPage session={getSessionById(selectedSessionId)} onBack={() => setView('Sessions')} />
+            : <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That example session is no longer available.</p><button className="subtle-action" type="button" onClick={() => setView('Sessions')}>Back to sessions</button></section>
+        )}
+    </AppShell>
   );
 }

@@ -16,7 +16,7 @@ function GitHubMark() {
   );
 }
 
-export default function AuthControl() {
+export default function AuthControl({ loginLabel = 'Sign in with GitHub' }) {
   const [status, setStatus] = useState('loading');
   const [user, setUser] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -76,7 +76,7 @@ export default function AuthControl() {
     <div className="auth-control">
       {status === 'loading' && <span className="auth-checking" role="status">Checking sign-in…</span>}
       {status === 'unauthenticated' && (
-        <a className="github-sign-in" href="/api/auth/github"><GitHubMark /> Sign in with GitHub</a>
+        <a className="github-sign-in" href="/api/auth/github"><GitHubMark /> {loginLabel}</a>
       )}
       {status === 'authenticated' && user && (
         <div className="auth-user">

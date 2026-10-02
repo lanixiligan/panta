@@ -487,6 +487,47 @@ body { background: var(--workspace-bg); }
   .profile-empty-state .subtle-action { grid-column: 2; justify-self: start; }
 }
 
+/* Centered Panta authentication card; the background canvas can later hold Panta artwork. */
+.auth-screen { position: relative; display: grid; min-height: 100vh; min-height: 100dvh; grid-template-rows: 1fr auto; justify-items: center; padding: 32px 22px 19px; overflow-x: hidden; background: #07110C; color: #E8FFF1; }
+.auth-background-canvas { position: absolute; inset: 0; z-index: 0; background: #07110C; }
+.auth-card { position: relative; z-index: 1; display: flex; align-self: center; width: min(100%, 680px); min-height: 460px; flex-direction: column; align-items: center; justify-content: center; padding: 48px 56px; border: 1px solid #21402D; border-radius: 7px; background: #0D1911; }
+.auth-brand { display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 40px; }
+.auth-brand-mark { display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid #294b35; border-radius: 6px; background: #122118; color: #91B8A0; font: 600 17px 'DM Mono', monospace; }
+.auth-copy { display: flex; width: min(100%, 460px); flex-direction: column; align-items: center; text-align: center; }
+.auth-copy h1 { margin: 0 0 12px; color: #E8FFF1; font-size: 35px; font-weight: 500; letter-spacing: -.045em; }
+.auth-copy > p:not(.auth-security-note) { margin: 0 0 28px; color: #91B8A0; font-size: 14px; line-height: 1.65; }
+.auth-screen .auth-control { width: 100%; min-height: 57px; }
+.auth-screen .github-sign-in { width: 100%; min-height: 56px; justify-content: center; gap: 10px; border: 1px solid #75c892; border-radius: 5px; background: #82cf99; color: #0d1b11; font-size: 13px; font-weight: 650; transition: background .15s ease, border-color .15s ease; }
+.auth-screen .github-sign-in:hover { border-color: #94d9a8; background: #94d9a8; }
+.auth-screen .github-sign-in:focus-visible, .auth-screen .auth-identity-error button:focus-visible, .auth-page-footer a:focus-visible { outline: 2px solid #9ae4b0; outline-offset: 3px; }
+.auth-screen .github-mark { width: 19px; height: 19px; }
+.auth-screen .auth-checking { color: #91B8A0; font-size: 12px; }
+.auth-screen-checking { margin: 0; color: #91B8A0; font-size: 12px; }
+.auth-screen .auth-message { position: static; width: 100%; max-width: none; margin-top: 11px; border-color: #554339; background: #1b1712; color: #d6b59a; box-shadow: none; font-size: 9px; }
+.auth-security-note { margin: 17px 0 0; color: #779381; font-size: 11px; line-height: 1.6; }
+.auth-identity-error { display: flex; align-items: flex-start; justify-content: space-between; gap: 11px; margin: 0 0 13px; padding: 9px 10px; border: 1px solid #543a34; border-radius: 4px; background: #18130f; color: #d9a79c; font-size: 9px; line-height: 1.5; }
+.auth-identity-error button { flex: 0 0 auto; padding: 0; border: 0; background: transparent; color: #e3c2b5; font-size: 9px; text-decoration: underline; cursor: pointer; }
+.auth-page-footer { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 11px 0 0; color: #91B8A0; font: 10px 'DM Mono', monospace; letter-spacing: .035em; }
+.auth-page-footer a { display: inline-flex; align-items: center; gap: 4px; color: #a1c6ac; text-decoration: none; }
+.auth-page-footer a:hover { color: #b1d5bc; }
+@media (max-width: 560px) {
+  .auth-screen { padding: 20px 16px 14px; }
+  .auth-card { width: min(100%, 680px); min-height: 420px; padding: 37px 28px; }
+  .auth-brand { margin-bottom: 34px; }
+  .auth-brand-mark { width: 42px; height: 42px; }
+  .auth-copy { width: min(100%, 460px); }
+  .auth-copy h1 { margin-bottom: 11px; font-size: 30px; }
+  .auth-copy > p:not(.auth-security-note) { margin-bottom: 24px; font-size: 13px; }
+  .auth-screen .auth-control { min-height: 54px; }
+  .auth-screen .github-sign-in { min-height: 53px; }
+  .auth-security-note { margin-top: 15px; font-size: 10px; }
+}
+@media (max-width: 360px) {
+  .auth-screen { padding-right: 12px; padding-left: 12px; }
+  .auth-card { min-height: 400px; padding-right: 20px; padding-left: 20px; }
+  .auth-copy h1 { font-size: 28px; }
+}
+
 /* Sample session history and recap views */
 .recent-session-list { display: flex; flex-direction: column; gap: 8px; }
 .recent-session-card { display: block; padding: 12px 13px; border: 1px solid #28382d; border-radius: 5px; background: #101711; color: inherit; text-decoration: none; transition: border-color .15s ease, background .15s ease; }

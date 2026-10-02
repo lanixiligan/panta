@@ -7,6 +7,7 @@ import SessionsPage from './pages/SessionsPage.jsx';
 import SessionDetailPage from './pages/SessionDetailPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import AuthenticationPage from './pages/AuthenticationPage.jsx';
 import AppShell from './components/layout/AppShell.jsx';
 import { getDailySessionActivity, getProjectsWithSessions, getSessionById, getSessionListItems, getSessions, getWeeklySummary } from './dummydata/index.js';
 
@@ -125,6 +126,16 @@ export default function App() {
     onRetryIdentity: loadWorkspace,
     onRetryRepositories: () => identity && loadRepositories(identity.username),
   };
+
+  if (identityStatus !== 'authenticated') {
+    return (
+      <AuthenticationPage
+        checking={identityStatus === 'loading'}
+        identityError={identityStatus === 'error' ? identityError : ''}
+        onRetryIdentity={loadWorkspace}
+      />
+    );
+  }
 
   return (
     <AppShell

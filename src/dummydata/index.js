@@ -20,26 +20,29 @@ export function getSessionDurationMinutes(session) {
 }
 
 export function getSessionListItems(sessions = getSessions()) {
-  return sessions.map((session) => ({
-    id: session.id,
-    source: session.source || 'github',
-    isPlaceholder: session.source === 'placeholder',
-    status: session.status || (session.endedAt ? 'completed' : 'active'),
-    hasActivity: Boolean(session.activity),
-    activityStatus: session.activityStatus || (session.source === 'placeholder' ? 'placeholder' : 'complete'),
-    repositoryName: session.repository.name,
-    repositoryFullName: session.repository.fullName || session.repository.full_name,
-    goal: session.goal,
-    startedAt: session.startedAt,
-    finishedAt: session.endedAt,
-    durationMinutes: getSessionDurationMinutes(session),
-    commitCount: session.activity?.commits ?? session.commits?.length ?? 0,
-    filesChanged: session.activity?.filesChanged ?? 0,
-    additions: session.activity?.additions ?? 0,
-    deletions: session.activity?.deletions ?? 0,
-    pullRequestCount: session.activity?.pullRequests ?? 0,
-    detailHref: sessionDetailPath(session.id),
-  }));
+  return sessions.filter((session) => session && typeof session === 'object').map((session) => {
+    const repository = session.repository || {};
+    return {
+      id: session.id,
+      source: session.source || 'github',
+      isPlaceholder: session.source === 'placeholder',
+      status: session.status || (session.endedAt ? 'completed' : 'active'),
+      hasActivity: Boolean(session.activity),
+      activityStatus: session.activityStatus || (session.source === 'placeholder' ? 'placeholder' : 'complete'),
+      repositoryName: repository.name || repository.fullName || repository.full_name || 'Repository unavailable',
+      repositoryFullName: repository.fullName || repository.full_name || '',
+      goal: session.goal,
+      startedAt: session.startedAt,
+      finishedAt: session.endedAt,
+      durationMinutes: getSessionDurationMinutes(session),
+      commitCount: session.activity?.commits ?? session.commits?.length ?? 0,
+      filesChanged: session.activity?.filesChanged ?? 0,
+      additions: session.activity?.additions ?? 0,
+      deletions: session.activity?.deletions ?? 0,
+      pullRequestCount: session.activity?.pullRequests ?? 0,
+      detailHref: sessionDetailPath(session.id),
+    };
+  });
 }
 
 export function getWeeklySummary(sessions = dummySessions, referenceDate = new Date()) {

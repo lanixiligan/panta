@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getCurrentUser } from './api/auth.js';
 import { getAccessibleRepositories, getActiveSessionCommits, getSessionActivity } from './api/github.js';
 import OverviewDashboard from './pages/OverviewDashboard.jsx';
@@ -8,17 +8,21 @@ import SessionDetailPage from './pages/SessionDetailPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import StartSessionPage from './pages/StartSessionPage.jsx';
+import AnalyticsPage from './pages/AnalyticsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import AuthenticationPage from './pages/AuthenticationPage.jsx';
 import AppShell from './components/layout/AppShell.jsx';
 import { getDailySessionActivity, getProjectsWithSessions, getSessionById, getSessionListItems, getSessions, getWeeklySummary } from './dummydata/index.js';
 import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
+import { getGitHubMutuals, sendPresenceHeartbeat } from './api/presence.js';
 
 function readStoredSessions(username) {
   if (!username) return [];
   try {
     const sessions = JSON.parse(window.localStorage.getItem(`panta.sessions.${encodeURIComponent(username)}`) || '[]');
-    return Array.isArray(sessions) ? sessions.filter((session) => session?.status === 'completed' && session.id) : [];
+    return Array.isArray(sessions)
+      ? sessions.filter((session) => session && typeof session === 'object' && session.status === 'completed' && session.id && session.repository && typeof session.repository === 'object')
+      : [];
   } catch {
     return [];
   }
@@ -48,9 +52,13 @@ export default function App() {
   const [completedSession, setCompletedSession] = useState(null);
   const [realSessions, setRealSessions] = useState([]);
   const [now, setNow] = useState(Date.now());
+  const [mutuals, setMutuals] = useState([]);
+  const [mutualsLoading, setMutualsLoading] = useState(true);
+  const [mutualsError, setMutualsError] = useState('');
   const loadId = useRef(0);
   const endingSession = useRef(false);
-  const allDummySessions = getSessions();
+  const allDummySessions = useMemo(() => getSessions(), []);
+  const analyticsSessions = useMemo(() => [...realSessions, ...allDummySessions], [realSessions, allDummySessions]);
   const sessionItems = getSessionListItems([...realSessions, ...allDummySessions])
     .sort((left, right) => new Date(right.startedAt) - new Date(left.startedAt));
   const dummyProjects = getProjectsWithSessions();
@@ -146,6 +154,55 @@ export default function App() {
     loadWorkspace();
     return () => { loadId.current += 1; };
   }, []);
+
+  useEffect(() => {
+    if (identityStatus !== 'authenticated' || !identity?.id) return undefined;
+    const sendHeartbeat = () => { void sendPresenceHeartbeat().catch(() => {}); };
+    sendHeartbeat();
+    const heartbeatTimer = window.setInterval(sendHeartbeat, 30_000);
+    return () => window.clearInterval(heartbeatTimer);
+  }, [identityStatus, identity?.id]);
+
+  useEffect(() => {
+    if (identityStatus !== 'authenticated' || !identity?.id) {
+      setMutuals([]);
+      setMutualsError('');
+      setMutualsLoading(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    let inFlight = false;
+    const controller = new AbortController();
+    async function refreshPeople(showLoading = false) {
+      if (cancelled || inFlight) return;
+      inFlight = true;
+      if (showLoading) {
+        setMutualsLoading(true);
+        setMutualsError('');
+      }
+      try {
+        const people = await getGitHubMutuals(controller.signal);
+        if (!cancelled) {
+          setMutuals(people);
+          setMutualsError('');
+        }
+      } catch (error) {
+        if (!cancelled && error.name !== 'AbortError') setMutualsError('Unable to load your GitHub mutuals.');
+      } finally {
+        inFlight = false;
+        if (showLoading && !cancelled) setMutualsLoading(false);
+      }
+    }
+
+    void refreshPeople(true);
+    const refreshTimer = window.setInterval(() => { void refreshPeople(); }, 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(refreshTimer);
+      controller.abort();
+    };
+  }, [identityStatus, identity?.id]);
 
   useEffect(() => {
     if (!activeSession) return undefined;
@@ -277,6 +334,8 @@ export default function App() {
     setActiveSession(null);
     setCompletedSession(null);
     setRealSessions([]);
+    setMutuals([]);
+    setMutualsError('');
     setIsEndingSession(false);
     setSessionEndingAt(null);
     navigate(routePaths.Overview);
@@ -313,6 +372,9 @@ export default function App() {
       activeSession={activeSession}
       now={now}
       onLogout={handleLogout}
+      mutuals={mutuals}
+      mutualsLoading={mutualsLoading}
+      mutualsError={mutualsError}
     >
         {view === 'Overview' && (
           <OverviewDashboard
@@ -358,6 +420,7 @@ export default function App() {
             ? <ProjectsPage identity={identity} repositories={repositories} loading={repositoriesLoading} error={repositoriesError} onRetry={() => identity && loadRepositories(identity.username)} dummyProjects={dummyProjects} onSelectSession={openSession} />
             : <OverviewDashboard {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
         )}
+        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onSelectSession={openSession} />}
         {view === 'Profile' && (
           identityStatus === 'authenticated' && identity
             ? <ProfilePage identity={identity} hasSessions={Boolean(activeSession)} onStart={() => navigate(routePaths['Start Session'])} />

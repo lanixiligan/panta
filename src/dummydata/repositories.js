@@ -12,12 +12,12 @@ export const dummyRepositories = [
     language: 'TypeScript', htmlUrl: `https://github.com/${owner}/Portfolio`,
   },
   {
-    id: 'repo-gitittogether', owner, name: 'GitItTogether', fullName: `${owner}/GitItTogether`,
+    id: 'repo-session-tracker-prototype', owner, name: 'GitItTogether', fullName: `${owner}/GitItTogether`,
     description: 'A focused coding-session workspace connected to GitHub.',
     language: 'JavaScript', htmlUrl: `https://github.com/${owner}/GitItTogether`,
   },
   {
-    id: 'repo-github-api-playground', owner, name: 'GitHub API Playground', fullName: `${owner}/github-api-playground`,
+    id: 'repo-api-playground-prototype', owner, name: 'GitHub API Playground', fullName: `${owner}/github-api-playground`,
     description: 'Small experiments with the public GitHub REST API.',
     language: 'JavaScript', htmlUrl: `https://github.com/${owner}/github-api-playground`,
   },

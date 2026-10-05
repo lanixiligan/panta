@@ -6,6 +6,7 @@ const items = [
   { label: 'Start a session', view: 'Start Session', path: routePaths['Start Session'], icon: '+' },
   { label: 'Session History', view: 'Sessions', path: routePaths.Sessions, icon: '◷' },
   { label: 'Projects', view: 'Projects', path: routePaths.Projects, icon: '□' },
+  { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, icon: '▥' },
 ];
 
 export default function SidebarNav({ pathname, onNavigate }) {

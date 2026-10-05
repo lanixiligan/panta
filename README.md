@@ -129,6 +129,8 @@ GITHUB_CALLBACK_URL=http://localhost:5173/api/auth/github/callback
 
 GitHub credentials and tokens must remain server-side and should never be exposed through frontend environment variables.
 
+Use the existing **Panta by Lanix Iligan** GitHub App. In **GitHub → Settings → Developer settings → GitHub Apps → Panta by Lanix Iligan → Edit**, copy the **Client ID** (not the App ID) into `GITHUB_APP_CLIENT_ID`. Under **Client secrets**, generate a client secret and put it in your local `.env` as `GITHUB_APP_CLIENT_SECRET`. The secret is shown only during creation, so store it securely. Panta obtains user access through OAuth; you do not need to create or provide a personal access token. The root `.env` file is ignored by Git; keep credentials there and out of frontend variables.
+
 ### Run the Development Server
 
 ```bash
@@ -153,6 +155,8 @@ Configure the callback URL as:
 http://localhost:5173/api/auth/github/callback
 ```
 
+Set this exact URL as a user authorization callback URL in the GitHub App configuration, and keep `GITHUB_CALLBACK_URL` identical to it. GitHub requires the callback URL used by the app to match its registered callback ([user authorization callback URL](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/about-the-user-authorization-callback-url)). See GitHub's guide to [generating a user access token for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app) for the Client ID and client secret fields.
+
 `GITHUB_APP_SLUG` is the public slug `panta-by-lanix-iligan`. The optional “Grant repository access” link on the login page opens GitHub's installation page; “Continue with GitHub” remains the separate Panta sign-in action.
 
 Panta currently uses GitHub primarily for authentication and retrieving repository activity.
@@ -163,10 +167,15 @@ Enable these **read-only repository permissions** in the GitHub App settings:
 
 - **Metadata: Read-only** — needed to list accessible repositories and read repository metadata.
 - **Contents: Read-only** — needed to list commits and read commit details for session recaps.
+- **Followers: Read-only** (user permission) — needed to list the authenticated user's GitHub following for the sidebar Socials section.
 
 Do not grant write permissions for the current workflow. GitHub may require the app installation or authorization to be reviewed again after changing permissions. A repository appears only when both the signed-in user and the app authorization can access it.
 
-See GitHub’s documentation for [listing repositories for the authenticated user](https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user), [listing commits](https://docs.github.com/en/rest/commits/commits#list-commits), and [choosing GitHub App permissions](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app).
+The sidebar Socials section loads `GET /user/following` and `GET /user/followers` on the server, follows GitHub pagination for both, and intersects the lists by GitHub user ID. Every mutual is shown as online when a recent Panta heartbeat exists, and offline otherwise; offline does not indicate whether the person has a Panta account. The relationship list is cached briefly while presence continues to refresh separately. The server sends authenticated heartbeats every 30 seconds; accounts are considered online for 90 seconds after their latest heartbeat. Presence is in-memory and process-local, so a server restart clears it and multiple server instances would need shared storage.
+
+For local Socials checks, sign in to the same Panta server from two isolated browser profiles with separate GitHub accounts. Make the accounts follow each other on GitHub to establish a mutual. Sign in as both accounts; the sidebar should show the other account as online. Log out or stop the second account's heartbeat and the mutual should appear offline (after the 90-second heartbeat window if the tab is simply closed).
+
+See GitHub’s documentation for [listing repositories for the authenticated user](https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user), [listing commits](https://docs.github.com/en/rest/commits/commits#list-commits), [listing people the authenticated user follows](https://docs.github.com/en/rest/users/followers#list-the-people-the-authenticated-user-follows), and [choosing GitHub App permissions](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app).
 
 ## Design Principles
 
@@ -221,4 +230,3 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 Built by [Lanix Iligan](https://github.com/lanixiligan)
-

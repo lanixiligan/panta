@@ -3,6 +3,7 @@ export const routePaths = {
   'Start Session': '/start-session',
   Sessions: '/session-history',
   Projects: '/projects',
+  Analytics: '/analytics',
   Profile: '/profile',
   Settings: '/settings',
 };
@@ -33,6 +34,7 @@ export function resolveRoute(pathname) {
     }
   }
   if (normalizedPath === '/projects') return { view: 'Projects' };
+  if (normalizedPath === '/analytics') return { view: 'Analytics' };
   if (normalizedPath === '/profile') return { view: 'Profile' };
   if (normalizedPath === '/settings') return { view: 'Settings' };
   return { view: 'Not Found' };

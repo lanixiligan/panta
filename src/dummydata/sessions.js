@@ -1,7 +1,7 @@
 import { dummyRepositories } from './repositories.js';
 
-const [pokefolio, portfolio, gitittogether, playground] = dummyRepositories.map(({ owner, name, fullName }) => ({ owner, name, fullName }));
-const repository = { pokefolio, portfolio, gitittogether, playground };
+const [pokefolio, portfolio, originalPrototype, playground] = dummyRepositories.map(({ owner, name, fullName }) => ({ owner, name, fullName }));
+const repository = { pokefolio, portfolio, originalPrototype, playground };
 
 // Five example-only records keep the history surfaces populated during development.
 // Their activity and commit timestamps are illustrative, never retrieved from GitHub.
@@ -17,7 +17,7 @@ export const dummySessions = [
     ],
   },
   {
-    id: 'session-002', source: 'placeholder', repository: repository.gitittogether, goal: 'Implement session history',
+    id: 'session-002', source: 'placeholder', repository: repository.originalPrototype, goal: 'Implement session history',
     startedAt: '2026-10-02T09:12:00+08:00', endedAt: '2026-10-02T10:46:00+08:00', status: 'completed',
     activity: { commits: 2, filesChanged: 8, additions: 318, deletions: 74, pullRequests: 0, issues: 1, reviews: 0 },
     commits: [

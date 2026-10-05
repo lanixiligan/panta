@@ -11,7 +11,7 @@ export default function ProfilePage({ identity, hasSessions, onStart }) {
       <section className="profile-activity-section">
         <div className="dashboard-section-heading"><div><span className="section-kicker">YOUR ACTIVITY</span><h2>Development history</h2></div></div>
         {hasSessions ? (
-          <div className="dashboard-section"><p className="dashboard-empty-note">A local session preview is active. Session history and totals will appear when saving is connected.</p></div>
+          <div className="dashboard-section"><p className="dashboard-empty-note">A session is active. Its GitHub activity recap will be ready when you end it.</p></div>
         ) : (
           <div className="profile-empty-state"><span className="empty-state-mark" aria-hidden="true">◷</span><div><h3>No sessions yet.</h3><p>Start your first coding session to build your development history.</p></div><button className="subtle-action" type="button" onClick={onStart}>Start a session</button></div>
         )}

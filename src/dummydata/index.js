@@ -1,5 +1,6 @@
 import { dummyRepositories } from './repositories.js';
 import { dummySessions } from './sessions.js';
+import { sessionDetailPath } from '../routing.js';
 
 export { dummyRepositories, dummySessions };
 
@@ -11,21 +12,33 @@ export function getSessionById(id) {
   return dummySessions.find((session) => session.id === id) || null;
 }
 
+export function getSessionDurationMinutes(session) {
+  const startedAt = new Date(session.startedAt).getTime();
+  const endedAt = new Date(session.endedAt).getTime();
+  if (!Number.isFinite(startedAt) || !Number.isFinite(endedAt) || endedAt < startedAt) return 0;
+  return Math.floor((endedAt - startedAt) / 60_000);
+}
+
 export function getSessionListItems(sessions = getSessions()) {
   return sessions.map((session) => ({
     id: session.id,
+    source: session.source || 'github',
+    isPlaceholder: session.source === 'placeholder',
+    status: session.status || (session.endedAt ? 'completed' : 'active'),
+    hasActivity: Boolean(session.activity),
+    activityStatus: session.activityStatus || (session.source === 'placeholder' ? 'placeholder' : 'complete'),
     repositoryName: session.repository.name,
-    repositoryFullName: session.repository.fullName,
+    repositoryFullName: session.repository.fullName || session.repository.full_name,
     goal: session.goal,
     startedAt: session.startedAt,
     finishedAt: session.endedAt,
-    durationMinutes: session.durationMinutes,
-    commitCount: session.activity.commits,
-    filesChanged: session.activity.filesChanged,
-    additions: session.activity.additions,
-    deletions: session.activity.deletions,
-    pullRequestCount: session.activity.pullRequests,
-    detailHref: `#session/${session.id}`,
+    durationMinutes: getSessionDurationMinutes(session),
+    commitCount: session.activity?.commits ?? session.commits?.length ?? 0,
+    filesChanged: session.activity?.filesChanged ?? 0,
+    additions: session.activity?.additions ?? 0,
+    deletions: session.activity?.deletions ?? 0,
+    pullRequestCount: session.activity?.pullRequests ?? 0,
+    detailHref: sessionDetailPath(session.id),
   }));
 }
 
@@ -42,8 +55,8 @@ export function getWeeklySummary(sessions = dummySessions, referenceDate = new D
   });
   return {
     sessionCount: thisWeek.length,
-    focusMinutes: thisWeek.reduce((sum, session) => sum + session.durationMinutes, 0),
-    commitCount: thisWeek.reduce((sum, session) => sum + session.activity.commits, 0),
+    sessionMinutes: thisWeek.reduce((sum, session) => sum + getSessionDurationMinutes(session), 0),
+    commitCount: thisWeek.reduce((sum, session) => sum + (session.activity?.commits ?? 0), 0),
     repositoryCount: new Set(thisWeek.map((session) => session.repository.fullName)).size,
   };
 }
@@ -55,11 +68,11 @@ export function getDailySessionActivity(sessions = dummySessions, referenceDate 
     date.setDate(date.getDate() - (6 - index));
     const nextDate = new Date(date);
     nextDate.setDate(nextDate.getDate() + 1);
-    const focusMinutes = sessions.reduce((sum, session) => {
+    const sessionMinutes = sessions.reduce((sum, session) => {
       const startedAt = new Date(session.startedAt);
-      return startedAt >= date && startedAt < nextDate ? sum + session.durationMinutes : sum;
+      return startedAt >= date && startedAt < nextDate ? sum + getSessionDurationMinutes(session) : sum;
     }, 0);
-    return { day: new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date), focusMinutes };
+    return { day: new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date), sessionMinutes };
   });
 }
 

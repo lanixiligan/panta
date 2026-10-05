@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import GitHubExplorer from '../components/github/GitHubExplorer.jsx';
+function repositoryVisibility(repository) {
+  return (repository.visibility || (repository.private ? 'private' : 'public')).toUpperCase();
+}
 
 function ProjectCard({ repository }) {
   return (
     <a className="project-card" href={repository.html_url} target="_blank" rel="noreferrer">
-      <div className="project-card-heading"><span className="project-mark" aria-hidden="true">⌂</span><span aria-hidden="true">↗</span></div>
+      <div className="project-card-heading"><span className="project-mark" aria-hidden="true">⌂</span><span className={`repository-visibility ${repository.private ? 'private' : 'public'}`}>{repositoryVisibility(repository)}</span></div>
       <h3>{repository.name}</h3>
       <p>{repository.description || 'No description provided.'}</p>
       <div className="project-card-footer">
@@ -32,14 +33,12 @@ function ProjectHistoryCard({ project, onSelectSession }) {
 }
 
 export default function ProjectsPage({ identity, repositories, loading, error, onRetry, dummyProjects = [], onSelectSession }) {
-  const [showExplorer, setShowExplorer] = useState(false);
-
   return (
     <div className="projects-page">
       <section className="page-intro">
         <span className="section-kicker">PROJECTS</span>
         <h1>Your GitHub repositories.</h1>
-        <p>Recent public repositories associated with @{identity.username}. Choose one when you start a session.</p>
+        <p>Repositories available through the GitHub App. Choose one when you start a session.</p>
       </section>
 
       <section className="project-history-section">
@@ -50,23 +49,14 @@ export default function ProjectsPage({ identity, repositories, loading, error, o
 
       {loading && <div className="project-grid-skeleton" aria-label="Loading repositories"><i /><i /><i /><i /></div>}
       {error && <div className="dashboard-error" role="alert"><span>{error}</span><button type="button" onClick={onRetry}>Try again</button></div>}
-      {!loading && !error && repositories.length === 0 && <div className="dashboard-section"><p className="dashboard-empty-note">No public repositories were found for this account.</p></div>}
+      {!loading && !error && repositories.length === 0 && <div className="dashboard-section"><p className="dashboard-empty-note">No accessible repositories found. Check that the GitHub App is installed for repositories you can access.</p></div>}
       {!loading && !error && repositories.length > 0 && (
         <>
           <div className="project-grid">{repositories.map((repository) => <ProjectCard repository={repository} key={repository.id} />)}</div>
-          <p className="projects-source-note">Showing up to 10 recently updated public repositories.</p>
+          <p className="projects-source-note">Showing repositories accessible to Panta, ordered by recent updates.</p>
         </>
       )}
 
-      <section className="api-experiment-section">
-        <div className="api-experiment-heading">
-          <div><span className="section-kicker">EXPERIMENTAL</span><h2>Public GitHub explorer</h2><p>Profile, repository, and contribution graph lookups.</p></div>
-          <button className="subtle-action" type="button" onClick={() => setShowExplorer((visible) => !visible)} aria-expanded={showExplorer}>
-            {showExplorer ? 'Close explorer' : 'Open explorer'}
-          </button>
-        </div>
-        {showExplorer && <GitHubExplorer />}
-      </section>
     </div>
   );
 }

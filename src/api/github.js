@@ -1,50 +1,97 @@
-const API_BASE = 'https://api.github.com';
-
-async function request(path) {
+export async function getAccessibleRepositories() {
   let response;
-
   try {
-    response = await fetch(`${API_BASE}${path}`, {
-      headers: { Accept: 'application/vnd.github+json' },
+    response = await fetch('/api/github/repositories', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
     });
   } catch {
-    throw new Error('Could not reach GitHub. Check your connection and try again.');
+    throw new Error('Could not reach Panta’s GitHub connection. Check your connection and try again.');
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error(`Panta’s GitHub connection returned an unreadable response (${response.status}).`);
   }
 
   if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error('We couldn’t find that GitHub user. Check the username and try again.');
-    }
-    if (response.status === 403 && response.headers.get('x-ratelimit-remaining') === '0') {
-      throw new Error('GitHub’s public API rate limit has been reached. Please try again later.');
-    }
-    if (response.status === 403 || response.status === 429) {
-      throw new Error('GitHub is limiting requests right now. Please try again in a little while.');
-    }
-    throw new Error(`GitHub returned an error (${response.status}). Please try again.`);
+    if (response.status === 401) throw new Error('Your GitHub session expired. Sign in again to load repositories.');
+    throw new Error(payload.error || `Unable to load repositories accessible to Panta (${response.status}).`);
   }
 
-  return response.json();
+  return Array.isArray(payload.repositories) ? payload.repositories : [];
 }
 
-export function getUser(username) {
-  return request(`/users/${encodeURIComponent(username)}`);
-}
-
-export function getUserRepositories(username) {
-  return request(`/users/${encodeURIComponent(username)}/repos?per_page=10&sort=updated`);
-}
-
-export function searchUsers(query, page = 1, perPage = 10) {
-  if (!query?.trim()) {
-    throw new Error('Enter a search term to find GitHub users.');
+export async function getSessionActivity(repository, since, until) {
+  const owner = repository?.owner?.login || repository?.owner;
+  const name = repository?.name;
+  if (!owner || !name) throw new Error('A GitHub repository is required to retrieve session activity.');
+  if (!Number.isFinite(Date.parse(since)) || !Number.isFinite(Date.parse(until))) {
+    throw new Error('Valid session start and end times are required to retrieve commits.');
   }
 
   const params = new URLSearchParams({
-    q: query,
-    per_page: String(perPage),
-    page: String(page),
+    since: new Date(since).toISOString(),
+    until: new Date(until).toISOString(),
   });
+  const path = `/api/github/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/session-commits?${params}`;
+  let response;
+  try {
+    response = await fetch(path, { credentials: 'same-origin', cache: 'no-store' });
+  } catch {
+    throw new Error('Could not reach Panta’s GitHub connection. Check your connection and try again.');
+  }
 
-  return request(`/search/users?${params.toString()}`);
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error(`Panta’s GitHub connection returned an unreadable response (${response.status}).`);
+  }
+
+  if (!response.ok) {
+    if (response.status === 401) throw new Error('Your GitHub session expired. Sign in again to retrieve commits.');
+    throw new Error(payload.error || `Could not retrieve GitHub commits (${response.status}).`);
+  }
+
+  return payload;
+}
+
+export async function getActiveSessionCommits(repository, startedAt, since = startedAt, until = new Date().toISOString(), signal) {
+  const owner = repository?.owner?.login || repository?.owner;
+  const name = repository?.name;
+  if (!owner || !name) throw new Error('A GitHub repository is required to retrieve session activity.');
+  if (![startedAt, since, until].every((value) => Number.isFinite(Date.parse(value)))) {
+    throw new Error('Valid session timestamps are required to retrieve live commits.');
+  }
+
+  const params = new URLSearchParams({
+    started_at: new Date(startedAt).toISOString(),
+    since: new Date(since).toISOString(),
+    until: new Date(until).toISOString(),
+  });
+  const path = `/api/github/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/active-session-commits?${params}`;
+  let response;
+  try {
+    response = await fetch(path, { credentials: 'same-origin', cache: 'no-store', signal });
+  } catch {
+    throw new Error('Could not reach Panta’s GitHub connection. Check your connection and try again.');
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error(`Panta’s GitHub connection returned an unreadable response (${response.status}).`);
+  }
+
+  if (!response.ok) {
+    if (response.status === 401) throw new Error('Your GitHub session expired. Sign in again to retrieve commits.');
+    throw new Error(payload.error || `Could not retrieve live GitHub commits (${response.status}).`);
+  }
+
+  return payload;
 }

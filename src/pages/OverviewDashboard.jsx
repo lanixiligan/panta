@@ -1,7 +1,6 @@
 import React from 'react';
 import ActiveSessionCard from '../components/sessions/ActiveSessionCard.jsx';
 import { CodingNow, RecentSessions, SessionActivity, WeeklySummary } from '../components/dashboard/DashboardSections.jsx';
-import SessionStartCard from '../components/sessions/SessionStartCard.jsx';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -10,7 +9,7 @@ function greeting() {
   return 'Good evening';
 }
 
-export default function OverviewDashboard({ identity, identityStatus, identityError, repositories, repositoriesLoading, repositoriesError, onRetryIdentity, onRetryRepositories, activeSession, now, onStartSession, onFinishSession, sessionNotice, onViewSessions, recentSessions, weeklySummary, activityDays, onSelectSession }) {
+export default function OverviewDashboard({ identity, identityStatus, identityError, onRetryIdentity, activeSession, now, isEndingSession, sessionEndingAt, onFinishSession, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, activityDays, onSelectSession }) {
   if (identityStatus === 'loading') {
     return <section className="dashboard-loading" aria-label="Loading your dashboard"><div /><div /><div /></section>;
   }
@@ -31,25 +30,17 @@ export default function OverviewDashboard({ identity, identityStatus, identityEr
   return (
     <div className="dashboard-home">
       <section className="dashboard-greeting">
-        <span className="section-kicker">YOUR WORKSPACE · {new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date())}</span>
-        <h1>{greeting()}, {name}.</h1>
-        <p>What are we getting together today?</p>
+        <div>
+          <span className="section-kicker">YOUR WORKSPACE · {new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date())}</span>
+          <h1>{greeting()}, {name}.</h1>
+          <p>What are we getting together today?</p>
+        </div>
+        {!activeSession && <button className="start-session-shortcut" type="button" onClick={onNavigateToStart}>Start a session <span aria-hidden="true">→</span></button>}
       </section>
 
-      {activeSession ? (
-        <ActiveSessionCard session={activeSession} now={now} onFinish={onFinishSession} />
-      ) : (
-        <SessionStartCard
-          repositories={repositories}
-          loading={repositoriesLoading}
-          error={repositoriesError}
-          onRetry={onRetryRepositories}
-          onStart={onStartSession}
-        />
-      )}
+      {activeSession && <ActiveSessionCard session={activeSession} now={now} onFinish={onFinishSession} isEnding={isEndingSession} endingAt={sessionEndingAt} />}
 
-      {sessionNotice && <p className="session-preview-notice" role="status">{sessionNotice}</p>}
-      <RecentSessions sessions={recentSessions} onStart={() => document.getElementById('start-session')?.scrollIntoView({ behavior: 'smooth', block: 'center' })} onViewAll={onViewSessions} onSelectSession={onSelectSession} />
+      <RecentSessions sessions={recentSessions} onViewAll={onViewSessions} onSelectSession={onSelectSession} />
       <div className="dashboard-lower-grid">
         <WeeklySummary summary={weeklySummary} />
         <CodingNow />

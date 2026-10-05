@@ -75,7 +75,7 @@ Sign in with your GitHub account through GitHub OAuth.
 | --- | --- |
 | Frontend | React, Vite, JavaScript, CSS |
 | Server | Node.js, Vite server middleware |
-| GitHub Integration | GitHub REST API, GitHub GraphQL API, GitHub OAuth / GitHub App |
+| GitHub Integration | GitHub REST API, GitHub OAuth / GitHub App |
 | Authentication | HTTP-only session cookies, server-side GitHub tokens |
 
 ## Project Structure
@@ -123,6 +123,7 @@ Create a `.env` file in the project root:
 ```ini
 GITHUB_APP_CLIENT_ID=your_client_id
 GITHUB_APP_CLIENT_SECRET=your_client_secret
+GITHUB_APP_SLUG=panta-by-lanix-iligan
 GITHUB_CALLBACK_URL=http://localhost:5173/api/auth/github/callback
 ```
 
@@ -152,7 +153,20 @@ Configure the callback URL as:
 http://localhost:5173/api/auth/github/callback
 ```
 
+`GITHUB_APP_SLUG` is the public slug `panta-by-lanix-iligan`. The optional “Grant repository access” link on the login page opens GitHub's installation page; “Continue with GitHub” remains the separate Panta sign-in action.
+
 Panta currently uses GitHub primarily for authentication and retrieving repository activity.
+
+For session repository selection, Panta asks the server for repositories the signed-in GitHub user can access through the app. This can include public and private repositories owned by the user, collaborator repositories, and organization repositories when the GitHub App is installed for them and has access. The list is paginated and only safe repository metadata is returned to the browser.
+
+Enable these **read-only repository permissions** in the GitHub App settings:
+
+- **Metadata: Read-only** — needed to list accessible repositories and read repository metadata.
+- **Contents: Read-only** — needed to list commits and read commit details for session recaps.
+
+Do not grant write permissions for the current workflow. GitHub may require the app installation or authorization to be reviewed again after changing permissions. A repository appears only when both the signed-in user and the app authorization can access it.
+
+See GitHub’s documentation for [listing repositories for the authenticated user](https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user), [listing commits](https://docs.github.com/en/rest/commits/commits#list-commits), and [choosing GitHub App permissions](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app).
 
 ## Design Principles
 
@@ -200,4 +214,11 @@ Individual work periods become part of a larger picture of how a project evolves
 
 ---
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
 Built by [Lanix Iligan](https://github.com/lanixiligan)
+

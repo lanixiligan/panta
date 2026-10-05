@@ -10,3 +10,13 @@ export async function getCurrentUser() {
   const result = await response.json();
   return result.authenticated ? result.user : null;
 }
+
+export async function logoutCurrentUser() {
+  const response = await fetch('/api/auth/logout', {
+    method: 'POST',
+    credentials: 'same-origin',
+    cache: 'no-store',
+  });
+
+  if (!response.ok) throw new Error('Could not disconnect the GitHub account.');
+}

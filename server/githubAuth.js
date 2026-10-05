@@ -5,6 +5,20 @@ const STATE_COOKIE = 'gittogether_oauth_state';
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 const STATE_TTL_SECONDS = 10 * 60;
 const API_PREFIX = '/api/auth/';
+const DEFAULT_GITHUB_APP_SLUG = 'panta-by-lanix-iligan';
+const ACCESSIBLE_REPOSITORIES_PATH = '/api/github/repositories';
+const SESSION_COMMITS_PATH = /^\/api\/github\/repos\/([^/]+)\/([^/]+)\/session-commits$/;
+const ACTIVE_SESSION_COMMITS_PATH = /^\/api\/github\/repos\/([^/]+)\/([^/]+)\/active-session-commits$/;
+
+function getGitHubAppSlug(configuredValue) {
+  const value = configuredValue?.trim();
+  if (!value) return DEFAULT_GITHUB_APP_SLUG;
+
+  const appUrlMatch = value.match(/^https:\/\/github\.com\/apps\/([a-z0-9-]+)\/?$/i);
+  if (appUrlMatch) return appUrlMatch[1];
+  if (/^[a-z0-9-]+$/i.test(value)) return value;
+  return null;
+}
 
 function parseCookies(header = '') {
   return Object.fromEntries(header.split(';').map((part) => {
@@ -62,6 +76,178 @@ function pruneSessions(sessions) {
   }
 }
 
+class GitHubApiError extends Error {
+  constructor(message, status = 502) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function fetchGitHubJson(url, accessToken) {
+  let response;
+  try {
+    response = await fetch(url, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      signal: AbortSignal.timeout(20_000),
+    });
+  } catch {
+    throw new GitHubApiError('Could not reach GitHub. Try retrieving the session activity again.');
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new GitHubApiError('GitHub returned an unreadable response. Try again.');
+  }
+
+  if (!response.ok) {
+    const rateLimited = response.status === 429 || (response.status === 403 && response.headers.get('x-ratelimit-remaining') === '0');
+    const message = rateLimited
+      ? 'GitHub is limiting API requests right now. Try retrieving the session activity again later.'
+      : response.status === 401
+        ? 'Your GitHub authorization has expired. Sign in again to access repositories.'
+        : response.status === 403 || response.status === 404
+          ? 'Repository access is not available to Panta. Check that the repository is included in the GitHub App installation and that read permissions are enabled.'
+          : payload.message || `GitHub returned an error (${response.status}).`;
+    throw new GitHubApiError(message, response.status);
+  }
+
+  return { payload, response };
+}
+
+function nextPageUrl(linkHeader) {
+  const nextLink = linkHeader?.split(',').map((part) => part.trim()).find((part) => /rel="next"/.test(part));
+  const match = nextLink?.match(/<([^>]+)>/);
+  if (!match) return null;
+  const nextUrl = new URL(match[1]);
+  return nextUrl.origin === 'https://api.github.com' ? nextUrl.href : null;
+}
+
+async function getAccessibleRepositories(accessToken) {
+  const repositoriesUrl = new URL('https://api.github.com/user/repos');
+  repositoriesUrl.search = new URLSearchParams({
+    affiliation: 'owner,collaborator,organization_member',
+    visibility: 'all',
+    sort: 'updated',
+    per_page: '100',
+  }).toString();
+
+  const repositories = [];
+  let pageUrl = repositoriesUrl.href;
+  while (pageUrl) {
+    const { payload, response } = await fetchGitHubJson(pageUrl, accessToken);
+    if (!Array.isArray(payload)) throw new GitHubApiError('GitHub returned an invalid repository list.');
+    repositories.push(...payload.map((repository) => ({
+      id: repository.id,
+      name: repository.name,
+      full_name: repository.full_name,
+      owner: repository.owner ? {
+        login: repository.owner.login,
+        avatar_url: repository.owner.avatar_url || null,
+      } : null,
+      description: repository.description || null,
+      private: Boolean(repository.private),
+      visibility: repository.visibility || (repository.private ? 'private' : 'public'),
+      language: repository.language || null,
+      updated_at: repository.updated_at || null,
+      html_url: repository.html_url,
+    })));
+    pageUrl = nextPageUrl(response.headers.get('link'));
+  }
+  return repositories;
+}
+
+async function getSessionCommitRefs({ owner, repository, since, until, author, accessToken }) {
+  const listUrl = new URL(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits`);
+  const params = new URLSearchParams({ since, until, per_page: '100' });
+  if (author) params.set('author', author);
+  listUrl.search = params.toString();
+
+  const commitRefs = [];
+  let pageUrl = listUrl.href;
+  while (pageUrl) {
+    const { payload, response } = await fetchGitHubJson(pageUrl, accessToken);
+    if (!Array.isArray(payload)) throw new GitHubApiError('GitHub returned an invalid commit list.');
+    commitRefs.push(...payload);
+    pageUrl = nextPageUrl(response.headers.get('link'));
+  }
+
+  return commitRefs
+    .filter((commit) => !author || commit.author?.login?.toLocaleLowerCase() === author.toLocaleLowerCase())
+    .map((commit) => ({
+      sha: commit.sha,
+      message: commit.commit?.message || 'Commit message unavailable',
+      timestamp: commit.commit?.committer?.date || commit.commit?.author?.date || null,
+      author: { name: commit.commit?.author?.name || commit.author?.login || 'Unknown author', login: commit.author?.login || null },
+      htmlUrl: commit.html_url || null,
+    }));
+}
+
+async function getActiveSessionCommitActivity({ owner, repository, since, until, author, accessToken }) {
+  const commits = await getSessionCommitRefs({ owner, repository, since, until, author, accessToken });
+  commits.sort((left, right) => new Date(right.timestamp || 0) - new Date(left.timestamp || 0));
+  return { commits, checkedAt: new Date().toISOString() };
+}
+
+async function getSessionCommitActivity({ owner, repository, since, until, author, accessToken }) {
+  const commitRefs = await getSessionCommitRefs({ owner, repository, since, until, author, accessToken });
+
+  const commits = [];
+  for (let index = 0; index < commitRefs.length; index += 8) {
+    const batch = commitRefs.slice(index, index + 8);
+    const details = await Promise.all(batch.map(({ sha }) => {
+      const detailUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits/${encodeURIComponent(sha)}`;
+      return fetchGitHubJson(detailUrl, accessToken);
+    }));
+
+    commits.push(...details.map(({ payload }) => {
+      const commit = payload.commit || {};
+      const files = Array.isArray(payload.files) ? payload.files.map((file) => ({
+        filename: file.filename,
+        status: file.status,
+        additions: Number(file.additions) || 0,
+        deletions: Number(file.deletions) || 0,
+        changes: Number(file.changes) || 0,
+      })) : [];
+      return {
+        sha: payload.sha,
+        message: commit.message || 'Commit message unavailable',
+        timestamp: commit.committer?.date || commit.author?.date || null,
+        author: {
+          name: commit.author?.name || payload.author?.login || 'Unknown author',
+          login: payload.author?.login || null,
+        },
+        committer: {
+          name: commit.committer?.name || payload.committer?.login || 'Unknown committer',
+          login: payload.committer?.login || null,
+        },
+        htmlUrl: payload.html_url || null,
+        additions: Number(payload.stats?.additions) || 0,
+        deletions: Number(payload.stats?.deletions) || 0,
+        totalChanges: Number(payload.stats?.total) || 0,
+        files,
+      };
+    }));
+  }
+
+  commits.sort((left, right) => new Date(right.timestamp || 0) - new Date(left.timestamp || 0));
+  return {
+    source: 'github',
+    activity: {
+      commits: commits.length,
+      filesChanged: commits.reduce((total, commit) => total + commit.files.length, 0),
+      additions: commits.reduce((total, commit) => total + commit.additions, 0),
+      deletions: commits.reduce((total, commit) => total + commit.deletions, 0),
+    },
+    commits,
+  };
+}
+
 async function exchangeCode({ code, clientId, clientSecret, callbackUrl }) {
   const response = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
@@ -113,7 +299,10 @@ function createGitHubAuthMiddleware(env = process.env) {
 
   return async function githubAuthMiddleware(request, response, next) {
     const requestUrl = new URL(request.url || '/', 'http://localhost');
-    if (!requestUrl.pathname.startsWith(API_PREFIX)) return next();
+    const sessionCommitsMatch = requestUrl.pathname.match(SESSION_COMMITS_PATH);
+    const activeSessionCommitsMatch = requestUrl.pathname.match(ACTIVE_SESSION_COMMITS_PATH);
+    const accessibleRepositoriesRequest = requestUrl.pathname === ACCESSIBLE_REPOSITORIES_PATH;
+    if (!requestUrl.pathname.startsWith(API_PREFIX) && !sessionCommitsMatch && !activeSessionCommitsMatch && !accessibleRepositoriesRequest) return next();
 
     const route = `${request.method} ${requestUrl.pathname}`;
     const cookies = parseCookies(request.headers.cookie);
@@ -121,6 +310,154 @@ function createGitHubAuthMiddleware(env = process.env) {
     const clearSessionCookie = `${SESSION_COOKIE}=; ${cookieOptions({ production, maxAge: 0 })}`;
 
     pruneSessions(sessions);
+
+    if (accessibleRepositoriesRequest) {
+      if (request.method !== 'GET') {
+        writeJson(response, 405, { error: 'Use GET to load accessible repositories.' }, { Allow: 'GET' });
+        return;
+      }
+
+      const sessionId = cookies[SESSION_COOKIE];
+      const session = sessionId && sessions.get(sessionId);
+      if (!session || session.expiresAt <= Date.now()) {
+        if (sessionId) sessions.delete(sessionId);
+        writeJson(response, 401, { error: 'Sign in with GitHub to load accessible repositories.' });
+        return;
+      }
+
+      try {
+        const repositories = await getAccessibleRepositories(session.accessToken);
+        writeJson(response, 200, { repositories });
+      } catch (error) {
+        writeJson(response, error instanceof GitHubApiError ? error.status : 502, {
+          error: error instanceof GitHubApiError
+            ? error.message
+            : 'Unable to load repositories accessible to Panta. Check the GitHub App installation and try again.',
+        });
+      }
+      return;
+    }
+
+    if (activeSessionCommitsMatch) {
+      if (request.method !== 'GET') {
+        writeJson(response, 405, { error: 'Use GET to retrieve active session commits.' }, { Allow: 'GET' });
+        return;
+      }
+
+      const sessionId = cookies[SESSION_COOKIE];
+      const session = sessionId && sessions.get(sessionId);
+      if (!session || session.expiresAt <= Date.now()) {
+        if (sessionId) sessions.delete(sessionId);
+        writeJson(response, 401, { error: 'Sign in with GitHub to retrieve session activity.' });
+        return;
+      }
+
+      let owner;
+      let repository;
+      try {
+        owner = decodeURIComponent(activeSessionCommitsMatch[1]);
+        repository = decodeURIComponent(activeSessionCommitsMatch[2]);
+      } catch {
+        writeJson(response, 400, { error: 'The repository path is invalid.' });
+        return;
+      }
+      if (!/^[A-Za-z0-9_.-]{1,100}$/.test(owner) || !/^[A-Za-z0-9_.-]{1,100}$/.test(repository)) {
+        writeJson(response, 400, { error: 'The repository owner or name is invalid.' });
+        return;
+      }
+
+      const startedTime = Date.parse(requestUrl.searchParams.get('started_at') || '');
+      const sinceTime = Date.parse(requestUrl.searchParams.get('since') || '');
+      const untilTime = Date.parse(requestUrl.searchParams.get('until') || '');
+      if (![startedTime, sinceTime, untilTime].every(Number.isFinite) || startedTime > untilTime) {
+        writeJson(response, 400, { error: 'Valid active session timestamps are required.' });
+        return;
+      }
+
+      try {
+        const result = await getActiveSessionCommitActivity({
+          owner,
+          repository,
+          since: new Date(Math.max(startedTime, sinceTime)).toISOString(),
+          until: new Date(untilTime).toISOString(),
+          author: session.user.username,
+          accessToken: session.accessToken,
+        });
+        writeJson(response, 200, result);
+      } catch (error) {
+        writeJson(response, error instanceof GitHubApiError ? error.status : 502, {
+          error: error instanceof GitHubApiError ? error.message : 'Could not retrieve live GitHub commits.',
+        });
+      }
+      return;
+    }
+
+    if (sessionCommitsMatch) {
+      if (request.method !== 'GET') {
+        writeJson(response, 405, { error: 'Use GET to retrieve session commits.' }, { Allow: 'GET' });
+        return;
+      }
+
+      const sessionId = cookies[SESSION_COOKIE];
+      const session = sessionId && sessions.get(sessionId);
+      if (!session || session.expiresAt <= Date.now()) {
+        if (sessionId) sessions.delete(sessionId);
+        writeJson(response, 401, { error: 'Sign in with GitHub to retrieve session activity.' });
+        return;
+      }
+
+      let owner;
+      let repository;
+      try {
+        owner = decodeURIComponent(sessionCommitsMatch[1]);
+        repository = decodeURIComponent(sessionCommitsMatch[2]);
+      } catch {
+        writeJson(response, 400, { error: 'The repository path is invalid.' });
+        return;
+      }
+      if (!/^[A-Za-z0-9_.-]{1,100}$/.test(owner) || !/^[A-Za-z0-9_.-]{1,100}$/.test(repository)) {
+        writeJson(response, 400, { error: 'The repository owner or name is invalid.' });
+        return;
+      }
+      const sinceValue = requestUrl.searchParams.get('since');
+      const untilValue = requestUrl.searchParams.get('until');
+      const sinceTime = Date.parse(sinceValue || '');
+      const untilTime = Date.parse(untilValue || '');
+      if (!Number.isFinite(sinceTime) || !Number.isFinite(untilTime) || sinceTime > untilTime) {
+        writeJson(response, 400, { error: 'Valid session start and end timestamps are required.' });
+        return;
+      }
+
+      try {
+        const repositoryUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}`;
+        await fetchGitHubJson(repositoryUrl, session.accessToken);
+        const result = await getSessionCommitActivity({
+          owner,
+          repository,
+          since: new Date(sinceTime).toISOString(),
+          until: new Date(untilTime).toISOString(),
+          author: session.user.username,
+          accessToken: session.accessToken,
+        });
+        writeJson(response, 200, result);
+      } catch (error) {
+        writeJson(response, error instanceof GitHubApiError ? error.status : 502, {
+          error: error instanceof GitHubApiError ? error.message : 'Could not retrieve GitHub commits for this session.',
+        });
+      }
+      return;
+    }
+
+    if (route === 'GET /api/auth/github/install') {
+      const appSlug = getGitHubAppSlug(env.GITHUB_APP_SLUG);
+      if (!appSlug) {
+        redirect(response, authErrorUrl('repository_access'));
+        return;
+      }
+
+      redirect(response, `https://github.com/apps/${appSlug}/installations/new`);
+      return;
+    }
 
     if (route === 'GET /api/auth/github') {
       const { GITHUB_APP_CLIENT_ID: clientId, GITHUB_APP_CLIENT_SECRET: clientSecret, GITHUB_CALLBACK_URL: callbackUrl } = env;

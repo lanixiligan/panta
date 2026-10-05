@@ -4,6 +4,7 @@ const AUTH_MESSAGES = {
   not_configured: 'GitHub sign-in is not configured yet. Set the server-side GitHub App environment variables.',
   denied: 'GitHub sign-in was cancelled. You can try again whenever you’re ready.',
   state: 'The sign-in request could not be verified. Please start again.',
+  repository_access: 'The Panta GitHub App link is not configured. Please contact the person maintaining this workspace.',
   callback: 'GitHub could not complete sign-in. Please try again.',
   exchange: 'GitHub sign-in could not be completed. Please try again.',
 };

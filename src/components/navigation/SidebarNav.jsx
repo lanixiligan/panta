@@ -1,19 +1,22 @@
 import React from 'react';
+import { followRouteLink, routePaths } from '../../routing.js';
 
 const items = [
-  { label: 'Overview', icon: '▣' },
-  { label: 'Sessions', icon: '◷' },
-  { label: 'Projects', icon: '□' },
+  { label: 'Overview', view: 'Overview', path: routePaths.Overview, icon: '▣' },
+  { label: 'Start a session', view: 'Start Session', path: routePaths['Start Session'], icon: '+' },
+  { label: 'Session History', view: 'Sessions', path: routePaths.Sessions, icon: '◷' },
+  { label: 'Projects', view: 'Projects', path: routePaths.Projects, icon: '□' },
 ];
 
-export default function SidebarNav({ activeView, onNavigate }) {
+export default function SidebarNav({ pathname, onNavigate }) {
   return (
     <nav className="sidebar-nav" aria-label="Main navigation">
-      {items.map(({ label, icon }) => (
-        <button key={label} type="button" className={`sidebar-nav-item${activeView === label ? ' active' : ''}`} aria-current={activeView === label ? 'page' : undefined} onClick={() => onNavigate(label)}>
+      {items.map(({ label, view, path, icon }) => {
+        const active = pathname === path || (view === 'Sessions' && pathname.startsWith(`${path}/`));
+        return <a key={view} href={path} className={`sidebar-nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
           <span className="sidebar-nav-icon" aria-hidden="true">{icon}</span><span>{label}</span>
-        </button>
-      ))}
+        </a>;
+      })}
     </nav>
   );
 }

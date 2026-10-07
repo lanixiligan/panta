@@ -1,0 +1,25 @@
+@media (max-width: 520px) {
+  .session-commit-list-active .session-commit-row-main strong { white-space: normal; }
+}
+.session-commit-list { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; }
+.session-commit-list li { position: relative; gap: 12px; border-top: 1px solid var(--workspace-divider); display: block; padding: 10px 0; }
+.session-commit-list li > div { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.session-commit-list strong { color: #d7e8da; font-weight: 500; }
+.session-commit-list small { color: var(--workspace-muted); font-size: 11px; }
+.session-commit-list code { color: #8eb99a; font: 11px 'DM Mono', monospace; }
+.session-commit-list strong a { color: inherit; text-decoration: none; }
+.session-commit-list strong a:hover { color: var(--workspace-accent); }
+.session-commit-files { overflow-wrap: anywhere; }
+.session-commit-list strong { font-size: 13px; }
+.session-commit-list .session-commit-row-main { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "sha time" "message time"; align-items: center; flex-direction: initial; gap: 3px 14px; min-width: 0; }
+.session-commit-row-main code { grid-area: sha; color: #8eb99a; font: 11px 'DM Mono', monospace; }
+.session-commit-row-main strong { grid-area: message; min-width: 0; overflow: hidden; color: #d7e8da; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.session-commit-row-main time { grid-area: time; color: #78877c; font: 11px 'DM Mono', monospace; white-space: nowrap; }
+.session-commit-row-details { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; }
+.session-commit-row-details small { color: var(--workspace-muted); font-size: 11px; }
+.session-commit-list-active { max-height: 220px; overflow: auto; overscroll-behavior: contain; scrollbar-color: #365440 #0d1710; scrollbar-width: thin; margin: 8px 0 0; padding: 0; }
+.session-commit-list-active .session-commit-row-main { grid-template-columns: 58px minmax(0, 1fr) auto; grid-template-areas: "sha message time"; }
+.session-commit-list-active .session-commit-row-main strong { grid-area: message; }
+@media (max-width: 520px) {
+  .session-commit-list-active .session-commit-row-main { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "sha time" "message message"; row-gap: 4px; }
+}

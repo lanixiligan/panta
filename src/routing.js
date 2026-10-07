@@ -1,7 +1,7 @@
 export const routePaths = {
   Overview: '/',
-  'Start Session': '/start-session',
-  Sessions: '/session-history',
+  'Session Workspace': '/session-workspace',
+  'Session History': '/session-history',
   Projects: '/projects',
   Analytics: '/analytics',
   Profile: '/profile',
@@ -10,6 +10,11 @@ export const routePaths = {
 
 export function sessionDetailPath(sessionId) {
   return `/session-history/${encodeURIComponent(sessionId)}`;
+}
+
+export function projectDetailPath(fullName) {
+  const [owner = '', repo = ''] = fullName.split('/');
+  return `/projects/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
 }
 
 export function followRouteLink(event, navigate) {
@@ -21,8 +26,8 @@ export function followRouteLink(event, navigate) {
 export function resolveRoute(pathname) {
   const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, '') : '/';
   if (normalizedPath === '/') return { view: 'Overview' };
-  if (normalizedPath === '/start-session') return { view: 'Start Session' };
-  if (normalizedPath === '/session-history') return { view: 'Sessions' };
+  if (normalizedPath === '/session-workspace') return { view: 'Session Workspace' };
+  if (normalizedPath === '/session-history') return { view: 'Session History' };
   if (normalizedPath.startsWith('/session-history/')) {
     const segment = normalizedPath.slice('/session-history/'.length);
     if (segment && !segment.includes('/')) {
@@ -34,6 +39,16 @@ export function resolveRoute(pathname) {
     }
   }
   if (normalizedPath === '/projects') return { view: 'Projects' };
+  if (normalizedPath.startsWith('/projects/')) {
+    const segments = normalizedPath.slice('/projects/'.length).split('/');
+    if (segments.length === 2 && segments.every(Boolean)) {
+      try {
+        return { view: 'Project Detail', owner: decodeURIComponent(segments[0]), repo: decodeURIComponent(segments[1]) };
+      } catch {
+        return { view: 'Not Found' };
+      }
+    }
+  }
   if (normalizedPath === '/analytics') return { view: 'Analytics' };
   if (normalizedPath === '/profile') return { view: 'Profile' };
   if (normalizedPath === '/settings') return { view: 'Settings' };

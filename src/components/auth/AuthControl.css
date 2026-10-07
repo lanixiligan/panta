@@ -1,0 +1,37 @@
+.auth-control { position: relative; display: flex; align-items: center; min-height: 38px; }
+.auth-checking { color: #8792a0; font-size: 13px; white-space: nowrap; }
+.github-sign-in { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 1px solid #cfd8d2; border-radius: 8px; background: #fff; color: #25332a; text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.github-sign-in:hover { border-color: #55a36b; background: #f4faf5; }
+.github-mark { width: 16px; height: 16px; }
+.auth-user { display: flex; align-items: center; gap: 8px; }
+.auth-avatar { width: 27px; height: 27px; border: 1px solid var(--line); border-radius: 50%; }
+.auth-username { max-width: 120px; overflow: hidden; color: #455162; font-size: 13px; font-weight: 600; text-overflow: ellipsis; }
+.logout-button { padding: 6px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #758091; font-size: 12px; cursor: pointer; }
+.logout-button:hover:not(:disabled) { border-color: var(--line); background: #fff; color: #354151; }
+.logout-button:disabled { cursor: wait; }
+.auth-message { position: absolute; z-index: 2; top: calc(100% + 7px); right: 0; width: max-content; max-width: min(320px, 80vw); margin: 0; padding: 9px 11px; border: 1px solid #e5d5a5; border-radius: 8px; background: #fffaf0; color: #76603a; box-shadow: 0 3px 12px #20273312; font-size: 12px; line-height: 1.5; }
+@media (max-width: 620px) {
+  .auth-control { min-height: 34px; }
+  .github-sign-in { min-height: 34px; padding: 0 9px; font-size: 12px; }
+  .auth-user { gap: 5px; }
+  .auth-username { display: none; }
+}
+@media (max-width: 390px) {
+  .auth-control { margin-top: 2px; }
+}
+.app-shell-dark .auth-checking { color: #89968c; }
+.app-shell-dark .github-sign-in { border-color: #385640; background: #172119; color: #dcebe0; }
+.app-shell-dark .github-sign-in:hover { border-color: #67a878; background: #1c2d20; }
+.app-shell-dark .auth-avatar { border-color: #344139; }
+.app-shell-dark .auth-username { color: #d5ded6; }
+.app-shell-dark .logout-button { color: #9ca89e; }
+.app-shell-dark .logout-button:hover:not(:disabled) { border-color: #334238; background: #171e19; color: #e9eee9; }
+.app-shell-dark .auth-message { border-color: #584a2b; background: #211c12; color: #e0c98f; box-shadow: 0 8px 24px #0005; }
+@media (max-width: 520px) {
+  .app-shell-dark .auth-user { gap: 6px; }
+  .app-shell-dark .auth-username { display: inline; max-width: 84px; font-size: 12px; }
+  .app-shell-dark .auth-avatar { width: 24px; height: 24px; }
+  .app-shell-dark .logout-button { padding: 5px; font-size: 11px; }
+  .app-shell-dark .github-sign-in { min-height: 32px; padding: 0 8px; font-size: 11px; }
+  .app-shell-dark .github-mark { width: 14px; height: 14px; }
+}

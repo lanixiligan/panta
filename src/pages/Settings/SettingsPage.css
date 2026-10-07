@@ -1,0 +1,46 @@
+.settings-page { gap: 22px; }
+.settings-page .page-intro { margin-bottom: 0; }
+.settings-content { width: 100%; }
+.settings-section { padding: 20px 0 21px; border-bottom: 1px solid var(--workspace-divider); }
+.settings-section:first-child { padding-top: 0; }
+.settings-section-heading { display: flex; align-items: center; margin-bottom: 3px; padding-bottom: 10px; border-bottom: 1px solid var(--workspace-divider); }
+.settings-section-heading h2 { margin: 0; color: #90aa97; font: 11px 'DM Mono', monospace; letter-spacing: .12em; text-transform: uppercase; }
+.settings-account-row { display: flex; align-items: center; gap: 15px; padding: 13px 0 5px; }
+.settings-avatar { width: 55px; height: 55px; flex: 0 0 auto; border: 1px solid var(--workspace-border); border-radius: 50%; object-fit: cover; }
+.settings-avatar-fallback { display: grid; place-items: center; background: #142319; color: #abd4b4; font-size: 19px; }
+.settings-account-copy, .settings-row-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.settings-account-copy strong { color: #e3eee5; font-weight: 550; font-size: 16px; }
+.settings-account-copy > span:not(.settings-connected) { color: #8ca095; font: 12px 'DM Mono', monospace; }
+.settings-connected { display: inline-flex; align-items: center; gap: 7px; color: #9bc9a4; font-size: 12px; }
+.settings-connected i { width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: #77c68c; }
+.settings-account-copy .settings-connected { margin-top: 4px; }
+.settings-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 20px; padding: 15px 0; border-top: 1px solid var(--workspace-divider); }
+.settings-section-heading + .settings-row { border-top: 0; }
+.settings-row-copy strong { color: #dce8de; font-weight: 550; font-size: 14px; }
+.settings-row-copy > span { color: #839387; font-size: 12px; line-height: 1.55; }
+.settings-value { color: #c0d0c3; font-size: 12px; }
+.settings-action-link { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--workspace-border); text-decoration: none; transition: border-color .15s ease, color .15s ease, background .15s ease; min-height: 34px; padding: 0 12px; border-radius: 6px; font-size: 12px; font-weight: 500; border-color: var(--workspace-border); background: transparent; color: var(--workspace-secondary); }
+.settings-action-link:hover { border-color: #2f5d40; background: var(--workspace-raised); color: var(--workspace-text); }
+.settings-action-link:focus-visible, .settings-disconnect-button:focus-visible, .settings-about-meta a:focus-visible { outline: 2px solid #9ae4b0; outline-offset: 3px; }
+.settings-disconnect-row { position: relative; }
+.settings-disconnect-button { border: 1px solid #563d38; background: transparent; color: #d0a198; cursor: pointer; min-height: 34px; padding: 0 12px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+.settings-disconnect-button:hover:not(:disabled) { border-color: #80534b; background: #1c1412; color: #e4b5ab; }
+.settings-disconnect-button:disabled { opacity: .6; cursor: wait; }
+.settings-error { grid-column: 1 / -1; margin: -8px 0 0; color: #d9a79c; font-size: 12px; }
+.settings-about { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 0 2px; }
+.settings-about-brand { display: flex; align-items: center; gap: 10px; }
+.settings-about-mark { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid #294b35; border-radius: 6px; background: #122118; color: #91b8a0; font: 500 14px 'DM Mono', monospace; }
+.settings-about-brand > div { display: flex; flex-direction: column; gap: 3px; }
+.settings-about-brand strong { color: #dce8de; font-size: 13px; font-weight: 550; }
+.settings-about-brand span:not(.settings-about-mark) { color: #819185; font-size: 11px; }
+.settings-about-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 7px 15px; color: #78887c; font-size: 11px; }
+.settings-about-meta a { color: #9dbca4; text-decoration: none; }
+.settings-about-meta a:hover { color: #c1dfc7; }
+@media (max-width: 520px) {
+  .settings-page { gap: 18px; }
+  .settings-section { padding: 17px 0 18px; }
+  .settings-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .settings-value, .settings-action-link, .settings-disconnect-button { justify-self: start; }
+  .settings-about { align-items: flex-start; flex-direction: column; }
+  .settings-about-meta { justify-content: flex-start; }
+}

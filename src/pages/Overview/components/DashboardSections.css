@@ -1,0 +1,41 @@
+.weekly-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; }
+.weekly-metric { display: flex; flex-direction: column; gap: 4px; padding: 8px 9px; border: 0; border-left: 1px solid var(--workspace-divider); border-radius: 0; background: transparent; }
+.weekly-metric strong { font: 17px 'DM Mono', monospace; }
+.presence-empty { display: flex; align-items: flex-start; gap: 9px; padding: 10px 0 2px; }
+.presence-dot { width: 6px; height: 6px; flex: 0 0 auto; margin-top: 4px; border-radius: 50%; background: #52685a; }
+.presence-empty p { max-width: 250px; margin: 0; color: #78857b; font-size: 12px; line-height: 1.65; }
+.activity-section { padding-bottom: 20px; padding: 20px 22px; }
+.session-activity-chart { height: 88px; display: flex; align-items: stretch; gap: 12px; padding-top: 3px; }
+.activity-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; color: #78857b; font: 11px 'DM Mono', monospace; }
+.activity-bar-track { width: min(100%, 34px); flex: 1; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; border-radius: 4px; background: #19211b; }
+.activity-bar-track i { width: 100%; border-radius: 3px 3px 0 0; background: #4e9060; }
+@media (max-width: 680px) {
+  .weekly-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .weekly-metric { padding: 7px 5px; }
+}
+.recent-session-list { display: flex; flex-direction: column; gap: 0; }
+.recent-session-card { display: block; color: inherit; text-decoration: none; transition: border-color .15s ease, background .15s ease; border: 0; border-top: 1px solid var(--workspace-divider); border-radius: 0; background: transparent; padding: 13px 10px; }
+.recent-session-card:hover { border-color: #3a6848; background: var(--workspace-raised); }
+.recent-session-heading { display: flex; min-width: 0; align-items: center; gap: 9px; }
+.recent-session-repo { overflow: hidden; font: 11px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; color: #91b8a0; font-size: 11px; }
+.recent-session-duration { flex: 0 0 auto; margin-left: auto; color: var(--workspace-secondary); font: 11px 'DM Mono', monospace; }
+.session-source-badge { flex: 0 0 auto; padding: 2px 5px; border: 1px solid #31523a; border-radius: 4px; color: #9fd6aa; font: 9px 'DM Mono', monospace; letter-spacing: .04em; }
+.session-source-badge.placeholder { border-color: #3a433c; color: #a5aea7; }
+.recent-session-data-status { margin: 0; color: var(--workspace-muted); font-size: 11px; }
+.recent-session-goal { color: var(--workspace-text); margin: 6px 0 8px; font-size: 14px; }
+.recent-session-stats { display: flex; flex-wrap: wrap; gap: 5px 10px; color: var(--workspace-muted); font: 10px 'DM Mono', monospace; font-size: 11px; }
+.recent-session-stats .additions { color: #81c895; }
+.recent-session-stats .deletions { color: #c4897d; }
+.recent-session-date { display: block; margin-top: 8px; color: #687b6d; font-size: 11px; }
+.recent-section { border-color: var(--workspace-border); background: var(--workspace-surface); padding: 20px 22px; }
+.recent-section .dashboard-section-heading { margin-bottom: 12px; }
+.weekly-section { padding: 20px 22px; }
+.weekly-section .dashboard-section-heading { margin-bottom: 11px; }
+.weekly-metric:first-child { border-left: 0; }
+.weekly-metric strong { color: #d6e6d9; font-size: 22px; }
+.weekly-metric span { color: var(--workspace-secondary); font-size: 11px; }
+.coding-now-section { min-height: 0; padding: 20px 22px; }
+@media (max-width: 680px) {
+  .weekly-metric strong { font-size: 17px; }
+  .weekly-metric span { font-size: 9px; }
+}

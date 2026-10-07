@@ -1,5 +1,5 @@
-import { calculateSessionAnalytics } from '../../dev-data/sessionAnalytics.js';
-import { getSessionListItems } from '../../dev-data/index.js';
+import { calculateSessionAnalytics } from '../../analytics/sessionAnalytics.js';
+import { dummyRepositories, getSessionListItems, getSessions } from '../../dev-data/index.js';
 
 function repositoryFullName(repository = {}) {
   const owner = repository.owner?.login || repository.owner;
@@ -15,9 +15,18 @@ function projectKey(repository = {}) {
 
 // Projects are derived only from real, completed Panta sessions. Example records are excluded.
 export function getProjects(sessions = [], repositories = []) {
+  return buildProjects(sessions.filter((session) => session?.source !== 'placeholder'), repositories);
+}
+
+// Example projects built from the example sessions in dev-data, kept apart from real projects.
+export function getExampleProjects() {
+  return buildProjects(getSessions(), dummyRepositories);
+}
+
+function buildProjects(sessions, repositories) {
   const sessionsByProject = new Map();
   sessions.forEach((session) => {
-    if (!session || session.source === 'placeholder' || session.status !== 'completed') return;
+    if (!session || session.status !== 'completed') return;
     const key = projectKey(session.repository);
     if (!key) return;
     sessionsByProject.set(key, [...(sessionsByProject.get(key) || []), session]);
@@ -38,6 +47,7 @@ export function getProjects(sessions = [], repositories = []) {
 
     return [{
       key,
+      isExample: latestSession.source === 'placeholder',
       name: repository.name || name,
       owner,
       fullName,

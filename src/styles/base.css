@@ -60,3 +60,10 @@ a { color: inherit; }
 .app-render-error p { max-width: 420px; margin: 0 0 18px; color: var(--workspace-secondary); font-size: 13px; line-height: 1.6; }
 .app-render-error button { min-height: 36px; padding: 0 12px; border: 1px solid #315d3e; border-radius: 6px; background: var(--workspace-raised); color: var(--workspace-text); cursor: pointer; }
 .app-render-error button:hover { border-color: #5d9b6b; }
+/* Pages that manage their own scrolling regions fill the viewport instead of scrolling. */
+@media (min-width: 901px) and (min-height: 620px) {
+  .workspace-main-fit { overflow: hidden; }
+  .workspace-main-fit .app-main { display: flex; min-height: 0; flex: 1 1 auto; flex-direction: column; padding-top: 28px; padding-bottom: 20px; }
+  .workspace-main-fit .app-main > .session-detail-page { flex: 1 1 auto; min-height: 0; }
+  .workspace-main-fit .app-footer { display: none; }
+}

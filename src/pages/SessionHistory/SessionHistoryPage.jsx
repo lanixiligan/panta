@@ -25,68 +25,89 @@ function formatCount(value, singular, plural = `${singular}s`) {
   return `${value} ${value === 1 ? singular : plural}`;
 }
 
+function RepositoryLabel({ session }) {
+  const fullName = session.repositoryFullName || session.repositoryName || 'Unknown repository';
+  const slash = fullName.indexOf('/');
+  if (slash < 0) return <span className="history-row-repo">{fullName}</span>;
+  return (
+    <span className="history-row-repo">
+      <span className="history-row-repo-owner">{fullName.slice(0, slash + 1)}</span>{fullName.slice(slash + 1)}
+    </span>
+  );
+}
+
+function SessionActivityStats({ session }) {
+  if (!session.hasActivity) {
+    return (
+      <span className="history-row-note">
+        {session.activityStatus === 'loading' ? 'Retrieving GitHub activity…' : 'GitHub activity unavailable'}
+      </span>
+    );
+  }
+  if (session.commitCount === 0) return <span className="history-row-note">No commits</span>;
+
+  return (
+    <>
+      <span className="history-row-stat">{formatCount(session.commitCount, 'commit')}</span>
+      <span className="history-row-stat">{formatCount(session.filesChanged, 'file')}</span>
+      <span className="history-row-stat">
+        <span className="history-additions">+{session.additions}</span> / <span className="history-deletions">−{session.deletions}</span>
+      </span>
+    </>
+  );
+}
+
 function SessionHistoryEntry({ session, onSelectSession }) {
   const startTime = formatDateTime(session.startedAt, { hour: 'numeric', minute: '2-digit' });
   const endTime = formatDateTime(session.finishedAt, { hour: 'numeric', minute: '2-digit' });
   const date = formatDateTime(session.startedAt, { month: 'short', day: 'numeric', year: 'numeric' });
-  const activitySummary = session.hasActivity
-    ? [
-        formatCount(session.commitCount, 'commit'),
-        formatCount(session.filesChanged, 'file changed', 'files changed'),
-        <span key="changes"><span className="history-additions">+{session.additions}</span> / <span className="history-deletions">−{session.deletions}</span></span>,
-      ]
-    : null;
+  const showStatus = session.status !== 'completed';
 
   return (
-    <article className="session-history-entry">
-      <div className="session-history-entry-main">
-        <div className="session-history-entry-heading">
-          <div className="session-history-repository">
-            <h2>{session.repositoryName}</h2>
-            {session.repositoryFullName && session.repositoryFullName !== session.repositoryName && (
-              <span>{session.repositoryFullName}</span>
-            )}
-          </div>
-          <span className={`session-history-status ${session.status === 'completed' ? 'completed' : ''}`}>
-            {session.status === 'completed' && <span aria-hidden="true">✓ </span>}
-            {session.status || 'unknown'}
-          </span>
-        </div>
-
-        {session.goal && <p className="session-history-goal">{session.goal}</p>}
-
-        <div className="session-history-when">
-          <time dateTime={session.startedAt}>{date}{startTime ? ` · ${startTime}` : ''}</time>
-          {endTime && <><span aria-hidden="true"> – </span><time dateTime={session.finishedAt}>{endTime}</time></>}
-          <span className="session-history-duration">{formatDuration(session.durationMinutes)}</span>
-        </div>
-
-        <div className="session-history-activity" aria-label="GitHub activity summary">
-          {activitySummary ? activitySummary.map((item, index) => <span key={index}>{item}</span>) : (
-            <span className="session-history-activity-note">
-              {session.activityStatus === 'loading' ? 'Retrieving GitHub activity…' : 'GitHub activity unavailable'}
-            </span>
-          )}
+    <a
+      className="history-row"
+      href={session.detailHref}
+      onClick={(event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        onSelectSession(session.id);
+      }}
+    >
+      <div className="history-row-main">
+        <h3 className={`history-row-goal ${session.goal ? '' : 'empty'}`}>{session.goal || 'No goal set'}</h3>
+        <div className="history-row-meta">
+          <RepositoryLabel session={session} />
+          <span aria-hidden="true">·</span>
+          <time dateTime={session.startedAt}>{date}{startTime ? `, ${startTime}` : ''}{endTime ? ` – ${endTime}` : ''}</time>
+          <span aria-hidden="true">·</span>
+          <span className="history-row-duration">{formatDuration(session.durationMinutes)}</span>
+          {showStatus && <span className="history-row-badge">{session.status || 'unknown'}</span>}
+          {session.isPlaceholder && <span className="history-row-badge">Example</span>}
         </div>
       </div>
 
-      <div className="session-history-entry-aside">
-        <span className={`session-history-origin ${session.isPlaceholder ? 'example' : ''}`}>
-          {session.isPlaceholder ? 'EXAMPLE SESSION' : 'GITHUB ACTIVITY'}
-        </span>
-        <a
-          className="session-history-view-link"
-          href={session.detailHref}
-          onClick={(event) => {
-            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-            event.preventDefault();
-            onSelectSession(session.id);
-          }}
-        >
-          View session <span aria-hidden="true">→</span>
-        </a>
+      <div className="history-row-stats" aria-label="GitHub activity summary">
+        <SessionActivityStats session={session} />
       </div>
-    </article>
+      <span className="history-row-chevron" aria-hidden="true">›</span>
+    </a>
+  );
+}
+
+function SessionHistorySection({ title, sessions, onSelectSession, note }) {
+  return (
+    <section className="history-section" aria-label={title}>
+      <div className="session-history-list-heading">
+        <h2>{title}</h2>
+        <span>{formatCount(sessions.length, 'session')}</span>
+      </div>
+      <div className="history-list">
+        {sessions.map((session) => (
+          <SessionHistoryEntry key={session.id} session={session} onSelectSession={onSelectSession} />
+        ))}
+      </div>
+      {note && <p className="session-history-boundary">{note}</p>}
+    </section>
   );
 }
 
@@ -175,25 +196,19 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession, onB
           </label>
         </div>
 
-        <div className="session-history-list-heading">
-          <h2>Your sessions</h2>
-          <span>{filteredSessions.length} {filteredSessions.length === 1 ? 'session' : 'sessions'}</span>
-        </div>
-
-        {filteredSessions.length ? (
-          <div className="session-history-list">
-            {filteredSessions.map((session) => (
-              <SessionHistoryEntry key={session.id} session={session} onSelectSession={onSelectSession} />
-            ))}
-          </div>
-        ) : (
-          <EmptyHistory hasFilters={hasFilters || sessions.length > 0} />
+        {filteredSessions.length > 0 && (
+          <SessionHistorySection
+            title="Your sessions"
+            sessions={filteredSessions}
+            onSelectSession={onSelectSession}
+            note={filteredSessions.some((session) => session.isPlaceholder)
+              ? 'Example sessions are illustrative; their GitHub activity was not retrieved from GitHub.'
+              : null}
+          />
         )}
-      </section>
 
-      {sessions.some((session) => session.isPlaceholder) && (
-        <p className="session-history-boundary">Example sessions are illustrative; their GitHub activity was not retrieved from GitHub.</p>
-      )}
+        {!filteredSessions.length && <EmptyHistory hasFilters={hasFilters || sessions.length > 0} />}
+      </section>
     </div>
   );
 }

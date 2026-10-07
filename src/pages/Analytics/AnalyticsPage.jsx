@@ -1,8 +1,21 @@
 import React, { useMemo, useState } from 'react';
-import { calculateSessionAnalytics } from '../../dev-data/sessionAnalytics.js';
-import { followRouteLink, sessionDetailPath } from '../../routing.js';
+import { calculateSessionAnalytics } from '../../analytics/sessionAnalytics.js';
+import { followRouteLink, projectDetailPath, sessionDetailPath } from '../../routing.js';
 
-const timeRanges = ['7D', '30D', '90D', 'All time'];
+const timeRanges = [
+  { value: '7D', label: '7 days' },
+  { value: '30D', label: '30 days' },
+  { value: '90D', label: '90 days' },
+  { value: 'All time', label: 'All time' },
+];
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEKDAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAY_PARTS = [
+  { label: 'mornings', hours: [5, 6, 7, 8, 9, 10, 11] },
+  { label: 'afternoons', hours: [12, 13, 14, 15, 16] },
+  { label: 'evenings', hours: [17, 18, 19, 20, 21] },
+  { label: 'nights', hours: [22, 23, 0, 1, 2, 3, 4] },
+];
 
 function formatDuration(milliseconds) {
   if (!Number.isFinite(milliseconds) || milliseconds < 60_000) return '<1m';
@@ -18,207 +31,319 @@ function formatNumber(value) {
   return Number(value).toLocaleString();
 }
 
-function localDateKey(value) {
-  const date = new Date(value);
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+function formatDate(value, options = { month: 'short', day: 'numeric' }) {
+  return new Intl.DateTimeFormat(undefined, options).format(new Date(value));
 }
 
-function formatRecentDate(value) {
-  const date = new Date(value);
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const dayDifference = Math.round((today - sessionDay) / 86_400_000);
-  const dayLabel = dayDifference === 0
-    ? 'Today'
-    : dayDifference === 1
-      ? 'Yesterday'
-      : new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date);
-  const timeLabel = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
-  return `${dayLabel} · ${timeLabel}`;
+function formatHour(hour) {
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).format(new Date(2000, 0, 1, hour));
 }
 
-function repositoryName(session) {
-  const repository = session.repository || {};
-  return repository.name || repository.fullName || repository.full_name || 'Repository unavailable';
+function formatCount(value, singular, plural = `${singular}s`) {
+  return `${formatNumber(value)} ${value === 1 ? singular : plural}`;
 }
 
-function repositoryFullName(session) {
-  const repository = session.repository || {};
-  return repository.fullName || repository.full_name || '';
+function periodLabel(rangeDays) {
+  return rangeDays ? `previous ${rangeDays} days` : null;
 }
 
-function TimeRangeControl({ value, onChange }) {
+// A neutral comparison with the previous period of the same length; it states the change, it doesn't grade it.
+function Comparison({ current, previous, previousSessionCount, rangeDays, format }) {
+  if (!rangeDays) return <span className="analytics-comparison">Across all recorded sessions</span>;
+  if (current === null || current === undefined) return <span className="analytics-comparison">Nothing recorded</span>;
+  if (!previousSessionCount) return <span className="analytics-comparison">No sessions in the {periodLabel(rangeDays)}</span>;
+  if (previous === null || previous === undefined) return <span className="analytics-comparison">Not recorded in the {periodLabel(rangeDays)}</span>;
+  const difference = current - previous;
+  if (Math.abs(difference) < 1) return <span className="analytics-comparison">Same as the {periodLabel(rangeDays)}</span>;
   return (
-    <div className="analytics-time-range" role="group" aria-label="Analytics time range">
-      {timeRanges.map((range) => (
-        <button key={range} type="button" aria-pressed={value === range} className={value === range ? 'selected' : ''} onClick={() => onChange(range)}>
-          {range}
-        </button>
-      ))}
-    </div>
+    <span className="analytics-comparison">
+      <span aria-hidden="true">{difference > 0 ? '↑' : '↓'}</span> {format(Math.abs(difference))} {difference > 0 ? 'more' : 'less'} than the {periodLabel(rangeDays)}
+    </span>
   );
 }
 
 function SummaryMetrics({ analytics }) {
+  const { previous, rangeDays } = analytics;
   const metrics = [
-    { label: 'Sessions', value: formatNumber(analytics.sessionCount) },
-    { label: 'Total time', value: formatDuration(analytics.totalDurationMs) },
-    { label: 'Projects', value: formatNumber(analytics.projectCount) },
-    { label: 'Commits', value: analytics.activity.commits.total === null ? '—' : formatNumber(analytics.activity.commits.total) },
+    { label: 'Session time', value: formatDuration(analytics.totalDurationMs), current: analytics.totalDurationMs, previous: previous?.totalDurationMs, format: formatDuration },
+    { label: 'Sessions', value: formatNumber(analytics.sessionCount), current: analytics.sessionCount, previous: previous?.sessionCount, format: formatNumber },
+    { label: 'Average session', value: formatDuration(analytics.averageDurationMs), current: analytics.averageDurationMs, previous: previous?.averageDurationMs, format: formatDuration },
+    { label: 'Commits', value: analytics.commits === null ? '—' : formatNumber(analytics.commits), current: analytics.commits, previous: previous?.commits, format: formatNumber },
   ];
 
   return (
-    <section className="analytics-summary" aria-label="Summary metrics">
-      {metrics.map(({ label, value }) => <div className="analytics-summary-metric" key={label}><strong>{value}</strong><span>{label}</span></div>)}
+    <section className="analytics-summary" aria-label="Summary for the selected period">
+      {metrics.map((metric) => (
+        <div className="analytics-summary-metric" key={metric.label}>
+          <span className="analytics-summary-label">{metric.label}</span>
+          <strong>{metric.value}</strong>
+          <Comparison current={metric.current} previous={metric.previous} previousSessionCount={previous?.sessionCount} rangeDays={rangeDays} format={metric.format} />
+        </div>
+      ))}
     </section>
   );
 }
 
-function shouldLabelDay(date, index, count) {
-  if (count <= 10 || index === count - 1) return true;
-  if (count <= 40) return index % 7 === 0;
-  return date.getDate() === 1;
+function bucketLabel(bucket, unit) {
+  if (unit === 'week') {
+    const lastDay = new Date(bucket.end.getTime() - 1);
+    return `Week of ${formatDate(bucket.start)} – ${formatDate(lastDay)}`;
+  }
+  return formatDate(bucket.start, { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-function SessionActivityChart({ days }) {
-  const maxDuration = Math.max(1, ...days.map((day) => day.durationMs));
-  const firstDay = days[0]?.date;
-  const lastDay = days.at(-1)?.date;
+function axisLabel(bucket, index, buckets, unit) {
+  if (unit === 'week') {
+    const previous = buckets[index - 1];
+    return !previous || previous.start.getMonth() !== bucket.start.getMonth() ? formatDate(bucket.start, { month: 'short' }) : '';
+  }
+  if (buckets.length <= 10) return formatDate(bucket.start, { weekday: 'short' });
+  return index % 7 === 0 || index === buckets.length - 1 ? formatDate(bucket.start) : '';
+}
+
+function SessionTimeChart({ timeline }) {
+  const { buckets, unit } = timeline;
+  const maxDuration = Math.max(...buckets.map(({ durationMs }) => durationMs), 0);
 
   return (
-    <section className="analytics-section analytics-activity-chart" aria-labelledby="analytics-activity-heading">
+    <section className="analytics-section analytics-time-chart" aria-labelledby="analytics-time-heading">
       <div className="analytics-section-heading">
-        <div><span className="section-kicker">SESSION ACTIVITY</span><h2 id="analytics-activity-heading">Time spent over time</h2></div>
-        {firstDay && lastDay && <span className="analytics-date-span">{new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(firstDay)} – {new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(lastDay)}</span>}
+        <h2 id="analytics-time-heading">Session time</h2>
+        <span>per {unit}</span>
       </div>
-      <p className="analytics-section-description">Daily session duration · local time</p>
-      <div className="analytics-day-chart" style={{ '--analytics-day-count': days.length }} role="list" aria-label="Daily session duration for the selected period">
-        {days.map(({ date, durationMs }, index) => {
-          const label = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date);
-          return (
-            <div className="analytics-day-column" key={localDateKey(date)} role="listitem" aria-label={`${label}: ${formatDuration(durationMs)}`} title={`${label}: ${formatDuration(durationMs)}`}>
-              <div className="analytics-day-track" aria-hidden="true"><i className={durationMs > 0 ? 'has-activity' : ''} style={{ height: `${durationMs / maxDuration * 100}%` }} /></div>
-              {shouldLabelDay(date, index, days.length) && <span>{days.length <= 10 ? new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date) : date.getDate()}</span>}
-            </div>
-          );
-        })}
+      <div className="analytics-bars">
+        <span className="analytics-bars-scale" aria-hidden="true">{maxDuration ? formatDuration(maxDuration) : ''}</span>
+        <div className="analytics-bars-plot" style={{ '--bucket-count': buckets.length }} role="list" aria-label={`Session time per ${unit}`}>
+          {buckets.map((bucket, index) => {
+            const label = bucketLabel(bucket, unit);
+            const align = index < buckets.length * 0.15 ? 'start' : index > buckets.length * 0.85 ? 'end' : 'center';
+            return (
+              <div className="analytics-bar" key={bucket.start.toISOString()} role="listitem" tabIndex={0} aria-label={`${label}: ${formatDuration(bucket.durationMs)}, ${formatCount(bucket.sessionCount, 'session')}`}>
+                <span className="analytics-bar-track">
+                  {bucket.durationMs > 0 && <i style={{ height: `${Math.max(3, (bucket.durationMs / maxDuration) * 100)}%` }} />}
+                </span>
+                <span className="analytics-bar-label">{axisLabel(bucket, index, buckets, unit)}</span>
+                <span className={`analytics-tooltip ${align}`} role="tooltip">
+                  <span className="analytics-tooltip-title">{label}</span>
+                  <span className="analytics-tooltip-value">{bucket.sessionCount ? formatDuration(bucket.durationMs) : 'No sessions'}</span>
+                  {bucket.sessionCount > 0 && (
+                    <span className="analytics-tooltip-meta">
+                      {formatCount(bucket.sessionCount, 'session')}{bucket.hasCommits ? ` · ${formatCount(bucket.commits, 'commit')}` : ''}
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <div className="analytics-chart-axis"><span>{firstDay ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(firstDay) : ''}</span><span>Each bar is one day</span><span>{lastDay ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(lastDay) : ''}</span></div>
     </section>
   );
 }
 
-function ProjectActivity({ projects }) {
-  const maxDuration = Math.max(1, ...projects.map((project) => project.durationMs));
+function ProjectBreakdown({ projects, onNavigate }) {
   return (
     <section className="analytics-section" aria-labelledby="analytics-projects-heading">
-      <div className="analytics-section-heading"><div><span className="section-kicker">PROJECT ACTIVITY</span><h2 id="analytics-projects-heading">Time by project</h2></div></div>
+      <div className="analytics-section-heading">
+        <h2 id="analytics-projects-heading">Where your time went</h2>
+        <span>{formatCount(projects.length, 'project')}</span>
+      </div>
       {projects.length ? (
-        <div className="analytics-project-list">
-          {projects.map((project) => (
-            <div className="analytics-project-row" key={project.fullName}>
-              <div className="analytics-project-copy"><strong>{project.name}</strong>{project.fullName !== project.name && <span>{project.fullName}</span>}</div>
-              <div className="analytics-project-track" aria-hidden="true"><i style={{ width: `${project.durationMs / maxDuration * 100}%` }} /></div>
-              <span className="analytics-project-duration">{formatDuration(project.durationMs)}</span>
-            </div>
-          ))}
-        </div>
+        <ol className="analytics-project-list">
+          {projects.map((project) => {
+            const content = (
+              <>
+                <span className="analytics-project-name">
+                  <strong>{project.name}</strong>
+                  <small>{formatCount(project.sessionCount, 'session')}{project.commits !== null ? ` · ${formatCount(project.commits, 'commit')}` : ''}</small>
+                </span>
+                <span className="analytics-project-share">{Math.round(project.share * 100)}%</span>
+                <span className="analytics-project-duration">{formatDuration(project.durationMs)}</span>
+                <span className="analytics-project-track" aria-hidden="true"><i style={{ width: `${project.share * 100}%` }} /></span>
+              </>
+            );
+            return (
+              <li key={project.fullName}>
+                {project.isExample || !project.fullName.includes('/')
+                  ? <div className="analytics-project-row">{content}</div>
+                  : <a className="analytics-project-row" href={projectDetailPath(project.fullName)} onClick={(event) => followRouteLink(event, onNavigate)}>{content}</a>}
+              </li>
+            );
+          })}
+        </ol>
       ) : <p className="analytics-empty-inline">No repository information is available for these sessions.</p>}
     </section>
   );
 }
 
-function SessionPatterns({ patterns }) {
-  if (!patterns) return null;
-  const values = [
-    ['Average session', formatDuration(patterns.averageDurationMs)],
-    ['Longest session', formatDuration(patterns.longestDurationMs)],
-    ['Shortest session', formatDuration(patterns.shortestDurationMs)],
-    ['Most active day', patterns.mostActiveDay || '—'],
-  ];
-  return (
-    <section className="analytics-section" aria-labelledby="analytics-patterns-heading">
-      <div className="analytics-section-heading"><div><span className="section-kicker">SESSION PATTERNS</span><h2 id="analytics-patterns-heading">A little context</h2></div></div>
-      <dl className="analytics-pattern-list">
-        {values.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}
-      </dl>
-    </section>
-  );
+function getPeakSummary(weekdayHours) {
+  let peak = null;
+  weekdayHours.forEach((hours, weekday) => DAY_PARTS.forEach((part) => {
+    const total = part.hours.reduce((sum, hour) => sum + hours[hour], 0);
+    if (total > 0 && (!peak || total > peak.total)) peak = { total, weekday, part };
+  }));
+  return peak ? `Most of your session time falls on ${WEEKDAY_NAMES[peak.weekday]} ${peak.part.label}.` : null;
 }
 
-function GitHubActivity({ activity, activitySessionsWithData, sessionCount }) {
-  const values = [
-    ['Commits', activity.commits],
-    ['Files changed', activity.filesChanged],
-  ];
+function WorkRhythm({ weekdayHours }) {
+  const max = Math.max(...weekdayHours.flat(), 0);
+  const level = (value) => (!value || !max ? 0 : Math.min(4, Math.ceil((value / max) * 4)));
+  const peak = getPeakSummary(weekdayHours);
+
   return (
-    <section className="analytics-section analytics-github-activity" aria-labelledby="analytics-github-heading">
-      <div className="analytics-section-heading"><div><span className="section-kicker">GITHUB ACTIVITY</span><h2 id="analytics-github-heading">Recorded changes</h2></div></div>
-      <div className="analytics-github-metrics">
-        {values.map(([label, metric]) => <div key={label}><strong>{metric.total === null ? '—' : formatNumber(metric.total)}</strong><span>{label}</span></div>)}
-        <div className="analytics-diff-metric" role="group" aria-label={`Lines added ${activity.additions.total === null ? 'unavailable' : activity.additions.total}; lines deleted ${activity.deletions.total === null ? 'unavailable' : activity.deletions.total}`}>
-          <strong><span className="analytics-additions">+{activity.additions.total === null ? '—' : formatNumber(activity.additions.total)}</span><span className="analytics-diff-separator" aria-hidden="true"> / </span><span className="analytics-deletions">−{activity.deletions.total === null ? '—' : formatNumber(activity.deletions.total)}</span></strong>
-          <span>Lines added / deleted</span>
+    <section className="analytics-section" aria-labelledby="analytics-rhythm-heading">
+      <div className="analytics-section-heading">
+        <h2 id="analytics-rhythm-heading">When you work</h2>
+        <span>local time</span>
+      </div>
+      {peak && <p className="analytics-insight">{peak}</p>}
+      <div className="analytics-heatmap" role="img" aria-label={peak || 'No session time in this period'}>
+        {weekdayHours.map((hours, weekday) => (
+          <div className="analytics-heatmap-row" key={WEEKDAYS[weekday]}>
+            <span className="analytics-heatmap-day">{WEEKDAYS[weekday]}</span>
+            {hours.map((value, hour) => (
+              <span
+                key={hour}
+                className={`analytics-heatmap-cell level-${level(value)}`}
+                title={`${WEEKDAY_NAMES[weekday]}, ${formatHour(hour)}–${formatHour((hour + 1) % 24)}: ${value ? formatDuration(value) : 'no sessions'}`}
+              />
+            ))}
+          </div>
+        ))}
+        <div className="analytics-heatmap-row analytics-heatmap-axis" aria-hidden="true">
+          <span className="analytics-heatmap-day" />
+          {Array.from({ length: 24 }, (_, hour) => <span key={hour}>{hour % 6 === 0 ? formatHour(hour) : ''}</span>)}
         </div>
       </div>
-      <p className="analytics-section-description">GitHub activity is recorded for {activitySessionsWithData} of {sessionCount} sessions. Missing values are not inferred; a dash means none was stored.</p>
-    </section>
-  );
-}
-
-function RecentWork({ sessions, onSelectSession }) {
-  return (
-    <section className="analytics-section analytics-recent-work" aria-labelledby="analytics-recent-heading">
-      <div className="analytics-section-heading"><div><span className="section-kicker">RECENT WORK</span><h2 id="analytics-recent-heading">Latest sessions</h2></div></div>
-      <div className="analytics-recent-list">
-        {sessions.slice(0, 6).map(({ session, endedAt, durationMs }) => (
-          <a className="analytics-recent-item" href={sessionDetailPath(session.id)} key={session.id} onClick={(event) => followRouteLink(event, onSelectSession)}>
-            <span className="analytics-recent-repository"><strong>{repositoryName(session)}</strong>{repositoryFullName(session) && <small>{repositoryFullName(session)}</small>}</span>
-            <span className="analytics-recent-goal">{session.goal || 'Session'}</span>
-            <time dateTime={session.endedAt}>{formatRecentDate(endedAt)}</time>
-            <span className="analytics-recent-duration">{formatDuration(durationMs)}</span>
-            <span className="analytics-recent-arrow" aria-hidden="true">→</span>
-          </a>
-        ))}
+      <div className="analytics-heatmap-legend" aria-hidden="true">
+        <span>Less</span>
+        {[0, 1, 2, 3, 4].map((value) => <i key={value} className={`analytics-heatmap-cell level-${value}`} />)}
+        <span>More</span>
       </div>
     </section>
   );
 }
 
-function AnalyticsEmptyState({ hasAnySessions }) {
+function SessionLengths({ analytics, onSelectSession }) {
+  const { lengthBuckets, longestSession, averageDurationMs } = analytics;
+  const maxCount = Math.max(1, ...lengthBuckets.map(({ count }) => count));
+
   return (
-    <section className="analytics-empty-state" role="status">
-      <span className="section-kicker">{hasAnySessions ? 'NO SESSIONS IN THIS PERIOD' : 'NO SESSION DATA YET'}</span>
-      <h2>{hasAnySessions ? 'No sessions in this period.' : 'Complete a session to start building your work history.'}</h2>
-      {hasAnySessions && <p>Try a different time range.</p>}
+    <section className="analytics-section" aria-labelledby="analytics-lengths-heading">
+      <div className="analytics-section-heading">
+        <h2 id="analytics-lengths-heading">How long your sessions run</h2>
+        <span>average {formatDuration(averageDurationMs)}</span>
+      </div>
+      <ol className="analytics-length-list">
+        {lengthBuckets.map(({ label, count }) => (
+          <li key={label}>
+            <span className="analytics-length-label">{label}</span>
+            <span className="analytics-length-track" aria-hidden="true">{count > 0 && <i style={{ width: `${(count / maxCount) * 100}%` }} />}</span>
+            <span className="analytics-length-count">{formatCount(count, 'session')}</span>
+          </li>
+        ))}
+      </ol>
+      {longestSession && (
+        <a className="analytics-longest" href={sessionDetailPath(longestSession.session.id)} onClick={(event) => followRouteLink(event, () => onSelectSession(longestSession.session.id))}>
+          <span>Longest</span>
+          <strong>{longestSession.session.goal || 'No goal set'}</strong>
+          <span className="analytics-longest-duration">{formatDuration(longestSession.durationMs)} <span aria-hidden="true">→</span></span>
+        </a>
+      )}
     </section>
   );
 }
 
-export default function AnalyticsPage({ sessions = [], onSelectSession }) {
+function GitHubActivity({ analytics }) {
+  const { activity, sessionsWithActivity, sessionsWithCommits, sessionCount } = analytics;
+  const value = (metric) => (metric.total === null ? '—' : formatNumber(metric.total));
+
+  return (
+    <section className="analytics-section" aria-labelledby="analytics-github-heading">
+      <div className="analytics-section-heading">
+        <h2 id="analytics-github-heading">What GitHub recorded</h2>
+        <span>during sessions</span>
+      </div>
+      <dl className="analytics-github-metrics">
+        <div><dt>Commits</dt><dd>{value(activity.commits)}</dd></div>
+        <div><dt>Lines added</dt><dd className="analytics-additions">+{value(activity.additions)}</dd></div>
+        <div><dt>Lines deleted</dt><dd className="analytics-deletions">−{value(activity.deletions)}</dd></div>
+      </dl>
+      <div className="analytics-github-coverage">
+        <span className="analytics-coverage-track" aria-hidden="true">
+          <i className="with-commits" style={{ flexGrow: sessionsWithCommits }} />
+          <i className="without-commits" style={{ flexGrow: sessionsWithActivity - sessionsWithCommits }} />
+          <i className="unrecorded" style={{ flexGrow: sessionCount - sessionsWithActivity }} />
+        </span>
+        <p>
+          {formatNumber(sessionsWithCommits)} of {formatCount(sessionCount, 'session')} had commits.
+          {sessionCount > sessionsWithActivity && ` ${formatNumber(sessionCount - sessionsWithActivity)} have no recorded GitHub activity.`}
+          {' '}Sessions without commits still count; planning, reading, and debugging are work too.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function AnalyticsEmptyState({ hasAnySessions, onShowAllTime }) {
+  return (
+    <section className="analytics-empty-state" role="status">
+      <h2>{hasAnySessions ? 'No sessions in this period.' : 'Complete a session to start building your work history.'}</h2>
+      {hasAnySessions && <button className="text-link" type="button" onClick={onShowAllTime}>Show all time <span aria-hidden="true">→</span></button>}
+    </section>
+  );
+}
+
+export default function AnalyticsPage({ sessions = [], onSelectSession, onNavigate }) {
   const [range, setRange] = useState('30D');
-  const analytics = useMemo(() => calculateSessionAnalytics(sessions, range), [sessions, range]);
+  const hasExamples = sessions.some((session) => session.source === 'placeholder');
+  const [includeExamples, setIncludeExamples] = useState(true);
+  const visibleSessions = useMemo(
+    () => (includeExamples ? sessions : sessions.filter((session) => session.source !== 'placeholder')),
+    [sessions, includeExamples],
+  );
+  const analytics = useMemo(() => calculateSessionAnalytics(visibleSessions, range), [visibleSessions, range]);
   const hasSessions = analytics.sessionCount > 0;
 
   return (
     <div className="analytics-page">
-      <section className="page-intro analytics-page-intro">
-        <div><span className="section-kicker">WORK OVER TIME</span><h1>Analytics</h1><p>Understand your work over time.</p></div>
-        <TimeRangeControl value={range} onChange={setRange} />
+      <section className="analytics-page-intro">
+        <div>
+          <h1>Analytics</h1>
+          <p>
+            {formatDate(analytics.rangeStart, { month: 'short', day: 'numeric', year: 'numeric' })} – {formatDate(analytics.rangeEnd, { month: 'short', day: 'numeric', year: 'numeric' })}
+            {analytics.rangeDays ? ` · compared with the ${periodLabel(analytics.rangeDays)}` : ''}
+          </p>
+        </div>
+        <div className="analytics-controls">
+          {hasExamples && (
+            <label className="analytics-example-toggle">
+              <input type="checkbox" checked={includeExamples} onChange={(event) => setIncludeExamples(event.target.checked)} />
+              Include example sessions
+            </label>
+          )}
+          <div className="analytics-time-range" role="group" aria-label="Time range">
+            {timeRanges.map(({ value, label }) => (
+              <button key={value} type="button" aria-pressed={range === value} className={range === value ? 'selected' : ''} onClick={() => setRange(value)}>{label}</button>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {!hasSessions ? <AnalyticsEmptyState hasAnySessions={analytics.totalCompletedSessions > 0} /> : (
+      {!hasSessions ? <AnalyticsEmptyState hasAnySessions={analytics.totalCompletedSessions > 0} onShowAllTime={() => setRange('All time')} /> : (
         <>
-          {analytics.includesExamples && <p className="analytics-example-note">Example sessions are included; their activity totals are illustrative.</p>}
           <SummaryMetrics analytics={analytics} />
-          <SessionActivityChart days={analytics.activityByDay} />
-          <div className="analytics-secondary-grid">
-            <ProjectActivity projects={analytics.projects} />
-            <SessionPatterns patterns={analytics.patterns} />
+          <SessionTimeChart timeline={analytics.timeline} />
+          <div className="analytics-grid">
+            <ProjectBreakdown projects={analytics.projects} onNavigate={onNavigate} />
+            <WorkRhythm weekdayHours={analytics.weekdayHours} />
+            <SessionLengths analytics={analytics} onSelectSession={onSelectSession} />
+            <GitHubActivity analytics={analytics} />
           </div>
-          <GitHubActivity activity={analytics.activity} activitySessionsWithData={analytics.activitySessionsWithData} sessionCount={analytics.sessionCount} />
-          <RecentWork sessions={analytics.sessions} onSelectSession={onSelectSession} />
+          <p className="session-history-boundary">
+            {analytics.includesExamples ? 'Example sessions are included; their activity is illustrative. ' : ''}
+            Session time is what you declared for each session. GitHub activity is what GitHub recorded during those sessions; neither is a measure of productivity.
+          </p>
         </>
       )}
     </div>

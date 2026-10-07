@@ -1,56 +1,185 @@
 import { dummyRepositories } from './repositories.js';
 
-const [pokefolio, portfolio, originalPrototype, playground] = dummyRepositories.map(({ owner, name, fullName }) => ({ owner, name, fullName }));
+const [pokefolio, portfolio, originalPrototype, playground] = dummyRepositories.map(({ id, owner, name, fullName }) => ({ id, owner, name, fullName }));
 const repository = { pokefolio, portfolio, originalPrototype, playground };
 
+const fileStatuses = { A: 'added', M: 'modified', D: 'removed', R: 'renamed' };
+const author = { name: 'Lanix Iligan', login: 'lanixiligan' };
+
+// A stable, made-up 40-character SHA so example commits have realistic-looking IDs.
+function exampleSha(seed) {
+  let hash = 2166136261;
+  let sha = '';
+  for (let round = 0; sha.length < 40; round += 1) {
+    for (const character of `${seed}:${round}`) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+    sha += (hash >>> 0).toString(16).padStart(8, '0');
+  }
+  return sha.slice(0, 40);
+}
+
+// Commits are written as [time, message, files, branches?], files as [path, status, additions, deletions].
+// Activity totals are derived from them so the example numbers stay consistent.
+function exampleSession({ id, date, branches, commits: commitRows, ...session }) {
+  const commits = commitRows.map(([time, message, files, commitBranches = branches], index) => {
+    const fileDetails = files.map(([filename, status, additions, deletions]) => ({
+      filename, status: fileStatuses[status], additions, deletions, changes: additions + deletions,
+    }));
+    const additions = fileDetails.reduce((total, file) => total + file.additions, 0);
+    const deletions = fileDetails.reduce((total, file) => total + file.deletions, 0);
+    return {
+      sha: exampleSha(`${id}-${index}`),
+      message,
+      timestamp: `${date}T${time}:00+08:00`,
+      author,
+      committer: author,
+      additions,
+      deletions,
+      totalChanges: additions + deletions,
+      files: fileDetails,
+      branches: commitBranches,
+    };
+  });
+
+  return {
+    id,
+    source: 'placeholder',
+    status: 'completed',
+    ...session,
+    activity: {
+      commits: commits.length,
+      filesChanged: new Set(commits.flatMap((commit) => commit.files.map(({ filename }) => filename))).size,
+      additions: commits.reduce((total, commit) => total + commit.additions, 0),
+      deletions: commits.reduce((total, commit) => total + commit.deletions, 0),
+    },
+    commits,
+  };
+}
+
 // Five example-only records keep the history surfaces populated during development.
-// Their activity and commit timestamps are illustrative, never retrieved from GitHub.
+// Their activity and commits are illustrative, never retrieved from GitHub.
 export const dummySessions = [
-  {
-    id: 'session-001', source: 'placeholder', repository: repository.pokefolio, goal: 'Finish the binder page redesign',
-    startedAt: '2026-09-30T19:02:00+08:00', endedAt: '2026-09-30T21:16:00+08:00', status: 'completed',
-    activity: { commits: 3, filesChanged: 14, additions: 642, deletions: 183, pullRequests: 1, issues: 0, reviews: 0 },
+  exampleSession({
+    id: 'session-001', repository: repository.pokefolio, goal: 'Finish the binder page redesign',
+    date: '2026-09-30', startedAt: '2026-09-30T19:02:00+08:00', endedAt: '2026-09-30T21:16:00+08:00',
+    branches: ['redesign/binder-page'],
     commits: [
-      { sha: 'a1b2c3d', message: 'Refactor binder components', timestamp: '2026-09-30T19:42:00+08:00' },
-      { sha: 'e4f5a6b', message: 'Fix mobile card spacing', timestamp: '2026-09-30T20:21:00+08:00' },
-      { sha: 'c7d8e9f', message: 'Improve binder page layout', timestamp: '2026-09-30T21:03:00+08:00' },
+      ['19:11', 'Sketch new binder page layout grid', [['src/pages/Binder/BinderPage.jsx', 'M', 48, 31], ['src/pages/Binder/BinderPage.css', 'M', 36, 22]]],
+      ['19:18', 'Extract BinderGrid from BinderPage', [['src/components/binder/BinderGrid.jsx', 'A', 64, 0], ['src/pages/Binder/BinderPage.jsx', 'M', 6, 52]]],
+      ['19:24', 'Move card slot markup into BinderSlot', [['src/components/binder/BinderSlot.jsx', 'A', 41, 0], ['src/components/binder/BinderGrid.jsx', 'M', 4, 23]]],
+      ['19:31', 'Add binder spacing and radius tokens', [['src/styles/tokens.css', 'M', 14, 2]]],
+      ['19:38', 'Style binder slots with the new tokens', [['src/components/binder/BinderSlot.css', 'A', 58, 0], ['src/index.css', 'M', 1, 0]]],
+      ['19:42', 'Refactor binder components', [['src/components/binder/BinderGrid.jsx', 'M', 18, 14], ['src/components/binder/BinderSlot.jsx', 'M', 9, 11], ['src/components/binder/index.js', 'A', 3, 0]]],
+      ['19:49', 'Show empty slot placeholder art', [['src/components/binder/BinderSlot.jsx', 'M', 12, 2], ['src/components/binder/BinderSlot.css', 'M', 19, 0], ['public/images/empty-slot.svg', 'A', 22, 0]]],
+      ['19:55', 'Add page flip controls', [['src/components/binder/BinderPageControls.jsx', 'A', 47, 0], ['src/pages/Binder/BinderPage.jsx', 'M', 11, 3]]],
+      ['20:02', 'Track current binder page in a hook', [['src/hooks/useBinderPages.js', 'A', 38, 0], ['src/pages/Binder/BinderPage.jsx', 'M', 7, 15]]],
+      ['20:08', 'Disable flip buttons at first and last page', [['src/components/binder/BinderPageControls.jsx', 'M', 6, 2]]],
+      ['20:14', 'Support arrow keys for page flips', [['src/hooks/useBinderPages.js', 'M', 17, 1]]],
+      ['20:21', 'Fix mobile card spacing', [['src/components/binder/BinderSlot.css', 'M', 8, 5], ['src/pages/Binder/BinderPage.css', 'M', 12, 4]]],
+      ['20:27', 'Collapse binder to two columns under 640px', [['src/components/binder/BinderGrid.css', 'A', 27, 0], ['src/index.css', 'M', 1, 0]]],
+      ['20:33', 'Animate page flip with reduced-motion fallback', [['src/components/binder/BinderGrid.css', 'M', 31, 2], ['src/components/binder/BinderGrid.jsx', 'M', 5, 1]]],
+      ['20:39', 'Remove old binder table layout', [['src/pages/Binder/BinderTable.jsx', 'D', 0, 94], ['src/pages/Binder/BinderTable.css', 'D', 0, 61], ['src/index.css', 'M', 0, 1]]],
+      ['20:44', 'Label binder slots for screen readers', [['src/components/binder/BinderSlot.jsx', 'M', 8, 3]]],
+      ['20:49', 'Show page count under the controls', [['src/components/binder/BinderPageControls.jsx', 'M', 9, 1], ['src/components/binder/BinderPageControls.css', 'A', 18, 0]]],
+      ['20:54', 'Tighten card hover state', [['src/components/binder/BinderSlot.css', 'M', 7, 9]]],
+      ['20:58', 'Load binder layout from collection settings', [['src/data/binderLayout.js', 'M', 22, 8], ['src/hooks/useBinderPages.js', 'M', 6, 4]]],
+      ['21:03', 'Improve binder page layout', [['src/pages/Binder/BinderPage.jsx', 'M', 14, 10], ['src/pages/Binder/BinderPage.css', 'M', 21, 17]]],
+      ['21:08', 'Fix flip animation flicker in Safari', [['src/components/binder/BinderGrid.css', 'M', 3, 1]]],
+      ['21:13', 'Update README screenshots for binder redesign', [['README.md', 'M', 6, 4], ['docs/binder-page.png', 'M', 0, 0]]],
     ],
-  },
-  {
-    id: 'session-002', source: 'placeholder', repository: repository.originalPrototype, goal: 'Implement session history',
-    startedAt: '2026-10-02T09:12:00+08:00', endedAt: '2026-10-02T10:46:00+08:00', status: 'completed',
-    activity: { commits: 2, filesChanged: 8, additions: 318, deletions: 74, pullRequests: 0, issues: 1, reviews: 0 },
+  }),
+  exampleSession({
+    id: 'session-002', repository: repository.originalPrototype, goal: 'Implement session history',
+    date: '2026-10-02', startedAt: '2026-10-02T09:12:00+08:00', endedAt: '2026-10-02T10:46:00+08:00',
+    branches: ['feature/session-history'],
     commits: [
-      { sha: 'f1a2b3c', message: 'Add session history page structure', timestamp: '2026-10-02T09:54:00+08:00' },
-      { sha: 'd4e5f6a', message: 'Polish empty history state', timestamp: '2026-10-02T10:35:00+08:00' },
+      ['09:16', 'Add session history route', [['src/routing.js', 'M', 9, 1], ['src/App.jsx', 'M', 6, 0]]],
+      ['09:21', 'Add session history page structure', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'A', 58, 0], ['src/pages/SessionHistory/SessionHistoryPage.css', 'A', 34, 0], ['src/index.css', 'M', 1, 0]]],
+      ['09:25', 'Read completed sessions from localStorage', [['src/storage/sessions.js', 'A', 31, 0], ['src/App.jsx', 'M', 12, 3]]],
+      ['09:29', 'Guard against malformed stored sessions', [['src/storage/sessions.js', 'M', 11, 2]]],
+      ['09:33', 'Render a row per completed session', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 37, 6], ['src/pages/SessionHistory/SessionHistoryPage.css', 'M', 28, 0]]],
+      ['09:38', 'Format session duration and time range', [['src/utils/formatTime.js', 'A', 26, 0], ['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 5, 4]]],
+      ['09:42', 'Show commit and line totals per session', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 14, 2], ['src/pages/SessionHistory/SessionHistoryPage.css', 'M', 9, 0]]],
+      ['09:47', 'Add repository filter', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 23, 3], ['src/pages/SessionHistory/SessionHistoryPage.css', 'M', 15, 0]]],
+      ['09:51', 'Add text search over repository and goal', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 18, 4]]],
+      ['09:54', 'Add session history page structure tests', [['src/pages/SessionHistory/SessionHistoryPage.test.jsx', 'A', 72, 0]]],
+      ['09:58', 'Add sort by newest, oldest, and duration', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 21, 5]]],
+      ['10:02', 'Lay out filters in a responsive toolbar', [['src/pages/SessionHistory/SessionHistoryPage.css', 'M', 24, 8]]],
+      ['10:06', 'Add session detail route', [['src/routing.js', 'M', 12, 2], ['src/App.jsx', 'M', 9, 1]]],
+      ['10:09', 'Add session detail page', [['src/pages/SessionHistory/SessionDetailPage.jsx', 'A', 66, 0], ['src/pages/SessionHistory/SessionDetailPage.css', 'A', 29, 0], ['src/index.css', 'M', 1, 0]]],
+      ['10:13', 'List commits on the session detail page', [['src/components/sessions/SessionCommitList.jsx', 'A', 44, 0], ['src/pages/SessionHistory/SessionDetailPage.jsx', 'M', 6, 2]]],
+      ['10:16', 'Link commits to GitHub', [['src/components/sessions/SessionCommitList.jsx', 'M', 7, 2]]],
+      ['10:19', 'Handle unknown session IDs', [['src/App.jsx', 'M', 11, 2]]],
+      ['10:22', 'Show unavailable totals instead of zero', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 9, 6], ['src/pages/SessionHistory/SessionDetailPage.jsx', 'M', 8, 5]]],
+      ['10:25', 'Fix copy on the empty history state', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 3, 3]], ['fix/empty-state-copy']],
+      ['10:27', 'Polish empty history state', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 8, 4], ['src/pages/SessionHistory/SessionHistoryPage.css', 'M', 11, 2]], ['fix/empty-state-copy']],
+      ['10:31', 'Make history rows keyboard accessible', [['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 7, 3], ['src/pages/SessionHistory/SessionHistoryPage.css', 'M', 6, 0]]],
+      ['10:35', 'Add back link from detail to history', [['src/pages/SessionHistory/SessionDetailPage.jsx', 'M', 4, 0]]],
+      ['10:39', 'Remove placeholder history mock', [['src/pages/SessionHistory/mockSessions.js', 'D', 0, 48], ['src/pages/SessionHistory/SessionHistoryPage.jsx', 'M', 1, 2]]],
+      ['10:43', 'Document session history in README', [['README.md', 'M', 18, 2]]],
     ],
-  },
-  {
-    id: 'session-003', source: 'placeholder', repository: repository.portfolio, goal: 'Polish project section',
-    startedAt: '2026-10-01T20:05:00+08:00', endedAt: '2026-10-01T21:37:00+08:00', status: 'completed',
-    activity: { commits: 2, filesChanged: 6, additions: 204, deletions: 61, pullRequests: 0, issues: 0, reviews: 0 },
+  }),
+  exampleSession({
+    id: 'session-003', repository: repository.portfolio, goal: 'Polish project section',
+    date: '2026-10-01', startedAt: '2026-10-01T20:05:00+08:00', endedAt: '2026-10-01T21:37:00+08:00',
+    branches: ['main'],
     commits: [
-      { sha: 'b2c3d4e', message: 'Tighten project card typography', timestamp: '2026-10-01T20:42:00+08:00' },
-      { sha: 'f5a6b7c', message: 'Tune project section spacing', timestamp: '2026-10-01T21:28:00+08:00' },
+      ['20:14', 'Tighten project card typography', [['src/components/ProjectCard.tsx', 'M', 6, 4], ['src/components/ProjectCard.module.css', 'M', 14, 11]]],
+      ['20:21', 'Use consistent aspect ratio for project thumbnails', [['src/components/ProjectCard.module.css', 'M', 9, 3]]],
+      ['20:27', 'Add tech stack tags to project cards', [['src/components/ProjectCard.tsx', 'M', 19, 2], ['src/components/TagList.tsx', 'A', 24, 0], ['src/components/TagList.module.css', 'A', 17, 0]]],
+      ['20:33', 'Type project stack field', [['src/content/projects.ts', 'M', 12, 4], ['src/types/project.ts', 'M', 3, 0]]],
+      ['20:38', 'Sort projects by featured, then year', [['src/content/projects.ts', 'M', 9, 2], ['src/sections/Projects.tsx', 'M', 4, 1]]],
+      ['20:42', 'Tune project section spacing', [['src/sections/Projects.module.css', 'M', 11, 8]]],
+      ['20:48', 'Add hover lift to project cards', [['src/components/ProjectCard.module.css', 'M', 12, 1]]],
+      ['20:53', 'Respect reduced motion on card hover', [['src/components/ProjectCard.module.css', 'M', 6, 0]]],
+      ['20:59', 'Rewrite project descriptions', [['src/content/projects.ts', 'M', 21, 19]]],
+      ['21:06', 'Add links to source and live demo', [['src/components/ProjectCard.tsx', 'M', 16, 3], ['src/components/icons/ExternalLink.tsx', 'A', 14, 0]]],
+      ['21:12', 'Lazy load project thumbnails', [['src/components/ProjectCard.tsx', 'M', 3, 1]]],
+      ['21:19', 'Compress project thumbnail images', [['public/projects/pokefolio.webp', 'M', 0, 0], ['public/projects/gititogether.webp', 'M', 0, 0], ['public/projects/playground.webp', 'M', 0, 0]]],
+      ['21:26', 'Fix card grid overflow on tablets', [['src/sections/Projects.module.css', 'M', 5, 3]]],
+      ['21:33', 'Remove unused project filter component', [['src/components/ProjectFilter.tsx', 'D', 0, 57], ['src/components/ProjectFilter.module.css', 'D', 0, 33], ['src/sections/Projects.tsx', 'M', 0, 4]]],
     ],
-  },
-  {
-    id: 'session-004', source: 'placeholder', repository: repository.playground, goal: 'Experiment with repository search',
-    startedAt: '2026-10-01T17:18:00+08:00', endedAt: '2026-10-01T18:31:00+08:00', status: 'completed',
-    activity: { commits: 2, filesChanged: 5, additions: 151, deletions: 29, pullRequests: 0, issues: 0, reviews: 0 },
+  }),
+  exampleSession({
+    id: 'session-004', repository: repository.playground, goal: 'Experiment with repository search',
+    date: '2026-10-01', startedAt: '2026-10-01T17:18:00+08:00', endedAt: '2026-10-01T18:31:00+08:00',
+    branches: ['experiment/repo-search'],
     commits: [
-      { sha: 'c3d4e5f', message: 'Try repository search query parameters', timestamp: '2026-10-01T17:52:00+08:00' },
-      { sha: 'a6b7c8d', message: 'Handle empty repository results', timestamp: '2026-10-01T18:22:00+08:00' },
+      ['17:26', 'Add repository search script', [['search/searchRepos.js', 'A', 38, 0], ['package.json', 'M', 1, 0]]],
+      ['17:33', 'Read GitHub token from environment', [['search/searchRepos.js', 'M', 7, 2], ['.env.example', 'A', 1, 0]]],
+      ['17:39', 'Print results as a table', [['search/printTable.js', 'A', 29, 0], ['search/searchRepos.js', 'M', 3, 6]]],
+      ['17:46', 'Try repository search query parameters', [['search/searchRepos.js', 'M', 18, 5], ['notes/search-qualifiers.md', 'A', 24, 0]]],
+      ['17:52', 'Add language and stars qualifiers', [['search/buildQuery.js', 'A', 22, 0], ['search/searchRepos.js', 'M', 4, 9]]],
+      ['17:58', 'Follow pagination links', [['search/searchRepos.js', 'M', 16, 3], ['lib/pagination.js', 'A', 19, 0]]],
+      ['18:04', 'Back off when the search rate limit is hit', [['lib/rateLimit.js', 'A', 27, 0], ['search/searchRepos.js', 'M', 5, 1]]],
+      ['18:11', 'Log remaining rate limit after each page', [['lib/rateLimit.js', 'M', 6, 0]]],
+      ['18:16', 'Handle empty repository results', [['search/searchRepos.js', 'M', 9, 2], ['search/printTable.js', 'M', 4, 1]]],
+      ['18:22', 'Write findings on search ranking', [['notes/search-qualifiers.md', 'M', 31, 3]]],
+      ['18:28', 'Add usage examples to README', [['README.md', 'M', 14, 1]]],
     ],
-  },
-  {
-    id: 'session-005', source: 'placeholder', repository: repository.pokefolio, goal: 'Add responsive filters to the collection',
-    startedAt: '2026-09-29T19:24:00+08:00', endedAt: '2026-09-29T21:02:00+08:00', status: 'completed',
-    activity: { commits: 3, filesChanged: 9, additions: 287, deletions: 48, pullRequests: 0, issues: 1, reviews: 0 },
+  }),
+  exampleSession({
+    id: 'session-005', repository: repository.pokefolio, goal: 'Add responsive filters to the collection',
+    date: '2026-09-29', startedAt: '2026-09-29T19:24:00+08:00', endedAt: '2026-09-29T21:02:00+08:00',
+    branches: ['feature/collection-filters'],
     commits: [
-      { sha: 'd4e5f6a', message: 'Add collection filter controls', timestamp: '2026-09-29T20:01:00+08:00' },
-      { sha: 'b7c8d9e', message: 'Make filters wrap on narrow screens', timestamp: '2026-09-29T20:34:00+08:00' },
-      { sha: 'e1f2a3b', message: 'Keep selected filter in the URL', timestamp: '2026-09-29T20:53:00+08:00' },
+      ['19:31', 'Add collection filter state hook', [['src/hooks/useCollectionFilters.js', 'A', 42, 0]]],
+      ['19:37', 'Add collection filter controls', [['src/components/collection/FilterBar.jsx', 'A', 56, 0], ['src/components/collection/FilterBar.css', 'A', 38, 0], ['src/index.css', 'M', 1, 0]]],
+      ['19:43', 'Filter collection by type', [['src/pages/Collection/CollectionPage.jsx', 'M', 12, 4], ['src/hooks/useCollectionFilters.js', 'M', 9, 2]]],
+      ['19:48', 'Filter collection by generation', [['src/hooks/useCollectionFilters.js', 'M', 11, 1], ['src/components/collection/FilterBar.jsx', 'M', 14, 2]]],
+      ['19:54', 'Add owned and missing toggle', [['src/components/collection/FilterBar.jsx', 'M', 18, 3], ['src/hooks/useCollectionFilters.js', 'M', 7, 1]]],
+      ['20:01', 'Show result count above the grid', [['src/pages/Collection/CollectionPage.jsx', 'M', 8, 1], ['src/pages/Collection/CollectionPage.css', 'M', 6, 0]]],
+      ['20:07', 'Add clear filters button', [['src/components/collection/FilterBar.jsx', 'M', 9, 1], ['src/components/collection/FilterBar.css', 'M', 7, 0]]],
+      ['20:13', 'Memoize filtered collection', [['src/pages/Collection/CollectionPage.jsx', 'M', 6, 5]]],
+      ['20:19', 'Show empty state when no cards match', [['src/components/collection/EmptyResults.jsx', 'A', 21, 0], ['src/pages/Collection/CollectionPage.jsx', 'M', 4, 1]]],
+      ['20:26', 'Make filters wrap on narrow screens', [['src/components/collection/FilterBar.css', 'M', 14, 6]]],
+      ['20:31', 'Move filters into a sheet on mobile', [['src/components/collection/FilterSheet.jsx', 'A', 47, 0], ['src/components/collection/FilterSheet.css', 'A', 41, 0], ['src/components/collection/FilterBar.jsx', 'M', 8, 3], ['src/index.css', 'M', 1, 0]]],
+      ['20:36', 'Trap focus inside the filter sheet', [['src/components/collection/FilterSheet.jsx', 'M', 17, 2]]],
+      ['20:41', 'Keep selected filter in the URL', [['src/hooks/useCollectionFilters.js', 'M', 24, 8]]],
+      ['20:45', 'Restore filters on back navigation', [['src/hooks/useCollectionFilters.js', 'M', 6, 2]]],
+      ['20:49', 'Label filter groups for screen readers', [['src/components/collection/FilterBar.jsx', 'M', 6, 2], ['src/components/collection/FilterSheet.jsx', 'M', 4, 1]]],
+      ['20:53', 'Remove legacy type dropdown', [['src/components/collection/TypeDropdown.jsx', 'D', 0, 39], ['src/pages/Collection/CollectionPage.jsx', 'M', 0, 3]]],
+      ['20:56', 'Merge collection filters into main', [['src/pages/Collection/CollectionPage.jsx', 'M', 0, 0]], ['feature/collection-filters', 'main']],
+      ['20:59', 'Bump version to 0.6.0', [['package.json', 'M', 1, 1], ['CHANGELOG.md', 'M', 9, 0]], ['main']],
     ],
-  },
+  }),
 ];

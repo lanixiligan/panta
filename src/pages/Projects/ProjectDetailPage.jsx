@@ -59,9 +59,11 @@ export default function ProjectDetailPage({ project, onBack, onSelectSession }) 
     <article className="session-detail-page project-detail-page">
       <button className="back-button" type="button" onClick={onBack}>← Projects</button>
       <header className="session-detail-heading">
-        <span className="session-complete-label"><i aria-hidden="true" /> PROJECT{project.visibility && <span> · {project.visibility.toUpperCase()}</span>}</span>
+        {project.isExample
+          ? <span className="session-detail-badge">Example project</span>
+          : <span className="session-complete-label"><i aria-hidden="true" /> PROJECT{project.visibility && <span> · {project.visibility.toUpperCase()}</span>}</span>}
         <h1>{project.name}</h1>
-        {project.htmlUrl
+        {project.htmlUrl && !project.isExample
           ? <a href={project.htmlUrl} target="_blank" rel="noreferrer">{project.fullName} <span aria-hidden="true">↗</span></a>
           : <span>{project.fullName}</span>}
         {project.description && <p className="project-detail-description">{project.description}</p>}
@@ -76,6 +78,9 @@ export default function ProjectDetailPage({ project, onBack, onSelectSession }) 
           </div>
         ))}
       </section>
+      {project.isExample && (
+        <p className="session-history-boundary">This example project is built from example sessions; its GitHub activity was not retrieved from GitHub.</p>
+      )}
       {partialActivity && (
         <p className="session-history-boundary">
           GitHub activity is available for {project.activitySessionsWithData} of {formatCount(project.sessionCount, 'session')}. Missing values are not counted.

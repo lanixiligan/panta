@@ -4,7 +4,7 @@ import { getAccessibleRepositories, getActiveSessionCommits, getSessionActivity 
 import OverviewPage from './pages/Overview/OverviewPage.jsx';
 import ProjectsPage from './pages/Projects/ProjectsPage.jsx';
 import ProjectDetailPage from './pages/Projects/ProjectDetailPage.jsx';
-import { findProject, getProjects } from './pages/Projects/projectHistory.js';
+import { findProject, getExampleProjects, getProjects } from './pages/Projects/projectHistory.js';
 
 import SessionHistoryPage from './pages/SessionHistory/SessionHistoryPage.jsx';
 import SessionDetailPage from './pages/SessionHistory/SessionDetailPage.jsx';
@@ -18,7 +18,7 @@ import NotFoundPage from './pages/NotFoundPage.jsx';
 import AuthenticationPage from './pages/Authentication/AuthenticationPage.jsx';
 import SidebarNav from './components/navigation/SidebarNav.jsx';
 import Footer from './components/layout/Footer.jsx';
-import { getDailySessionActivity, getSessionById, getSessionListItems, getSessions, getWeeklySummary } from './dev-data/index.js';
+import { getSessionById, getSessionListItems, getSessions, getWeeklySummary } from './dev-data/index.js';
 import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
 import { getGitHubMutuals, sendPresenceHeartbeat } from './api/presence.js';
 
@@ -37,9 +37,24 @@ function readStoredSessions(username) {
 function mergeCommits(...lists) {
   const commitsBySha = new Map();
   lists.flat().forEach((commit) => {
-    if (commit?.sha) commitsBySha.set(commit.sha, { ...commitsBySha.get(commit.sha), ...commit });
+    if (!commit?.sha) return;
+    const existing = commitsBySha.get(commit.sha);
+    const branches = [...new Set([...(existing?.branches || []), ...(commit.branches || [])])];
+    commitsBySha.set(commit.sha, { ...existing, ...commit, ...(branches.length ? { branches } : {}) });
   });
   return [...commitsBySha.values()].sort((left, right) => new Date(right.timestamp || 0) - new Date(left.timestamp || 0));
+}
+
+// Totals come from the merged commits so commits kept from an earlier check
+// (for example, from a branch deleted since) still count.
+function summarizeCommits(commits) {
+  const detailed = commits.filter((commit) => Array.isArray(commit.files));
+  return {
+    commits: commits.length,
+    filesChanged: new Set(detailed.flatMap((commit) => commit.files.map(({ filename }) => filename))).size,
+    additions: detailed.reduce((total, commit) => total + (commit.additions || 0), 0),
+    deletions: detailed.reduce((total, commit) => total + (commit.deletions || 0), 0),
+  };
 }
 
 export default function App() {
@@ -68,8 +83,9 @@ export default function App() {
   const sessionItems = getSessionListItems([...realSessions, ...allDummySessions])
     .sort((left, right) => new Date(right.startedAt) - new Date(left.startedAt));
   const projects = useMemo(() => getProjects(realSessions, repositories), [realSessions, repositories]);
-  const weeklySummary = getWeeklySummary(allDummySessions);
-  const activityDays = getDailySessionActivity(allDummySessions);
+  const exampleProjects = useMemo(() => getExampleProjects(), []);
+  const routeProject = view === 'Project Detail' ? findProject([...projects, ...exampleProjects], route.owner, route.repo) : null;
+  const weeklySummary = getWeeklySummary(realSessions, new Date(now));
 
   useEffect(() => {
     function syncPathname() {
@@ -307,15 +323,16 @@ export default function App() {
       const updatedSession = {
         ...session,
         ...activity,
-        activity: { ...activity.activity, commits: commits.length },
+        activity: { ...activity.activity, ...summarizeCommits(commits) },
         commits,
         activityStatus: 'complete',
         activityError: '',
+        activityCheckedAt: new Date().toISOString(),
       };
       if (updateState) updateRealSession(updatedSession);
       return updatedSession;
     } catch (error) {
-      const failedSession = { ...session, activity: null, commits: session.commits || [], activityStatus: 'error', activityError: error.message || 'Could not retrieve GitHub commits for this session.' };
+      const failedSession = { ...session, activity: session.activity ?? null, commits: session.commits || [], activityStatus: 'error', activityError: error.message || 'Could not retrieve GitHub commits for this session.' };
       if (updateState) updateRealSession(failedSession);
       return failedSession;
     }
@@ -324,6 +341,12 @@ export default function App() {
   function updateRealSession(session) {
     setCompletedSession((current) => current?.id === session.id ? session : current);
     setRealSessions((current) => current.map((item) => item.id === session.id ? session : item));
+  }
+
+  function deleteSession(sessionId) {
+    setRealSessions((current) => current.filter((session) => session.id !== sessionId));
+    setCompletedSession((current) => current?.id === sessionId ? null : current);
+    navigate(routePaths['Session History']);
   }
 
   function retrySessionActivity(session) {
@@ -383,7 +406,7 @@ export default function App() {
         mutualsLoading={mutualsLoading}
         mutualsError={mutualsError}
       />
-      <div className="workspace-main">
+      <div className={`workspace-main ${view === 'Session Detail' ? 'workspace-main-fit' : ''}`}>
         <main className="app-main" id="main-content">
         {view === 'Overview' && (
           <OverviewPage
@@ -395,9 +418,10 @@ export default function App() {
             onFinishSession={finishSession}
             onNavigateToStart={() => navigate(routePaths['Session Workspace'])}
             onViewSessions={() => navigate(routePaths['Session History'])}
-            recentSessions={sessionItems.slice(0, 4)}
+            recentSessions={sessionItems.slice(0, 5)}
             weeklySummary={weeklySummary}
-            activityDays={activityDays}
+            mutuals={mutuals}
+            mutualsLoading={mutualsLoading}
             onSelectSession={openSession}
           />
         )}
@@ -428,15 +452,15 @@ export default function App() {
         )}
         {view === 'Projects' && (
           identityStatus === 'authenticated'
-            ? <ProjectsPage projects={projects} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
+            ? <ProjectsPage projects={projects} exampleProjects={exampleProjects} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
             : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
         )}
         {view === 'Project Detail' && (
-          findProject(projects, route.owner, route.repo)
-            ? <ProjectDetailPage project={findProject(projects, route.owner, route.repo)} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
+          routeProject
+            ? <ProjectDetailPage project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
             : <section className="dashboard-section"><h2>Project not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Projects</button></section>
         )}
-        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onSelectSession={openSession} />}
+        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onSelectSession={openSession} onNavigate={navigate} />}
         {view === 'Profile' && (
           identityStatus === 'authenticated' && identity
             ? <ProfilePage identity={identity} hasSessions={Boolean(activeSession)} onStart={() => navigate(routePaths['Session Workspace'])} />
@@ -446,8 +470,10 @@ export default function App() {
         {view === 'Session Detail' && (
           (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getSessionById(route.sessionId))
             ? <SessionDetailPage
+                key={route.sessionId}
                 session={completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getSessionById(route.sessionId)}
                 onRetryActivity={retrySessionActivity}
+                onDelete={deleteSession}
                 onBack={() => { setCompletedSession(null); navigate(routePaths['Session History']); }}
               />
             : <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths['Session History'])}>Back to Session History</button></section>

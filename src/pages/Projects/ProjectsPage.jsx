@@ -41,7 +41,9 @@ function ProjectCard({ project, days, maxMinutes, onNavigate }) {
       <div className="project-card-head">
         <div className="project-card-title">
           <strong>{project.name}</strong>
-          {project.visibility && <span className={`repository-visibility ${project.visibility}`}>{project.visibility}</span>}
+          {project.isExample
+            ? <span className="project-card-badge">Example</span>
+            : project.visibility && <span className={`repository-visibility ${project.visibility}`}>{project.visibility}</span>}
         </div>
         <span className="project-card-fullname">{project.fullName}</span>
         {project.description && <p className="project-card-description">{project.description}</p>}
@@ -62,8 +64,13 @@ function ProjectCard({ project, days, maxMinutes, onNavigate }) {
   );
 }
 
-export default function ProjectsPage({ projects = [], onNavigate, onStartSession }) {
+export default function ProjectsPage({ projects: realProjects = [], exampleProjects = [], onNavigate, onStartSession }) {
   const [sort, setSort] = useState('recent');
+  const [includeExamples, setIncludeExamples] = useState(true);
+  const projects = useMemo(
+    () => (includeExamples ? [...realProjects, ...exampleProjects].sort((left, right) => right.lastWorkedAt - left.lastWorkedAt) : realProjects),
+    [realProjects, exampleProjects, includeExamples],
+  );
   const sortedProjects = useMemo(() => sortProjects(projects, sort), [projects, sort]);
   const activity = useMemo(() => new Map(projects.map((project) => [project.key, recentDailyMinutes(project, ACTIVITY_DAYS)])), [projects]);
   // One scale for every card, so bar heights compare honestly across projects.
@@ -78,6 +85,13 @@ export default function ProjectsPage({ projects = [], onNavigate, onStartSession
         <p>Repositories you’ve worked on through Panta.</p>
       </section>
 
+      {exampleProjects.length > 0 && (
+        <label className="analytics-example-toggle project-example-toggle">
+          <input type="checkbox" checked={includeExamples} onChange={(event) => setIncludeExamples(event.target.checked)} />
+          Include example projects
+        </label>
+      )}
+
       {projects.length ? (
         <section className="project-list-section" aria-label="Projects">
           <div className="project-grid-toolbar">
@@ -91,6 +105,9 @@ export default function ProjectsPage({ projects = [], onNavigate, onStartSession
               </select>
             </label>
           </div>
+          {includeExamples && exampleProjects.length > 0 && (
+            <p className="session-history-boundary">Example projects are built from example sessions; their GitHub activity was not retrieved from GitHub.</p>
+          )}
           <div className="project-grid">
             {sortedProjects.map((project) => (
               <ProjectCard key={project.key} project={project} days={activity.get(project.key)} maxMinutes={maxMinutes} onNavigate={onNavigate} />

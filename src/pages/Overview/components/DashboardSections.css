@@ -1,41 +1,57 @@
-.weekly-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; }
-.weekly-metric { display: flex; flex-direction: column; gap: 4px; padding: 8px 9px; border: 0; border-left: 1px solid var(--workspace-divider); border-radius: 0; background: transparent; }
-.weekly-metric strong { font: 17px 'DM Mono', monospace; }
-.presence-empty { display: flex; align-items: flex-start; gap: 9px; padding: 10px 0 2px; }
-.presence-dot { width: 6px; height: 6px; flex: 0 0 auto; margin-top: 4px; border-radius: 50%; background: #52685a; }
-.presence-empty p { max-width: 250px; margin: 0; color: #78857b; font-size: 12px; line-height: 1.65; }
-.activity-section { padding-bottom: 20px; padding: 20px 22px; }
-.session-activity-chart { height: 88px; display: flex; align-items: stretch; gap: 12px; padding-top: 3px; }
-.activity-day { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; color: #78857b; font: 11px 'DM Mono', monospace; }
-.activity-bar-track { width: min(100%, 34px); flex: 1; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; border-radius: 4px; background: #19211b; }
-.activity-bar-track i { width: 100%; border-radius: 3px 3px 0 0; background: #4e9060; }
-@media (max-width: 680px) {
-  .weekly-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .weekly-metric { padding: 7px 5px; }
-}
-.recent-session-list { display: flex; flex-direction: column; gap: 0; }
-.recent-session-card { display: block; color: inherit; text-decoration: none; transition: border-color .15s ease, background .15s ease; border: 0; border-top: 1px solid var(--workspace-divider); border-radius: 0; background: transparent; padding: 13px 10px; }
-.recent-session-card:hover { border-color: #3a6848; background: var(--workspace-raised); }
-.recent-session-heading { display: flex; min-width: 0; align-items: center; gap: 9px; }
-.recent-session-repo { overflow: hidden; font: 11px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; color: #91b8a0; font-size: 11px; }
-.recent-session-duration { flex: 0 0 auto; margin-left: auto; color: var(--workspace-secondary); font: 11px 'DM Mono', monospace; }
-.session-source-badge { flex: 0 0 auto; padding: 2px 5px; border: 1px solid #31523a; border-radius: 4px; color: #9fd6aa; font: 9px 'DM Mono', monospace; letter-spacing: .04em; }
-.session-source-badge.placeholder { border-color: #3a433c; color: #a5aea7; }
-.recent-session-data-status { margin: 0; color: var(--workspace-muted); font-size: 11px; }
-.recent-session-goal { color: var(--workspace-text); margin: 6px 0 8px; font-size: 14px; }
-.recent-session-stats { display: flex; flex-wrap: wrap; gap: 5px 10px; color: var(--workspace-muted); font: 10px 'DM Mono', monospace; font-size: 11px; }
-.recent-session-stats .additions { color: #81c895; }
-.recent-session-stats .deletions { color: #c4897d; }
-.recent-session-date { display: block; margin-top: 8px; color: #687b6d; font-size: 11px; }
-.recent-section { border-color: var(--workspace-border); background: var(--workspace-surface); padding: 20px 22px; }
-.recent-section .dashboard-section-heading { margin-bottom: 12px; }
-.weekly-section { padding: 20px 22px; }
-.weekly-section .dashboard-section-heading { margin-bottom: 11px; }
-.weekly-metric:first-child { border-left: 0; }
-.weekly-metric strong { color: #d6e6d9; font-size: 22px; }
+.dashboard-home .dashboard-section { border-radius: 8px; }
+.dashboard-home .dashboard-section-heading { align-items: baseline; margin-bottom: 12px; }
+.dashboard-home .dashboard-section-heading h2 { margin: 0; }
+.dashboard-section-meta { color: #75867a; font: 11px 'DM Mono', monospace; }
+
+/* Recent sessions */
+.recent-section { padding: 18px 20px 10px; }
+.recent-session-list { display: flex; flex-direction: column; }
+.recent-session-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 64px; align-items: center; gap: 18px; margin: 0 -10px; padding: 11px 10px; border-top: 1px solid var(--workspace-divider); border-radius: 6px; color: inherit; text-decoration: none; transition: background-color .12s ease; }
+.recent-session-row:hover { background: var(--workspace-raised); }
+.recent-session-row:focus-visible { outline: 2px solid #39ff8899; outline-offset: -2px; }
+.recent-session-main { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.recent-session-goal { overflow: hidden; color: var(--workspace-text); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.recent-session-goal.empty { color: var(--workspace-muted); font-style: italic; }
+.recent-session-meta { display: flex; min-width: 0; align-items: center; gap: 7px; color: #7d8c81; font-size: 11px; white-space: nowrap; }
+.recent-session-meta > [aria-hidden] { color: #4d6155; }
+.recent-session-repo { overflow: hidden; color: #91b8a0; font: 11px 'DM Mono', monospace; text-overflow: ellipsis; }
+.session-source-badge { flex: 0 0 auto; padding: 1px 5px; border: 1px solid #3a433c; border-radius: 4px; color: #a5aea7; font: 9px 'DM Mono', monospace; letter-spacing: .04em; }
+.recent-session-commits { color: var(--workspace-muted); font: 11px 'DM Mono', monospace; white-space: nowrap; }
+.recent-session-duration { color: var(--workspace-secondary); font: 12px 'DM Mono', monospace; text-align: right; white-space: nowrap; }
+
+/* This week */
+.weekly-section { padding: 18px 20px; }
+.weekly-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; }
+.weekly-metric { display: flex; min-width: 0; flex-direction: column; gap: 4px; padding: 2px 10px; border-left: 1px solid var(--workspace-divider); }
+.weekly-metric:first-child { padding-left: 0; border-left: 0; }
+.weekly-metric strong { overflow: hidden; color: #d6e6d9; font: 20px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
 .weekly-metric span { color: var(--workspace-secondary); font-size: 11px; }
-.coding-now-section { min-height: 0; padding: 20px 22px; }
+.session-activity-chart { display: flex; height: 92px; align-items: stretch; gap: 10px; }
+.activity-day { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 6px; color: #78857b; font: 10px 'DM Mono', monospace; }
+.activity-bar-track { display: flex; width: min(100%, 30px); flex: 1; align-items: flex-end; overflow: hidden; border-radius: 4px; background: #19211b; }
+.activity-bar-track i { width: 100%; border-radius: 3px 3px 0 0; background: #4e9060; }
+.activity-day.today { color: var(--workspace-accent); }
+.activity-day.today .activity-bar-track i { background: var(--workspace-accent); }
+.activity-day.future .activity-bar-track { background: transparent; box-shadow: inset 0 0 0 1px #19211b; }
+.activity-day.future { color: #4d6155; }
+
+/* Online now */
+.online-now-section { flex: 1; padding: 18px 20px; }
+.online-now-list { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.online-now-list a { display: flex; align-items: center; gap: 10px; margin: 0 -8px; padding: 6px 8px; border-radius: 6px; color: #d7e8da; font-size: 13px; text-decoration: none; }
+.online-now-list a:hover { background: var(--workspace-raised); }
+.online-now-list img, .online-now-fallback { width: 24px; height: 24px; flex: 0 0 auto; border-radius: 50%; }
+.online-now-fallback { display: grid; place-items: center; background: var(--workspace-raised); color: var(--workspace-secondary); font-size: 11px; }
+.online-now-list a > span:not(.online-now-fallback) { overflow: hidden; flex: 1; text-overflow: ellipsis; white-space: nowrap; }
+.online-now-list i { width: 7px; height: 7px; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 6px #39ff8866; }
+.presence-empty { display: flex; align-items: flex-start; gap: 9px; }
+.presence-dot { width: 6px; height: 6px; flex: 0 0 auto; margin-top: 5px; border-radius: 50%; background: #52685a; }
+.presence-empty p { margin: 0; color: #78857b; font-size: 12px; line-height: 1.6; }
+
 @media (max-width: 680px) {
-  .weekly-metric strong { font-size: 17px; }
-  .weekly-metric span { font-size: 9px; }
+  .recent-session-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+  .recent-session-commits { display: none; }
+  .weekly-metric { padding: 2px 6px; }
+  .weekly-metric strong { font-size: 16px; }
+  .weekly-metric span { font-size: 10px; }
 }

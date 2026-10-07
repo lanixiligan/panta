@@ -45,38 +45,45 @@ export function getSessionListItems(sessions = getSessions()) {
   });
 }
 
-export function getWeeklySummary(sessions = dummySessions, referenceDate = new Date()) {
+// Totals and per-day session time for the current Monday-to-Sunday week.
+export function getWeeklySummary(sessions = [], referenceDate = new Date()) {
   const start = new Date(referenceDate);
   start.setHours(0, 0, 0, 0);
-  const dayOfWeek = (start.getDay() + 6) % 7;
-  start.setDate(start.getDate() - dayOfWeek);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
   const end = new Date(start);
   end.setDate(start.getDate() + 7);
   const thisWeek = sessions.filter((session) => {
     const startedAt = new Date(session.startedAt);
     return startedAt >= start && startedAt < end;
   });
+  const withActivity = thisWeek.filter((session) => typeof session.activity?.commits === 'number');
+  const today = new Date(referenceDate).toDateString();
+
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const dateKey = date.toDateString();
+    return {
+      label: new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date),
+      date: date.toISOString(),
+      sessionMinutes: thisWeek
+        .filter((session) => new Date(session.startedAt).toDateString() === dateKey)
+        .reduce((sum, session) => sum + getSessionDurationMinutes(session), 0),
+      isToday: dateKey === today,
+      isFuture: date > new Date(referenceDate),
+    };
+  });
+
   return {
+    start: start.toISOString(),
+    end: new Date(end.getTime() - 1).toISOString(),
     sessionCount: thisWeek.length,
     sessionMinutes: thisWeek.reduce((sum, session) => sum + getSessionDurationMinutes(session), 0),
-    commitCount: thisWeek.reduce((sum, session) => sum + (session.activity?.commits ?? 0), 0),
-    repositoryCount: new Set(thisWeek.map((session) => session.repository.fullName)).size,
+    // Commits are unavailable, not zero, when no session this week has recorded activity.
+    commitCount: withActivity.length ? withActivity.reduce((sum, session) => sum + session.activity.commits, 0) : null,
+    repositoryCount: new Set(thisWeek.map((session) => session.repository?.fullName || session.repository?.name)).size,
+    days,
   };
-}
-
-export function getDailySessionActivity(sessions = dummySessions, referenceDate = new Date()) {
-  return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(referenceDate);
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() - (6 - index));
-    const nextDate = new Date(date);
-    nextDate.setDate(nextDate.getDate() + 1);
-    const sessionMinutes = sessions.reduce((sum, session) => {
-      const startedAt = new Date(session.startedAt);
-      return startedAt >= date && startedAt < nextDate ? sum + getSessionDurationMinutes(session) : sum;
-    }, 0);
-    return { day: new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date), sessionMinutes };
-  });
 }
 
 export function getProjectsWithSessions() {

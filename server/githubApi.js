@@ -117,30 +117,91 @@ export async function getAuthenticatedUserList(endpoint, accessToken) {
   return [...users.values()];
 }
 
-async function getSessionCommitRefs({ owner, repository, since, until, author, accessToken }) {
-  const listUrl = new URL(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits`);
-  const params = new URLSearchParams({ since, until, per_page: '100' });
-  if (author) params.set('author', author);
-  listUrl.search = params.toString();
+const commitDateCache = new Map();
+const COMMIT_DATE_CACHE_LIMIT = 5000;
 
-  const commitRefs = [];
-  let pageUrl = listUrl.href;
+function repositoryApiUrl(owner, repository, path = '') {
+  return `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}${path}`;
+}
+
+async function getPaginatedList(url, accessToken, invalidMessage) {
+  const items = [];
+  let pageUrl = url;
   while (pageUrl) {
     const { payload, response } = await fetchGitHubJson(pageUrl, accessToken);
-    if (!Array.isArray(payload)) throw new GitHubApiError('GitHub returned an invalid commit list.');
-    commitRefs.push(...payload);
+    if (!Array.isArray(payload)) throw new GitHubApiError(invalidMessage);
+    items.push(...payload);
     pageUrl = nextPageUrl(response.headers.get('link'));
   }
+  return items;
+}
 
-  return commitRefs
-    .filter((commit) => !author || commit.author?.login?.toLocaleLowerCase() === author.toLocaleLowerCase())
-    .map((commit) => ({
-      sha: commit.sha,
-      message: commit.commit?.message || 'Commit message unavailable',
-      timestamp: commit.commit?.committer?.date || commit.commit?.author?.date || null,
-      author: { name: commit.commit?.author?.name || commit.author?.login || 'Unknown author', login: commit.author?.login || null },
-      htmlUrl: commit.html_url || null,
+// Commits are immutable, so a branch head's committer date can be cached by SHA.
+async function getCommitDate(owner, repository, sha, accessToken) {
+  const key = `${owner}/${repository}@${sha}`.toLocaleLowerCase();
+  if (commitDateCache.has(key)) return commitDateCache.get(key);
+  const { payload } = await fetchGitHubJson(repositoryApiUrl(owner, repository, `/git/commits/${encodeURIComponent(sha)}`), accessToken);
+  const time = Date.parse(payload?.committer?.date || payload?.author?.date || '');
+  if (commitDateCache.size >= COMMIT_DATE_CACHE_LIMIT) commitDateCache.clear();
+  commitDateCache.set(key, time);
+  return time;
+}
+
+// Branches whose head commit predates the window cannot contain commits from it,
+// so only the remaining branches are queried for commits.
+async function getBranchesChangedSince(owner, repository, since, accessToken) {
+  const branches = await getPaginatedList(
+    `${repositoryApiUrl(owner, repository, '/branches')}?per_page=100`,
+    accessToken,
+    'GitHub returned an invalid branch list.',
+  );
+  const sinceTime = Date.parse(since);
+  const changed = [];
+  for (let index = 0; index < branches.length; index += 8) {
+    const batch = branches.slice(index, index + 8);
+    const headTimes = await Promise.all(batch.map((branch) => getCommitDate(owner, repository, branch.commit.sha, accessToken)));
+    batch.forEach((branch, batchIndex) => {
+      if (!Number.isFinite(headTimes[batchIndex]) || headTimes[batchIndex] >= sinceTime) changed.push(branch.name);
+    });
+  }
+  return changed;
+}
+
+async function getSessionCommitRefs({ owner, repository, since, until, author, accessToken }) {
+  const branchNames = await getBranchesChangedSince(owner, repository, since, accessToken);
+  const commitsBySha = new Map();
+
+  for (let index = 0; index < branchNames.length; index += 8) {
+    const batch = branchNames.slice(index, index + 8);
+    const results = await Promise.all(batch.map((branch) => {
+      const params = new URLSearchParams({ sha: branch, since, until, per_page: '100' });
+      if (author) params.set('author', author);
+      return getPaginatedList(`${repositoryApiUrl(owner, repository, '/commits')}?${params}`, accessToken, 'GitHub returned an invalid commit list.');
     }));
+
+    results.forEach((branchCommits, batchIndex) => {
+      const branch = batch[batchIndex];
+      branchCommits
+        .filter((commit) => !author || commit.author?.login?.toLocaleLowerCase() === author.toLocaleLowerCase())
+        .forEach((commit) => {
+          const existing = commitsBySha.get(commit.sha);
+          if (existing) {
+            existing.branches.push(branch);
+            return;
+          }
+          commitsBySha.set(commit.sha, {
+            sha: commit.sha,
+            message: commit.commit?.message || 'Commit message unavailable',
+            timestamp: commit.commit?.committer?.date || commit.commit?.author?.date || null,
+            author: { name: commit.commit?.author?.name || commit.author?.login || 'Unknown author', login: commit.author?.login || null },
+            htmlUrl: commit.html_url || null,
+            branches: [branch],
+          });
+        });
+    });
+  }
+
+  return [...commitsBySha.values()];
 }
 
 export async function getActiveSessionCommitActivity({ owner, repository, since, until, author, accessToken }) {
@@ -156,11 +217,10 @@ export async function getSessionCommitActivity({ owner, repository, since, until
   for (let index = 0; index < commitRefs.length; index += 8) {
     const batch = commitRefs.slice(index, index + 8);
     const details = await Promise.all(batch.map(({ sha }) => {
-      const detailUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits/${encodeURIComponent(sha)}`;
-      return fetchGitHubJson(detailUrl, accessToken);
+      return fetchGitHubJson(repositoryApiUrl(owner, repository, `/commits/${encodeURIComponent(sha)}`), accessToken);
     }));
 
-    commits.push(...details.map(({ payload }) => {
+    commits.push(...details.map(({ payload }, batchIndex) => {
       const commit = payload.commit || {};
       const files = Array.isArray(payload.files) ? payload.files.map((file) => ({
         filename: file.filename,
@@ -186,6 +246,7 @@ export async function getSessionCommitActivity({ owner, repository, since, until
         deletions: Number(payload.stats?.deletions) || 0,
         totalChanges: Number(payload.stats?.total) || 0,
         files,
+        branches: batch[batchIndex].branches,
       };
     }));
   }
@@ -195,7 +256,7 @@ export async function getSessionCommitActivity({ owner, repository, since, until
     source: 'github',
     activity: {
       commits: commits.length,
-      filesChanged: commits.reduce((total, commit) => total + commit.files.length, 0),
+      filesChanged: new Set(commits.flatMap((commit) => commit.files.map(({ filename }) => filename))).size,
       additions: commits.reduce((total, commit) => total + commit.additions, 0),
       deletions: commits.reduce((total, commit) => total + commit.deletions, 0),
     },

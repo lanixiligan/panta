@@ -19,6 +19,8 @@ A session represents a focused period of work on a single GitHub repository.
 3. While the session runs, Panta checks the repository for new commits every 30 seconds.
 4. When you end the session, Panta records the end time and retrieves the commits for the full session window, including files changed and lines added and deleted.
 
+Commits are collected from every branch that changed during the session, not only the default branch, so you don't declare a branch up front. Each commit records the branches GitHub found it on.
+
 Panta keeps two concepts separate:
 
 - **Session time** — the period of work declared by the developer.
@@ -38,30 +40,30 @@ Sessions run inside the Session Workspace (`/session-workspace`, labeled **Start
 
 ### Overview
 
-A dashboard with a greeting, the active session (when one is running), a shortcut to start a session, and recent sessions. The weekly totals and "week at a glance" chart currently use the example data in `src/dev-data/`, and the "Coding now" panel is a placeholder.
+A one-screen dashboard with a greeting, the active session (when one is running), a shortcut to start a session, and the five most recent sessions. **This week** shows the current Monday-to-Sunday totals (sessions, session time, commits, projects) and session time per day, computed from your recorded sessions only. **Online now** lists GitHub mutuals who currently have Panta open; presence does not reveal what they are working on.
 
 ### Session History
 
-A searchable list of completed sessions with repository, status, and sort filters. Each session has a detail page with its duration, GitHub activity totals, and commits (including author and changed files when available).
+A searchable list of completed sessions with repository, status, and sort filters. Each session has a detail page that fits the window on desktop. A summary card keeps the declared session time (duration, start, and end) separate from the GitHub activity recorded in that window (commits, lines, and the branches the commits landed on). The Commit Timeline plots when each commit landed and lists the commits, each linking to GitHub. Files touched lists every changed file with its line changes and a breakdown by file type; selecting a file filters the commits to the ones that touched it. **Check GitHub again** re-fetches the window and merges the result with the stored commits, which picks up commits pushed after the session ended without losing commits from branches deleted since. Recorded sessions can be deleted from their detail page.
 
 ### Projects
 
 A project is a GitHub repository that has become part of your Panta work history. Projects are derived from your completed sessions — a repository appears here only after you complete a session in it — and are grouped by GitHub repository ID.
 
-Each project card shows the total session time, a 14-day activity strip, the number of sessions and commits, and when you last worked in it. Projects can be sorted by last worked, total time, or number of sessions. A project's page shows its totals and the sessions recorded for it, each linking to its Session History entry.
+Each project card shows the total session time, a 14-day activity strip, the number of sessions and commits, and when you last worked in it. Projects can be sorted by last worked, total time, or number of sessions. A project's page shows its totals and the sessions recorded for it, each linking to its Session History entry. Example projects built from the example sessions in `src/dev-data/` are shown alongside your own, labeled as examples; **Include example projects** turns them off.
 
 ### Analytics
 
-Aggregated views of completed sessions over 7 days, 30 days, 90 days, or all time:
+Aggregated views of completed sessions over 7 days, 30 days, 90 days, or all time, each organized around a question:
 
-- session count, total time, project count, and commits
-- daily session time
-- time by project (repository)
-- session patterns: average, longest, and shortest session, and most active day
-- recorded GitHub activity: commits, files changed, and lines added and deleted
-- the latest completed sessions
+- **Summary** — session time, sessions, average session, and commits, each compared with the previous period of the same length (stated as a change, not graded).
+- **Session time** — per day, or per week for ranges longer than 45 days, with a tooltip for sessions and commits in each bar.
+- **Where your time went** — time per project with its share of the period; real projects link to their Projects page.
+- **When you work** — session time by weekday and hour of day, with a one-line summary of when most of it falls.
+- **How long your sessions run** — sessions grouped by length, with a link to the longest one.
+- **What GitHub recorded** — commits and lines added and deleted during sessions, and how many sessions had commits, had none, or have no recorded activity.
 
-Values that were never recorded are shown as unavailable rather than zero. Analytics includes the example sessions from `src/dev-data/` and marks the page when they are part of the totals.
+Values that were never recorded are shown as unavailable rather than zero. Analytics includes the example sessions from `src/dev-data/` by default; **Include example sessions** turns them off, and the page notes when they are part of the totals.
 
 ### Socials
 
@@ -118,8 +120,8 @@ Data routes used by the frontend:
 | Endpoint | Purpose |
 | --- | --- |
 | `GET /api/github/repositories` | Repositories the signed-in user can access through the app |
-| `GET /api/github/repos/:owner/:repo/active-session-commits` | Commits during an active session (polled every 30 seconds) |
-| `GET /api/github/repos/:owner/:repo/session-commits` | Final commits for a completed session, with file and line details |
+| `GET /api/github/repos/:owner/:repo/active-session-commits` | Commits during an active session across all branches (polled every 30 seconds) |
+| `GET /api/github/repos/:owner/:repo/session-commits` | Final commits for a completed session across all branches, with file, line, and branch details |
 | `POST /api/presence/heartbeat` | Marks the signed-in user as present (sent every 30 seconds) |
 | `GET /api/social/people-following` | GitHub mutuals with online/offline presence |
 
@@ -146,9 +148,9 @@ Panta does not use a database.
 
 ### Development Data
 
-`src/dev-data/` contains illustrative example data: four example repositories and five example sessions marked as examples (`source: 'placeholder'`). Their commits and activity totals are made up and were never retrieved from GitHub. They keep Overview, Session History, and Analytics populated during development and are labeled as examples wherever they appear. They are not used for Projects and are not a mock of the GitHub API.
+`src/dev-data/` contains illustrative example data: four example repositories and five example sessions marked as examples (`source: 'placeholder'`). Their commits and activity totals are made up and were never retrieved from GitHub. They keep Overview, Session History, Analytics, and Projects populated during development and are labeled as examples wherever they appear. Example projects are kept separate from real ones, so they never affect the project history shown when starting a session. They are not a mock of the GitHub API.
 
-The folder also contains the session list and summary helpers (`index.js`) and the analytics calculation (`sessionAnalytics.js`), which operate on both real and example sessions.
+The folder also contains the session list and summary helpers (`index.js`), which operate on both real and example sessions. The analytics calculation lives in `src/analytics/sessionAnalytics.js`.
 
 ## Project Structure
 
@@ -168,6 +170,8 @@ panta/
     ├── App.jsx               # Application state, routing, and page composition
     ├── routing.js            # Route table and path helpers
     ├── index.css             # Ordered stylesheet import manifest
+    ├── analytics/
+    │   └── sessionAnalytics.js   # Totals and breakdowns for Analytics and Projects
     ├── api/                  # Browser helpers for Panta's /api endpoints
     │   ├── auth.js
     │   ├── github.js
@@ -186,8 +190,7 @@ panta/
     ├── dev-data/
     │   ├── index.js
     │   ├── repositories.js
-    │   ├── sessions.js
-    │   └── sessionAnalytics.js
+    │   └── sessions.js
     └── pages/
         ├── Overview/
         │   ├── OverviewPage.jsx (+ .css)
@@ -339,7 +342,9 @@ Panta is under active development. In the current implementation:
 - Login sessions and presence are kept in server memory, so restarting the server signs everyone out.
 - The server runs as Vite middleware; there is no standalone production server.
 - Live polling retrieves commit messages and times only; file and line totals are retrieved when the session ends.
-- The Overview weekly totals and week chart, and the Profile development history, are not yet connected to real session history.
+- Commit queries cost one GitHub request per branch whose latest commit falls in the session window, plus a one-time lookup of each new branch head. Repositories with many active branches use more of the GitHub rate limit.
+- Sessions completed before branch detection was added have no branch information until you use **Check GitHub again** on their detail page.
+- The Profile development history is not yet connected to real session history.
 
 ## Name
 

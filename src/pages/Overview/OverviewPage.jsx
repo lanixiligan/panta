@@ -1,6 +1,6 @@
 import React from 'react';
 import ActiveSessionCard from '../../components/sessions/ActiveSessionCard.jsx';
-import { CodingNow, RecentSessions, SessionActivity, WeeklySummary } from './components/DashboardSections.jsx';
+import { OnlineNow, RecentSessions, WeeklySummary } from './components/DashboardSections.jsx';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -9,7 +9,7 @@ function greeting() {
   return 'Good evening';
 }
 
-export default function OverviewPage({ identity, identityStatus, identityError, onRetryIdentity, activeSession, now, isEndingSession, sessionEndingAt, onFinishSession, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, activityDays, onSelectSession }) {
+export default function OverviewPage({ identity, identityStatus, identityError, onRetryIdentity, activeSession, now, isEndingSession, sessionEndingAt, onFinishSession, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, mutuals, mutualsLoading, onSelectSession }) {
   if (identityStatus === 'loading') {
     return <section className="dashboard-loading" aria-label="Loading your dashboard"><div /><div /><div /></section>;
   }
@@ -40,12 +40,13 @@ export default function OverviewPage({ identity, identityStatus, identityError, 
 
       {activeSession && <ActiveSessionCard session={activeSession} now={now} onFinish={onFinishSession} isEnding={isEndingSession} endingAt={sessionEndingAt} />}
 
-      <RecentSessions sessions={recentSessions} onViewAll={onViewSessions} onSelectSession={onSelectSession} />
-      <div className="dashboard-lower-grid">
-        <WeeklySummary summary={weeklySummary} />
-        <CodingNow />
+      <div className="dashboard-grid">
+        <RecentSessions sessions={recentSessions} onViewAll={onViewSessions} onSelectSession={onSelectSession} />
+        <div className="dashboard-side">
+          <WeeklySummary summary={weeklySummary} />
+          <OnlineNow mutuals={mutuals} loading={mutualsLoading} />
+        </div>
       </div>
-      <SessionActivity days={activityDays} />
     </div>
   );
 }

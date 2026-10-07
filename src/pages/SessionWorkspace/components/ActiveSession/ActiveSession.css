@@ -1,0 +1,64 @@
+/* Active Session: the timer is the centerpiece; activity is the evidence. */
+.session-workspace-already-active { display: flex; flex-direction: column; gap: 26px; }
+
+.session-console-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "status status" "context timer"; align-items: end; gap: 18px 40px; padding: 26px 32px 30px; border: 1px solid #2f5c3f; border-radius: 14px; background: var(--workspace-surface); box-shadow: inset 0 2px 0 #39ff88b3; }
+.session-console-status { grid-area: status; display: inline-flex; align-items: center; gap: 9px; color: var(--workspace-accent); font: 11px 'DM Mono', monospace; letter-spacing: .14em; }
+.session-console-status i, .session-console-sync i { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 0 3px #39ff881f; animation: session-live-pulse 2.4s ease-in-out infinite; }
+@keyframes session-live-pulse { 50% { opacity: .45; } }
+
+.session-console-context { grid-area: context; min-width: 0; }
+.session-console-repo { margin: 0 0 10px; color: var(--workspace-secondary); font: 15px 'DM Mono', monospace; }
+.session-console-context h2 { max-width: 640px; margin: 0; color: var(--workspace-text); font-size: clamp(22px, 2.4vw, 28px); font-weight: 500; letter-spacing: -.03em; line-height: 1.2; }
+.session-console-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 16px; color: var(--workspace-muted); font-size: 13px; }
+.session-console-meta span:first-child:not(:only-child) { padding: 4px 8px; border: 1px solid var(--workspace-border); border-radius: 4px; color: var(--workspace-secondary); font: 11px 'DM Mono', monospace; }
+
+.session-console-timer { grid-area: timer; display: flex; align-items: flex-end; flex-direction: column; gap: 12px; text-align: right; }
+.session-console-time { color: var(--workspace-text); font: 400 clamp(52px, 6.6vw, 84px) 'DM Mono', monospace; letter-spacing: -.05em; line-height: .95; font-variant-numeric: tabular-nums; }
+.session-console-sync { display: inline-flex; align-items: center; gap: 8px; color: var(--workspace-secondary); font: 12px 'DM Mono', monospace; letter-spacing: .02em; }
+.session-console-sync[data-status='loading'] i, .session-console-sync[data-status='syncing'] i, .session-console-sync[data-status='ending'] i { background: #9baa9d; box-shadow: none; }
+.session-console-sync[data-status='error'] { color: #e0a99f; }
+.session-console-sync[data-status='error'] i { background: #e0a99f; box-shadow: none; animation: none; }
+
+/* Live activity — sits on the page */
+.session-console-activity { display: flex; min-width: 0; flex-direction: column; }
+.session-console-activity-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 0 2px 14px; border-bottom: 1px solid var(--workspace-divider); }
+.session-console-activity-heading h3 { margin: 6px 0 0; color: var(--workspace-text); font-size: 17px; font-weight: 500; letter-spacing: -.02em; }
+.session-console-count { color: var(--workspace-secondary); font-size: 13px; white-space: nowrap; }
+.session-console-count strong { margin-right: 4px; color: var(--workspace-text); font: 500 20px 'DM Mono', monospace; }
+.session-console-activity .session-commit-list-active { max-height: none; margin: 0; padding: 0; }
+.session-console-activity .session-commit-list li { padding: 14px 2px; border-top: 0; border-bottom: 1px solid var(--workspace-divider); }
+.session-console-activity .session-commit-list-active .session-commit-row-main { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "message time" "sha sha"; row-gap: 5px; }
+.session-console-activity .session-commit-row-main strong { color: var(--workspace-text); font-size: 14px; white-space: normal; }
+.session-console-activity .session-commit-row-main code { color: var(--workspace-muted); font-size: 11px; }
+.session-console-activity .session-commit-row-main time { color: var(--workspace-secondary); font-size: 12px; }
+.session-console-empty { display: flex; flex-direction: column; gap: 6px; padding: 22px 2px; border-bottom: 1px solid var(--workspace-divider); }
+.session-console-empty strong { color: var(--workspace-text); font-size: 14px; font-weight: 500; }
+.session-console-empty p { margin: 0; color: var(--workspace-muted); font-size: 13px; }
+.session-console-checked { min-height: 16px; margin: 10px 2px 0; color: var(--workspace-muted); font-size: 12px; }
+
+/* End Session stays available, but secondary to the timer and activity */
+.session-console-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-top: 18px; border-top: 1px solid var(--workspace-divider); }
+.session-console-actions .finish-session-button { margin-left: auto; }
+
+/* Desktop frame: activity fills the space and its list scrolls */
+@media (min-width: 681px) {
+  .session-workspace-already-active { min-height: 0; }
+  .session-console-hero, .session-console-actions { flex: 0 0 auto; }
+  .session-console-activity { min-height: 0; flex: 1 1 auto; }
+  .session-console-activity .session-commit-list-active { min-height: 0; flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #2f5d40 transparent; scrollbar-width: thin; }
+}
+@media (max-width: 760px) {
+  .session-console-hero { grid-template-columns: minmax(0, 1fr); grid-template-areas: "status" "timer" "context"; align-items: start; gap: 18px; padding: 22px; }
+  .session-console-timer { align-items: flex-start; text-align: left; }
+}
+@media (max-width: 520px) {
+  .session-workspace-already-active { gap: 22px; }
+  .session-console-hero { padding: 20px 18px; border-radius: 12px; }
+  .session-console-time { font-size: clamp(46px, 15vw, 60px); }
+  .session-console-repo { font-size: 13px; }
+  .session-console-actions { flex-direction: column; align-items: stretch; }
+  .session-console-actions .finish-session-button, .session-console-actions .continue-session-button { justify-content: center; margin-left: 0; min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .session-console-status i, .session-console-sync i { animation: none; }
+}

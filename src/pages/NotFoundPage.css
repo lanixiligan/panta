@@ -1,0 +1,94 @@
+.not-found-page {
+  position: relative;
+  min-height: calc(100vh - 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  overflow: hidden;
+}
+.not-found-content {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 100%);
+  text-align: center;
+}
+.not-found-background {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -54%);
+  font-size: clamp(13rem, 28vw, 24rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.08em;
+  color: rgba(57, 255, 136, 0.025);
+  user-select: none;
+  pointer-events: none;
+}
+.not-found-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent, #39ff88);
+}
+.not-found-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent, #39ff88);
+  box-shadow: 0 0 12px rgba(57, 255, 136, 0.35);
+}
+.not-found-content h1 {
+  margin: 0;
+  color: var(--primary-text, #e8fff1);
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.not-found-content p {
+  max-width: 420px;
+  margin: 1rem auto 1.75rem;
+  color: var(--secondary-text, #91b8a0);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.not-found-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 42px;
+  padding: 0 1rem 0 1.1rem;
+  border: 1px solid #21402d;
+  border-radius: 8px;
+  background: #101f16;
+  color: #e8fff1;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+.not-found-action span:last-child {
+  color: #39ff88;
+  font-size: 1rem;
+  transition: transform 160ms ease;
+}
+.not-found-action:hover {
+  border-color: #326044;
+  background: #15291d;
+  transform: translateY(-1px);
+}
+.not-found-action:hover span:last-child {
+  transform: translateX(3px);
+}
+.not-found-action:active {
+  transform: translateY(0);
+}

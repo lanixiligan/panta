@@ -1,0 +1,55 @@
+/* Session Workspace: one environment for Setup → Active → Recap. */
+.workspace-main:has(.session-workspace-page) {
+  background-color: var(--workspace-bg);
+  background-image: radial-gradient(circle, #21402d59 1px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+.session-workspace-page { display: flex; flex-direction: column; gap: 24px; }
+
+.session-workspace-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--workspace-divider); }
+.session-workspace-header .page-intro { margin: 0; }
+.session-workspace-header .page-intro h1 { margin: 0 0 6px; font-size: clamp(26px, 2.6vw, 32px); }
+
+/* Lifecycle track: done → current → upcoming */
+.session-phase-track { display: flex; flex: 0 0 auto; align-items: center; margin: 0; padding: 0; list-style: none; }
+.session-phase-track li { position: relative; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid transparent; border-radius: 999px; color: var(--workspace-muted); font: 11px 'DM Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+.session-phase-track li + li { margin-left: clamp(28px, 4vw, 52px); }
+.session-phase-track li + li::before { position: absolute; top: 50%; right: calc(100% + 4px); width: calc(clamp(28px, 4vw, 52px) - 8px); height: 1px; content: ''; background: var(--workspace-border); }
+.session-phase-track li[data-state='done'] + li::before, .session-phase-track li[data-state='current'] + li::before { background: #2f5d40; }
+.session-phase-marker { display: grid; width: 14px; height: 14px; flex: 0 0 auto; place-items: center; border: 1px solid #2c4a36; border-radius: 50%; color: var(--workspace-accent); font-size: 8px; line-height: 1; }
+.session-phase-track li[data-state='done'] { color: var(--workspace-secondary); }
+.session-phase-track li[data-state='done'] .session-phase-marker { border-color: #2f5d40; background: #16301f; }
+.session-phase-track li[data-state='current'] { border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-text); }
+.session-phase-track li[data-state='current'] .session-phase-marker { border-color: var(--workspace-accent); background: var(--workspace-accent); box-shadow: 0 0 0 3px #39ff881f; }
+
+/* Shared primary action inside the workspace */
+.session-workspace-page .session-workspace-button { width: 100%; min-height: 44px; font-size: 14px; }
+.session-workspace-page .session-workspace-button:not(:disabled) { border-color: var(--workspace-accent); background: var(--workspace-accent); color: #04230f; }
+.session-workspace-page .session-workspace-button:not(:disabled):hover { border-color: #6dffa6; background: #6dffa6; }
+
+@media (max-width: 760px) {
+  .session-workspace-header { align-items: flex-start; flex-direction: column; gap: 16px; }
+}
+@media (max-width: 520px) {
+  .session-workspace-page { gap: 18px; }
+  .session-workspace-header { padding-bottom: 16px; }
+  .session-phase-track li { padding: 5px 8px; font-size: 10px; }
+  .session-phase-track li + li { margin-left: 22px; }
+  .session-phase-track li + li::before { width: 14px; }
+}
+
+/* Desktop: the workspace is a fixed frame; only lists scroll inside it. */
+@media (min-width: 681px) {
+  .workspace-main:has(.session-workspace-page) { height: 100dvh; overflow: hidden; }
+  .workspace-main:has(.session-workspace-page) .app-main { display: flex; min-height: 0; flex: 1 1 auto; padding-bottom: 20px; }
+  .session-workspace-page { width: 100%; min-height: 0; flex: 1 1 auto; }
+  .session-workspace-header { flex: 0 0 auto; }
+  .session-workspace-page > .session-complete-card,
+  .session-workspace-page > .session-workspace-already-active,
+  .session-workspace-page > .session-workspace-layout { min-height: 0; flex: 1 1 auto; }
+}
+/* Short desktop windows: let the page scroll instead of squeezing the frame. */
+@media (max-height: 620px) and (min-width: 681px) {
+  .workspace-main:has(.session-workspace-page) { overflow-y: auto; }
+  .workspace-main:has(.session-workspace-page) .app-main { min-height: 620px; flex: 0 0 auto; }
+}

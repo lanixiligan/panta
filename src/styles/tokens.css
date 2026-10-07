@@ -1,0 +1,14 @@
+:root {
+  --line: #e4e8ed;
+  --workspace-bg: #07110C;
+  --workspace-sidebar: #0B1510;
+  --workspace-surface: #101F16;
+  --workspace-raised: #15291D;
+  --workspace-border: #21402D;
+  --workspace-divider: #183022;
+  --workspace-text: #E8FFF1;
+  --workspace-secondary: #91B8A0;
+  --workspace-muted: #5F796A;
+  --workspace-accent: #39FF88;
+}
+:root { --accent: #39FF88; }

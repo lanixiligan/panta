@@ -1,7 +1,7 @@
 import React from 'react';
 import SessionCommitList from './SessionCommitList.jsx';
 
-function formatElapsed(milliseconds) {
+export function formatElapsed(milliseconds) {
   const seconds = Math.max(0, Math.floor(milliseconds / 1000));
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -9,7 +9,7 @@ function formatElapsed(milliseconds) {
   return [hours, minutes, remainingSeconds].map((value) => String(value).padStart(2, '0')).join(':');
 }
 
-function relativeTime(value, now) {
+export function relativeTime(value, now) {
   if (!value) return '';
   const seconds = Math.round((new Date(value).getTime() - now) / 1000);
   const formatter = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });

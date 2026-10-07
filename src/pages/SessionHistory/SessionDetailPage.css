@@ -1,0 +1,6 @@
+.session-activity-state { display: flex; align-items: center; gap: 6px; color: var(--workspace-secondary); font-size: 12px; }
+.session-activity-state .dashboard-spinner { margin: 0 2px 0 0; }
+.session-activity-empty { color: var(--workspace-secondary); font-size: 13px; }
+.session-commit-section { border-color: var(--workspace-border); background: var(--workspace-surface); padding: 16px 18px; }
+.session-commit-section .dashboard-section-heading h2 { color: var(--workspace-text); font-size: 16px; font-weight: 500; }
+.session-commit-section { border-radius: 8px; }

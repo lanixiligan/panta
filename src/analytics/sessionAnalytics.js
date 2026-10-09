@@ -54,18 +54,6 @@ function completedSessionRecords(sessions, now) {
   });
 }
 
-// Splits a session at every hour boundary so time is attributed to the hours it actually covered.
-function forEachHourSegment(record, callback) {
-  let cursor = record.startedAt;
-  while (cursor < record.endedAt) {
-    const hourStart = new Date(cursor);
-    hourStart.setMinutes(0, 0, 0);
-    const segmentEnd = Math.min(record.endedAt, hourStart.getTime() + HOUR_MS);
-    callback(new Date(cursor), segmentEnd - cursor);
-    cursor = segmentEnd;
-  }
-}
-
 function sumAvailable(records, getValue) {
   let total = 0;
   let sessionsWithValue = 0;
@@ -83,6 +71,8 @@ function summarize(records) {
   return {
     sessionCount: records.length,
     totalDurationMs,
+    // Days with at least one session, by the local day each session started.
+    activeDays: new Set(records.map(({ startedAt }) => dayKey(startedAt))).size,
     averageDurationMs: records.length ? totalDurationMs / records.length : null,
     commits: sumAvailable(records, (session) => session.activity?.commits).total,
   };
@@ -94,13 +84,11 @@ function buildTimeline(records, chartStart, chartEnd) {
     days.set(dayKey(date), { start: new Date(date), durationMs: 0, sessionCount: 0, commits: 0, hasCommits: false });
   }
 
+  // A session counts entirely toward the day it started, matching the calendar and Projects.
   records.forEach((record) => {
-    forEachHourSegment(record, (segmentStart, durationMs) => {
-      const day = days.get(dayKey(segmentStart));
-      if (day) day.durationMs += durationMs;
-    });
     const startDay = days.get(dayKey(record.startedAt));
     if (startDay) {
+      startDay.durationMs += record.durationMs;
       startDay.sessionCount += 1;
       if (record.commits !== null) {
         startDay.commits += record.commits;
@@ -143,17 +131,8 @@ export function calculateSessionAnalytics(sessions = [], range = '30D', referenc
     .filter(({ startedAt }) => !rangeDays || startedAt >= rangeStart.getTime())
     .sort((left, right) => right.endedAt - left.endedAt);
 
-  // The previous period has the same length and ends where the selected one starts.
-  let previous = null;
-  if (rangeDays) {
-    const previousStart = new Date(rangeStart);
-    previousStart.setDate(previousStart.getDate() - rangeDays);
-    previous = summarize(allCompleted.filter(({ startedAt }) => startedAt >= previousStart.getTime() && startedAt < rangeStart.getTime()));
-  }
-
   const current = summarize(records);
   const projects = new Map();
-  const weekdayHours = Array.from({ length: 7 }, () => Array(24).fill(0));
   const lengthBuckets = SESSION_LENGTH_BUCKETS.map(({ label }) => ({ label, count: 0 }));
 
   records.forEach((record) => {
@@ -166,10 +145,6 @@ export function calculateSessionAnalytics(sessions = [], range = '30D', referenc
       if (record.commits !== null) project.commits = (project.commits || 0) + record.commits;
       projects.set(fullName, project);
     }
-
-    forEachHourSegment(record, (segmentStart, durationMs) => {
-      weekdayHours[(segmentStart.getDay() + 6) % 7][segmentStart.getHours()] += durationMs;
-    });
 
     lengthBuckets[SESSION_LENGTH_BUCKETS.findIndex(({ maxMs }) => record.durationMs < maxMs)].count += 1;
   });
@@ -184,18 +159,18 @@ export function calculateSessionAnalytics(sessions = [], range = '30D', referenc
   return {
     range,
     rangeDays: rangeDays || null,
+    // Calendar days the period covers, today included; for All time, since the first session.
+    periodDays: Math.round((startOfLocalDay(safeNow) - chartStart) / 86_400_000) + 1,
     rangeStart: chartStart,
     rangeEnd: new Date(safeNow),
     totalCompletedSessions: allCompleted.length,
     sessions: records.map(({ session, startedAt, endedAt, durationMs }) => ({ session, startedAt, endedAt, durationMs })),
     ...current,
-    previous,
     projectCount: projects.size,
     projects: [...projects.values()]
       .map((project) => ({ ...project, share: current.totalDurationMs ? project.durationMs / current.totalDurationMs : 0 }))
       .sort((left, right) => right.durationMs - left.durationMs),
     timeline: buildTimeline(records, chartStart, startOfLocalDay(safeNow)),
-    weekdayHours,
     lengthBuckets,
     longestSession: longest ? { session: longest.session, durationMs: longest.durationMs } : null,
     activity: {

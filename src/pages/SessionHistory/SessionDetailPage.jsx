@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { getSessionDurationMinutes } from '../../dev-data/index.js';
+import { getSessionDurationMinutes } from '../../sessions/sessionHelpers.js';
 import { orderCommits } from '../../components/sessions/SessionCommitList.jsx';
+import { followRouteLink, routePaths } from '../../routing.js';
 
 const FILE_STATUS_LETTERS = { added: 'A', modified: 'M', removed: 'D', renamed: 'R', copied: 'C', changed: 'M' };
 const FILE_TYPE_LIMIT = 5;
@@ -174,7 +175,7 @@ function SessionSummary({ session, isPlaceholder, branches, onRetry }) {
             <span>{branches.length === 1 ? 'Branch' : 'Branches'}</span>
             <ul>
               {branches.map(({ name, count }) => (
-                <li key={name}><code>{name}</code>{branches.length > 1 && <small>{count}</small>}</li>
+                <li key={name}><code translate="no">{name}</code>{branches.length > 1 && <small>{count}</small>}</li>
               ))}
             </ul>
           </div>
@@ -231,7 +232,7 @@ function CommitTimeline({ session, commits, matches }) {
             <span className={`session-timeline-tooltip ${align}`} role="tooltip">
               <span className="session-timeline-tooltip-meta">
                 <time dateTime={commit.timestamp}>{formatTime(commit.timestamp)}</time>
-                <code>{commit.sha.slice(0, 7)}</code>
+                <code translate="no">{commit.sha.slice(0, 7)}</code>
                 {Array.isArray(commit.files) && <span><span className="history-additions">+{commit.additions ?? 0}</span> <span className="history-deletions">−{commit.deletions ?? 0}</span></span>}
               </span>
               <span className="session-timeline-tooltip-message">{message}</span>
@@ -239,8 +240,8 @@ function CommitTimeline({ session, commits, matches }) {
           );
           const label = `${formatTime(commit.timestamp)}: ${message}`;
           return commit.htmlUrl
-            ? <a className={className} key={commit.sha} style={{ left: `${offset * 100}%` }} href={commit.htmlUrl} target="_blank" rel="noreferrer" aria-label={`${label} (opens on GitHub)`}>{tooltip}</a>
-            : <span className={className} key={commit.sha} style={{ left: `${offset * 100}%` }} tabIndex={0} aria-label={label}>{tooltip}</span>;
+            ? <a className={className} key={commit.sha} style={{ left: `${offset * 100}%` }} href={commit.htmlUrl} target="_blank" rel="noreferrer" aria-label={`${label} (opens on GitHub)`}><span className="session-timeline-dot" />{tooltip}</a>
+            : <span className={className} key={commit.sha} style={{ left: `${offset * 100}%` }} tabIndex={0} role="img" aria-label={label}><span className="session-timeline-dot" />{tooltip}</span>;
         })}
       </div>
       <div className="session-timeline-labels">
@@ -261,10 +262,10 @@ function CommitRows({ commits, primaryBranch }) {
         const otherBranches = commit.branches?.length && !commit.branches.includes(primaryBranch) ? commit.branches : [];
         const content = (
           <>
-            <code className="session-commit-rows-sha">{commit.sha?.slice(0, 7) || 'Unknown'}</code>
+            <code className="session-commit-rows-sha" translate="no">{commit.sha?.slice(0, 7) || 'Unknown'}</code>
             <span className="session-commit-rows-message">{message}</span>
             <span className="session-commit-rows-branches">
-              {otherBranches.map((branch) => <code key={branch}>{branch}</code>)}
+              {otherBranches.map((branch) => <code key={branch} translate="no">{branch}</code>)}
             </span>
             <span className="session-commit-rows-lines">
               {hasLines && <><span className="history-additions">+{commit.additions ?? 0}</span> <span className="history-deletions">−{commit.deletions ?? 0}</span></>}
@@ -299,7 +300,7 @@ function CommitTimelinePanel({ session, commits, primaryBranch, compareUrl, sele
       <CommitTimeline session={session} commits={commits} matches={touchesFile} />
       {selectedFile && (
         <div className="session-detail-filter" role="status">
-          <span>Commits touching <code>{selectedFile.slice(selectedFile.lastIndexOf('/') + 1)}</code></span>
+          <span>Commits touching <code translate="no">{selectedFile.slice(selectedFile.lastIndexOf('/') + 1)}</code></span>
           <button type="button" onClick={onClearFile}>Clear</button>
         </div>
       )}
@@ -335,7 +336,7 @@ function FilesPanel({ files, selectedFile, onSelectFile }) {
                 onClick={() => onSelectFile(isSelected ? null : file.filename)}
               >
                 <span className={`session-file-status ${file.status}`} title={file.status}>{FILE_STATUS_LETTERS[file.status] || '·'}</span>
-                <span className="session-file-path">
+                <span className="session-file-path" translate="no">
                   {slash >= 0 && <span>{file.filename.slice(0, slash + 1)}</span>}{file.filename.slice(slash + 1)}
                 </span>
                 <span className="session-file-lines"><span className="history-additions">+{file.additions}</span> <span className="history-deletions">−{file.deletions}</span></span>
@@ -370,19 +371,29 @@ function FilesPanel({ files, selectedFile, onSelectFile }) {
 }
 
 export default function SessionDetailPage({ session, onBack, onRetryActivity, onDelete }) {
-  const [selectedFile, setSelectedFile] = useState(null);
+  // The file filter lives in the URL (?file=), so a reload or a shared link keeps it.
+  const [selectedFile, setSelectedFileState] = useState(() => new URLSearchParams(window.location.search).get('file'));
+  function setSelectedFile(filename) {
+    setSelectedFileState(filename);
+    const params = new URLSearchParams(window.location.search);
+    if (filename) params.set('file', filename);
+    else params.delete('file');
+    const search = params.toString();
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}${search ? `?${search}` : ''}`);
+  }
   const isPlaceholder = session.source === 'placeholder';
   const activityReady = isPlaceholder || session.activity;
   const commits = activityReady ? session.commits || [] : [];
   const branches = getBranchSummary(commits);
   const files = getFilesTouched(commits);
+  const activeFile = files.some(({ filename }) => filename === selectedFile) ? selectedFile : null;
   const compareUrl = isPlaceholder ? null : getCompareUrl(session, commits, branches);
   const layoutClass = [files.length ? '' : 'no-files', commits.length ? '' : 'no-commits'].filter(Boolean).join(' ');
 
   return (
     <article className="session-detail-page">
       <div className="session-detail-topbar">
-        <button className="back-button" type="button" onClick={onBack}>← Session History</button>
+        <a className="back-button" href={routePaths['Session History']} onClick={(event) => followRouteLink(event, () => onBack())}>← Session History</a>
         {!isPlaceholder && onDelete && <DeleteSession onDelete={() => onDelete(session.id)} />}
       </div>
 
@@ -404,11 +415,11 @@ export default function SessionDetailPage({ session, onBack, onRetryActivity, on
             commits={commits}
             primaryBranch={branches[0]?.name}
             compareUrl={compareUrl}
-            selectedFile={selectedFile}
+            selectedFile={activeFile}
             onClearFile={() => setSelectedFile(null)}
           />
         )}
-        {files.length > 0 && <FilesPanel files={files} selectedFile={selectedFile} onSelectFile={setSelectedFile} />}
+        {files.length > 0 && <FilesPanel files={files} selectedFile={activeFile} onSelectFile={setSelectedFile} />}
       </div>
 
       {!isPlaceholder && (

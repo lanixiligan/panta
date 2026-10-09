@@ -4,7 +4,6 @@ export const routePaths = {
   'Session History': '/session-history',
   Projects: '/projects',
   Analytics: '/analytics',
-  Profile: '/profile',
   Settings: '/settings',
 };
 
@@ -15,6 +14,22 @@ export function sessionDetailPath(sessionId) {
 export function projectDetailPath(fullName) {
   const [owner = '', repo = ''] = fullName.split('/');
   return `/projects/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
+}
+
+// Page state that belongs in the URL (filters, ranges, toggles). A value of null or the page's default removes the key.
+export function readSearchParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+export function updateSearchParams(updates) {
+  const params = new URLSearchParams(window.location.search);
+  Object.entries(updates).forEach(([key, value]) => {
+    if (value === null || value === undefined || value === '') params.delete(key);
+    else params.set(key, String(value));
+  });
+  const search = params.toString();
+  const url = `${window.location.pathname}${search ? `?${search}` : ''}`;
+  if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(window.history.state, '', url);
 }
 
 export function followRouteLink(event, navigate) {
@@ -50,7 +65,6 @@ export function resolveRoute(pathname) {
     }
   }
   if (normalizedPath === '/analytics') return { view: 'Analytics' };
-  if (normalizedPath === '/profile') return { view: 'Profile' };
   if (normalizedPath === '/settings') return { view: 'Settings' };
   return { view: 'Not Found' };
 }

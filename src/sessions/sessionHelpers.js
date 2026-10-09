@@ -1,16 +1,6 @@
-import { dummyRepositories } from './repositories.js';
-import { dummySessions } from './sessions.js';
 import { sessionDetailPath } from '../routing.js';
 
-export { dummyRepositories, dummySessions };
-
-export function getSessions() {
-  return [...dummySessions].sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
-}
-
-export function getSessionById(id) {
-  return dummySessions.find((session) => session.id === id) || null;
-}
+// Helpers for session records. They work the same on real sessions and on the example sessions in src/dummy-data/.
 
 export function getSessionDurationMinutes(session) {
   const startedAt = new Date(session.startedAt).getTime();
@@ -19,7 +9,7 @@ export function getSessionDurationMinutes(session) {
   return Math.floor((endedAt - startedAt) / 60_000);
 }
 
-export function getSessionListItems(sessions = getSessions()) {
+export function getSessionListItems(sessions = []) {
   return sessions.filter((session) => session && typeof session === 'object').map((session) => {
     const repository = session.repository || {};
     return {
@@ -82,13 +72,7 @@ export function getWeeklySummary(sessions = [], referenceDate = new Date()) {
     // Commits are unavailable, not zero, when no session this week has recorded activity.
     commitCount: withActivity.length ? withActivity.reduce((sum, session) => sum + session.activity.commits, 0) : null,
     repositoryCount: new Set(thisWeek.map((session) => session.repository?.fullName || session.repository?.name)).size,
+    includesExamples: thisWeek.some((session) => session.source === 'placeholder'),
     days,
   };
-}
-
-export function getProjectsWithSessions() {
-  return dummyRepositories.map((repository) => {
-    const sessions = getSessions().filter((session) => session.repository.fullName === repository.fullName);
-    return { ...repository, sessions: getSessionListItems(sessions), sessionCount: sessions.length };
-  });
 }

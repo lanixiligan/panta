@@ -16,6 +16,7 @@ function SettingsSection({ label, children }) {
 export default function SettingsPage({ identity, onLogout }) {
   const [disconnecting, setDisconnecting] = useState(false);
   const [disconnectError, setDisconnectError] = useState('');
+  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
   const username = identity?.username || '';
   const displayName = identity?.displayName?.trim() || username;
   const profileUrl = identity?.profileUrl || `https://github.com/${encodeURIComponent(username)}`;
@@ -44,7 +45,7 @@ export default function SettingsPage({ identity, onLogout }) {
         <SettingsSection label="Account">
           <div className="settings-account-row">
             {identity?.avatarUrl
-              ? <img className="settings-avatar" src={identity.avatarUrl} alt="" />
+              ? <img className="settings-avatar" src={identity.avatarUrl} alt="" width="55" height="55" />
               : <span className="settings-avatar settings-avatar-fallback" aria-hidden="true">{username.charAt(0).toUpperCase()}</span>}
             <div className="settings-account-copy">
               <strong>{displayName}</strong>
@@ -78,9 +79,17 @@ export default function SettingsPage({ identity, onLogout }) {
               <strong>Disconnect GitHub</strong>
               <span>Disconnect your GitHub account from Panta.</span>
             </div>
-            <button className="settings-disconnect-button" type="button" onClick={disconnectGitHub} disabled={disconnecting}>
-              {disconnecting ? 'Disconnecting…' : 'Disconnect'}
-            </button>
+            {confirmingDisconnect ? (
+              <div className="settings-disconnect-confirm" role="group" aria-label="Confirm disconnecting GitHub">
+                <span>This signs you out of Panta.</span>
+                <button className="settings-disconnect-button is-danger" type="button" onClick={disconnectGitHub} disabled={disconnecting}>
+                  {disconnecting ? 'Disconnecting…' : 'Disconnect GitHub'}
+                </button>
+                <button className="settings-cancel-button" type="button" onClick={() => setConfirmingDisconnect(false)} disabled={disconnecting}>Cancel</button>
+              </div>
+            ) : (
+              <button className="settings-disconnect-button" type="button" onClick={() => setConfirmingDisconnect(true)}>Disconnect</button>
+            )}
             {disconnectError && <p className="settings-error" role="alert">{disconnectError}</p>}
           </div>
         </SettingsSection>

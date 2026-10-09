@@ -92,3 +92,6 @@
 .not-found-action:active {
   transform: translateY(0);
 }
+
+.not-found-action { text-decoration: none; }
+.not-found-action:focus-visible { outline: 2px solid #39ff8899; outline-offset: 3px; }

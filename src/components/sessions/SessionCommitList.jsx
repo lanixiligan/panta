@@ -32,7 +32,7 @@ export default function SessionCommitList({ commits = [], mode = 'recap', timest
       {orderCommits(commits, order).map((commit) => (
         <li key={commit.sha}>
           <div className="session-commit-row-main">
-            <code>{commit.sha?.slice(0, 7) || 'Unknown SHA'}</code>
+            <code translate="no">{commit.sha?.slice(0, 7) || 'Unknown SHA'}</code>
             <strong>
               {commit.htmlUrl
                 ? <a href={commit.htmlUrl} target="_blank" rel="noreferrer">{commit.message?.split('\n')[0] || 'Commit message unavailable'}</a>

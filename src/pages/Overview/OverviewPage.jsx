@@ -1,6 +1,7 @@
 import React from 'react';
 import ActiveSessionCard from '../../components/sessions/ActiveSessionCard.jsx';
-import { OnlineNow, RecentSessions, WeeklySummary } from './components/DashboardSections.jsx';
+import { followRouteLink, routePaths } from '../../routing.js';
+import { RecentSessions, WeeklySummary } from './components/DashboardSections.jsx';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -9,7 +10,7 @@ function greeting() {
   return 'Good evening';
 }
 
-export default function OverviewPage({ identity, identityStatus, identityError, onRetryIdentity, activeSession, now, isEndingSession, sessionEndingAt, onFinishSession, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, mutuals, mutualsLoading, onSelectSession }) {
+export default function OverviewPage({ identity, identityStatus, identityError, onRetryIdentity, activeSession, now, isEndingSession, sessionEndingAt, onFinishSession, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, onSelectSession }) {
   if (identityStatus === 'loading') {
     return <section className="dashboard-loading" aria-label="Loading your dashboard"><div /><div /><div /></section>;
   }
@@ -35,17 +36,14 @@ export default function OverviewPage({ identity, identityStatus, identityError, 
           <h1>{greeting()}, {name}.</h1>
           <p>What are we getting together today?</p>
         </div>
-        {!activeSession && <button className="session-workspace-shortcut" type="button" onClick={onNavigateToStart}>Start a session <span aria-hidden="true">→</span></button>}
+        {!activeSession && <a className="session-workspace-shortcut" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, () => onNavigateToStart())}>Start a session <span aria-hidden="true">→</span></a>}
       </section>
 
       {activeSession && <ActiveSessionCard session={activeSession} now={now} onFinish={onFinishSession} isEnding={isEndingSession} endingAt={sessionEndingAt} />}
 
       <div className="dashboard-grid">
         <RecentSessions sessions={recentSessions} onViewAll={onViewSessions} onSelectSession={onSelectSession} />
-        <div className="dashboard-side">
-          <WeeklySummary summary={weeklySummary} />
-          <OnlineNow mutuals={mutuals} loading={mutualsLoading} />
-        </div>
+        <WeeklySummary summary={weeklySummary} />
       </div>
     </div>
   );

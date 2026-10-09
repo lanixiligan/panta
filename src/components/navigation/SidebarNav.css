@@ -21,6 +21,7 @@
 .sidebar-nav-item.active::before { position: absolute; top: 8px; bottom: 8px; border-radius: 0 2px 2px 0; content: ''; left: -17px; width: 2px; background: var(--workspace-accent); }
 .sidebar-nav-icon { width: 17px; text-align: center; color: #708474; font-size: 15px; }
 .sidebar-live-session { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; width: 100%; margin-top: 19px; padding: 12px; border: 1px solid #245238; border-radius: 8px; background: #102219; color: var(--workspace-text); text-align: left; cursor: pointer; }
+.sidebar-live-session { color: inherit; text-decoration: none; }
 .live-session-heading { display: flex; align-items: center; gap: 6px; color: var(--workspace-accent); font: 11px 'DM Mono', monospace; letter-spacing: .08em; }
 .live-session-heading i { width: 6px; height: 6px; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 8px #39ff8870; }
 .live-session-heading span { margin-left: auto; color: var(--workspace-muted); font-size: 9px; letter-spacing: .04em; }

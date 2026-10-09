@@ -19,39 +19,32 @@
 .recent-session-commits { color: var(--workspace-muted); font: 11px 'DM Mono', monospace; white-space: nowrap; }
 .recent-session-duration { color: var(--workspace-secondary); font: 12px 'DM Mono', monospace; text-align: right; white-space: nowrap; }
 
-/* This week */
-.weekly-section { padding: 18px 20px; }
-.weekly-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 18px; }
-.weekly-metric { display: flex; min-width: 0; flex-direction: column; gap: 4px; padding: 2px 10px; border-left: 1px solid var(--workspace-divider); }
-.weekly-metric:first-child { padding-left: 0; border-left: 0; }
-.weekly-metric strong { overflow: hidden; color: #d6e6d9; font: 20px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
+/* Recent sessions on the left; this week's totals and daily chart stacked on the right. Both columns share top and bottom edges. */
+.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr); gap: 14px; }
+.dashboard-side { display: flex; min-width: 0; flex-direction: column; gap: 14px; }
+.weekly-section { display: flex; flex-direction: column; padding: 18px 20px; }
+.weekly-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.weekly-metric { display: flex; min-width: 0; flex-direction: column; gap: 5px; padding: 12px 0 12px 16px; border-left: 1px solid var(--workspace-divider); }
+.weekly-metric:nth-child(odd) { padding-left: 0; border-left: 0; }
+.weekly-metric:nth-child(-n + 2) { padding-top: 2px; }
+.weekly-metric:nth-child(n + 3) { border-top: 1px solid var(--workspace-divider); padding-bottom: 0; }
+.weekly-metric strong { overflow: hidden; color: #d6e6d9; font: 22px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
 .weekly-metric span { color: var(--workspace-secondary); font-size: 11px; }
-.session-activity-chart { display: flex; height: 92px; align-items: stretch; gap: 10px; }
+.weekly-days { flex: 1; }
+.session-activity-chart { display: flex; min-height: 96px; flex: 1; align-items: stretch; gap: 8px; }
 .activity-day { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 6px; color: #78857b; font: 10px 'DM Mono', monospace; }
-.activity-bar-track { display: flex; width: min(100%, 30px); flex: 1; align-items: flex-end; overflow: hidden; border-radius: 4px; background: #19211b; }
+.activity-bar-track { display: flex; width: min(100%, 28px); flex: 1; align-items: flex-end; overflow: hidden; border-radius: 4px; background: #19211b; }
 .activity-bar-track i { width: 100%; border-radius: 3px 3px 0 0; background: #4e9060; }
 .activity-day.today { color: var(--workspace-accent); }
 .activity-day.today .activity-bar-track i { background: var(--workspace-accent); }
 .activity-day.future .activity-bar-track { background: transparent; box-shadow: inset 0 0 0 1px #19211b; }
 .activity-day.future { color: #4d6155; }
 
-/* Online now */
-.online-now-section { flex: 1; padding: 18px 20px; }
-.online-now-list { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
-.online-now-list a { display: flex; align-items: center; gap: 10px; margin: 0 -8px; padding: 6px 8px; border-radius: 6px; color: #d7e8da; font-size: 13px; text-decoration: none; }
-.online-now-list a:hover { background: var(--workspace-raised); }
-.online-now-list img, .online-now-fallback { width: 24px; height: 24px; flex: 0 0 auto; border-radius: 50%; }
-.online-now-fallback { display: grid; place-items: center; background: var(--workspace-raised); color: var(--workspace-secondary); font-size: 11px; }
-.online-now-list a > span:not(.online-now-fallback) { overflow: hidden; flex: 1; text-overflow: ellipsis; white-space: nowrap; }
-.online-now-list i { width: 7px; height: 7px; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 6px #39ff8866; }
-.presence-empty { display: flex; align-items: flex-start; gap: 9px; }
-.presence-dot { width: 6px; height: 6px; flex: 0 0 auto; margin-top: 5px; border-radius: 50%; background: #52685a; }
-.presence-empty p { margin: 0; color: #78857b; font-size: 12px; line-height: 1.6; }
-
+@media (max-width: 900px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
 @media (max-width: 680px) {
   .recent-session-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
   .recent-session-commits { display: none; }
-  .weekly-metric { padding: 2px 6px; }
-  .weekly-metric strong { font-size: 16px; }
-  .weekly-metric span { font-size: 10px; }
+  .weekly-metric strong { font-size: 18px; }
 }

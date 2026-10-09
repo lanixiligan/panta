@@ -12,13 +12,14 @@
 .analytics-time-range button:focus-visible { outline: 2px solid #8bd69d; outline-offset: 2px; }
 
 /* Summary */
-.analytics-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--workspace-border); border-radius: 8px; background: var(--workspace-surface); }
+.analytics-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--workspace-border); border-radius: 8px; background: var(--workspace-surface); }
 .analytics-summary-metric { display: flex; min-width: 0; flex-direction: column; gap: 7px; padding: 16px 20px; }
 .analytics-summary-metric + .analytics-summary-metric { border-left: 1px solid var(--workspace-divider); }
 .analytics-summary-label { color: var(--workspace-secondary); font-size: 12px; }
 .analytics-summary-metric strong { overflow: hidden; color: var(--workspace-text); font: 500 28px/1 'DM Mono', monospace; letter-spacing: -.03em; text-overflow: ellipsis; white-space: nowrap; }
-.analytics-comparison { color: var(--workspace-muted); font-size: 11px; line-height: 1.4; }
-.analytics-comparison span { color: var(--workspace-secondary); }
+.analytics-summary-metric strong small { margin-left: 8px; color: var(--workspace-secondary); font: 400 12px 'DM Sans', sans-serif; letter-spacing: 0; }
+.analytics-project-row.is-others .analytics-project-name strong { color: var(--workspace-secondary); font-family: 'DM Sans', sans-serif; font-weight: 400; }
+.analytics-project-row.is-others .analytics-project-track i { background: #2a4a36; }
 
 /* Shared section frame */
 .analytics-section { display: flex; min-width: 0; flex-direction: column; gap: 14px; padding: 16px 20px 18px; border: 1px solid var(--workspace-border); border-radius: 8px; background: var(--workspace-surface); }
@@ -37,6 +38,7 @@
 .analytics-bar-track { display: flex; flex: 1; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--workspace-border); border-radius: 3px 3px 0 0; transition: background-color .12s ease; }
 .analytics-bar-track i { display: block; width: 100%; max-width: 30px; min-height: 3px; border-radius: 3px 3px 0 0; background: #4e9060; transition: background-color .12s ease; }
 .analytics-bar:hover .analytics-bar-track, .analytics-bar:focus-visible .analytics-bar-track { background: #ffffff08; }
+.analytics-bar:focus-visible .analytics-bar-track { border-radius: 3px; box-shadow: 0 0 0 2px #39ff8899; }
 .analytics-bar:hover .analytics-bar-track i, .analytics-bar:focus-visible .analytics-bar-track i { background: var(--workspace-accent); }
 .analytics-bar-label { height: 12px; overflow: visible; color: #78877c; font: 10px 'DM Mono', monospace; text-align: center; white-space: nowrap; }
 .analytics-tooltip { position: absolute; z-index: 3; bottom: calc(100% - 4px); left: 50%; display: flex; width: max-content; max-width: 220px; flex-direction: column; gap: 3px; padding: 8px 10px; border: 1px solid var(--workspace-border); border-radius: 6px; background: var(--workspace-raised); box-shadow: 0 8px 24px #00000066; opacity: 0; pointer-events: none; transform: translate(-50%, 4px); transition: opacity .12s ease, transform .12s ease; visibility: hidden; }
@@ -63,51 +65,45 @@ a.analytics-project-row:focus-visible { outline: 2px solid #3d7a52; outline-offs
 .analytics-project-track i { display: block; height: 100%; border-radius: 3px; background: #4e9060; }
 a.analytics-project-row:hover .analytics-project-track i { background: var(--workspace-accent); }
 
-/* Weekday x hour heatmap */
-.analytics-heatmap { display: flex; flex-direction: column; gap: 3px; }
-.analytics-heatmap-row { display: grid; grid-template-columns: 30px repeat(24, minmax(0, 1fr)); align-items: center; gap: 3px; }
-.analytics-heatmap-day { color: var(--workspace-muted); font: 10px 'DM Mono', monospace; }
+/* Month calendar: one cell per date, shaded by that day's session time */
 .analytics-heatmap-cell { display: block; aspect-ratio: 1; min-height: 8px; border-radius: 2px; background: #19211b; }
-.analytics-heatmap-cell.level-1 { background: #1d4a30; }
-.analytics-heatmap-cell.level-2 { background: #23703f; }
-.analytics-heatmap-cell.level-3 { background: #2fa85a; }
-.analytics-heatmap-cell.level-4 { background: #39ff88; }
-.analytics-heatmap-axis span { overflow: visible; color: var(--workspace-muted); font: 9px 'DM Mono', monospace; white-space: nowrap; }
+.analytics-heatmap-cell.level-1, .analytics-calendar-day.level-1 { background: #1d4a30; }
+.analytics-heatmap-cell.level-2, .analytics-calendar-day.level-2 { background: #23703f; }
+.analytics-heatmap-cell.level-3, .analytics-calendar-day.level-3 { background: #2fa85a; }
+.analytics-heatmap-cell.level-4, .analytics-calendar-day.level-4 { background: #39ff88; }
+.analytics-calendar-nav { display: flex; align-items: center; gap: 4px; }
+.analytics-calendar-nav span { min-width: 112px; color: var(--workspace-text); font: 12px 'DM Mono', monospace; text-align: center; }
+.analytics-calendar-nav button { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--workspace-border); border-radius: 6px; background: var(--workspace-sidebar); color: var(--workspace-secondary); font-size: 16px; line-height: 1; cursor: pointer; }
+.analytics-calendar-nav button:hover:not(:disabled) { border-color: #3d7a52; color: var(--workspace-accent); }
+.analytics-calendar-nav button:disabled { opacity: .35; cursor: default; }
+.analytics-calendar-nav button:focus-visible { outline: 2px solid #3d7a52; outline-offset: 2px; }
+.analytics-calendar { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.analytics-calendar-weekday { padding-bottom: 4px; color: var(--workspace-muted); font: 10px 'DM Mono', monospace; text-align: center; }
+.analytics-calendar-day { display: flex; min-height: 38px; align-items: flex-start; justify-content: flex-end; padding: 5px 7px; border: 1px solid transparent; border-radius: 6px; background: #19211b; color: #8fa596; font: 11px 'DM Mono', monospace; cursor: default; transition: border-color .12s ease; }
+.analytics-calendar-day.level-3, .analytics-calendar-day.level-4 { color: #06140c; }
+.analytics-calendar-day.is-today { border-color: var(--workspace-accent); }
+.analytics-calendar-day.is-future { background: transparent; border-color: var(--workspace-divider); color: #4d6155; }
+.analytics-calendar-day.is-hovered:not(.is-future) { border-color: #e8fff1aa; }
+.analytics-calendar-day:focus-visible { outline: 2px solid #3d7a52; outline-offset: 2px; }
+.analytics-calendar-tooltip { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: 2px; min-width: 120px; max-width: 220px; padding: 7px 10px; border: 1px solid var(--workspace-border); border-radius: 8px; background: var(--workspace-raised); box-shadow: 0 6px 20px #00000066; pointer-events: none; transform: translate(-50%, -100%); }
+.analytics-calendar-tooltip span { color: var(--workspace-secondary); font-size: 11px; }
+.analytics-calendar-tooltip strong { color: var(--workspace-text); font: 400 13px 'DM Mono', monospace; }
+.analytics-calendar-tooltip small { overflow: hidden; color: var(--workspace-secondary); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .analytics-heatmap-legend { display: flex; align-items: center; justify-content: flex-end; gap: 3px; color: var(--workspace-muted); font: 10px 'DM Mono', monospace; }
 .analytics-heatmap-legend i { width: 10px; min-height: 10px; }
 .analytics-heatmap-legend span:first-child { margin-right: 4px; }
 .analytics-heatmap-legend span:last-child { margin-left: 4px; }
 
 /* Session lengths */
-.analytics-length-list { display: flex; flex-direction: column; gap: 9px; margin: 0; padding: 0; list-style: none; }
-.analytics-length-list li { display: grid; grid-template-columns: 74px minmax(0, 1fr) 86px; align-items: center; gap: 12px; }
-.analytics-length-label { color: var(--workspace-secondary); font: 11px 'DM Mono', monospace; }
-.analytics-length-track { height: 10px; overflow: hidden; border-radius: 3px; background: var(--workspace-divider); }
-.analytics-length-track i { display: block; height: 100%; border-radius: 3px; background: #4e9060; }
-.analytics-length-count { color: #d7e8da; font: 11px 'DM Mono', monospace; text-align: right; }
-.analytics-longest { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: 12px; margin: auto -8px 0; padding: 9px 8px; border-top: 1px solid var(--workspace-divider); border-radius: 0 0 6px 6px; color: inherit; text-decoration: none; }
-.analytics-longest:hover { background: var(--workspace-raised); }
-.analytics-longest > span:first-child { color: var(--workspace-muted); font-size: 11px; }
-.analytics-longest strong { overflow: hidden; color: #d7e8da; font-size: 13px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
-.analytics-longest-duration { color: var(--workspace-secondary); font: 12px 'DM Mono', monospace; white-space: nowrap; }
-.analytics-longest:hover .analytics-longest-duration { color: var(--workspace-accent); }
 
 /* GitHub activity */
-.analytics-github-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
-.analytics-github-metrics div { display: flex; min-width: 0; flex-direction: column; gap: 6px; padding: 0 14px; }
-.analytics-github-metrics div:first-child { padding-left: 0; }
-.analytics-github-metrics div + div { border-left: 1px solid var(--workspace-divider); }
-.analytics-github-metrics dt { color: var(--workspace-secondary); font-size: 11px; }
-.analytics-github-metrics dd { overflow: hidden; margin: 0; color: var(--workspace-text); font: 500 22px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
-.analytics-additions { color: #82c895 !important; }
-.analytics-deletions { color: #c58d81 !important; }
-.analytics-github-coverage { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
-.analytics-coverage-track { display: flex; height: 8px; gap: 2px; overflow: hidden; border-radius: 4px; }
-.analytics-coverage-track i { min-width: 0; }
-.analytics-coverage-track .with-commits { background: #4e9060; }
-.analytics-coverage-track .without-commits { background: #2a4a37; }
-.analytics-coverage-track .unrecorded { background: repeating-linear-gradient(45deg, #19211b 0 4px, #222c25 4px 8px); }
-.analytics-github-coverage p { margin: 0; color: var(--workspace-secondary); font-size: 12px; line-height: 1.55; }
+.analytics-github { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 6px 24px; padding: 14px 20px; }
+.analytics-github h2 { margin: 0; color: var(--workspace-text); font-size: 15px; font-weight: 500; }
+.analytics-github-figures { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin: 0; color: var(--workspace-secondary); font: 13px 'DM Mono', monospace; }
+.analytics-github-figures strong { color: var(--workspace-text); font-weight: 500; }
+.analytics-additions { color: #82c895; }
+.analytics-deletions { color: #c58d81; }
+.analytics-github-note { margin: 0 0 0 auto; color: #75867a; font-size: 12px; }
 
 .analytics-empty-state { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 28px; border: 1px solid var(--workspace-border); border-radius: 8px; background: var(--workspace-surface); }
 .analytics-empty-state h2 { margin: 0; color: var(--workspace-text); font-size: 16px; font-weight: 500; }
@@ -117,12 +113,12 @@ a.analytics-project-row:hover .analytics-project-track i { background: var(--wor
   .analytics-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 680px) {
-  .analytics-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .analytics-summary-metric:nth-child(3) { border-left: 0; }
-  .analytics-summary-metric:nth-child(n + 3) { border-top: 1px solid var(--workspace-divider); }
+  .analytics-summary { grid-template-columns: 1fr; }
+  .analytics-summary-metric + .analytics-summary-metric { border-top: 1px solid var(--workspace-divider); border-left: 0; }
   .analytics-summary-metric strong { font-size: 22px; }
   .analytics-controls, .analytics-time-range { width: 100%; }
   .analytics-time-range button { flex: 1; }
-  .analytics-heatmap-row { gap: 2px; }
-  .analytics-github-metrics dd { font-size: 17px; }
+  .analytics-calendar { gap: 3px; }
+  .analytics-calendar-day { min-height: 32px; padding: 4px 5px; }
+  .analytics-github-note { margin-left: 0; }
 }

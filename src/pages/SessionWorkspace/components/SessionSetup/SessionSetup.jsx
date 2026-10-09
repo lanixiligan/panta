@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { followRouteLink, projectDetailPath, routePaths } from '../../../../routing.js';
 import { formatCount, formatLastWorked, formatProjectDuration } from '../../../Projects/projectHistory.js';
 
@@ -102,6 +102,18 @@ function RepositoryHistory({ project, projects, hasSelection, onNavigate }) {
 }
 
 export default function SessionSetup({ selectedProject, projects = [], onNavigate, repositories, loading, error, onRetry, selectedRepository, selectedRepositoryId, setSelectedRepositoryId, goal, setGoal, handleSubmit, query, setQuery, type, setType, language, setLanguage, sort, setSort, languages, filteredRepositories }) {
+  const [needsRepository, setNeedsRepository] = useState(false);
+
+  // Start stays clickable; pressing it before choosing a repository explains what's missing.
+  function submit(event) {
+    if (!selectedRepository) {
+      event.preventDefault();
+      setNeedsRepository(true);
+      return;
+    }
+    handleSubmit(event);
+  }
+
   return (
     <div className="session-workspace-layout">
       <section className="repository-browser" aria-labelledby="repository-browser-heading">
@@ -113,7 +125,7 @@ export default function SessionSetup({ selectedProject, projects = [], onNavigat
         <div className="repository-browser-filters">
           <label className="repository-search-field">
             <span>Search</span>
-            <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a repository..." />
+            <input type="search" name="repository-search" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a repository…" />
           </label>
           <label>
             <span>Type</span>
@@ -196,14 +208,15 @@ export default function SessionSetup({ selectedProject, projects = [], onNavigat
 
         <RepositoryHistory project={selectedProject} projects={projects} hasSelection={Boolean(selectedRepository)} onNavigate={onNavigate} />
 
-        <form className="session-goal-form" onSubmit={handleSubmit}>
+        <form className="session-goal-form" onSubmit={submit}>
           <label className="dashboard-field" htmlFor="session-goal">
             <span>What are you working on? <small>Optional</small></span>
-            <input id="session-goal" value={goal} onChange={(event) => setGoal(event.target.value)} maxLength={160} placeholder="e.g. Refactor the session timer" />
+            <input id="session-goal" name="goal" autoComplete="off" value={goal} onChange={(event) => setGoal(event.target.value)} maxLength={160} placeholder="e.g. Refactor the session timer…" />
           </label>
-          <button className="session-workspace-button" type="submit" disabled={!selectedRepository || loading || Boolean(error)}>
+          <button className="session-workspace-button" type="submit" disabled={loading || Boolean(error)}>
             Start session <span aria-hidden="true">→</span>
           </button>
+          {needsRepository && !selectedRepository && <p className="session-goal-error" role="alert">Choose a repository first, then start the session.</p>}
           <p className="session-goal-hint">Session time starts when you press Start. GitHub activity is tracked automatically.</p>
         </form>
 

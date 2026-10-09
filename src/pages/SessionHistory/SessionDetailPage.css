@@ -62,13 +62,15 @@
 .session-timeline { padding: 6px 2px 2px; }
 .session-timeline-track { position: relative; height: 24px; margin: 0 8px; }
 .session-timeline-track::before { position: absolute; top: 50%; right: -8px; left: -8px; height: 2px; border-radius: 1px; background: var(--workspace-border); content: ''; }
-.session-timeline-tick { position: absolute; top: 50%; width: 13px; height: 13px; border: 2px solid var(--workspace-surface); border-radius: 50%; outline: none; background: var(--workspace-accent); cursor: default; transform: translate(-50%, -50%); transition: width .12s ease, height .12s ease, box-shadow .12s ease, opacity .12s ease; }
+/* The tick is a fixed-size hit target; only the dot inside it scales, so the tooltip never grows with it. */
+.session-timeline-tick { position: absolute; top: 50%; display: grid; width: 25px; height: 25px; place-items: center; border-radius: 50%; outline: none; cursor: default; transform: translate(-50%, -50%); }
 a.session-timeline-tick { cursor: pointer; }
-.session-timeline-tick.dimmed { background: var(--workspace-muted); opacity: .35; }
-/* A wider invisible hit area so the dots are easy to hover. */
-.session-timeline-tick::before { position: absolute; inset: -6px; content: ''; }
-.session-timeline-tick:hover, .session-timeline-tick:focus-visible { z-index: 2; width: 17px; height: 17px; opacity: 1; box-shadow: 0 0 0 3px #39ff8833, 0 0 12px #39ff8866; }
-.session-timeline-tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; display: flex; width: max-content; max-width: 280px; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid var(--workspace-border); border-radius: 6px; background: var(--workspace-raised); box-shadow: 0 8px 24px #00000066; opacity: 0; pointer-events: none; transform: translate(-50%, 4px); transition: opacity .12s ease, transform .12s ease; visibility: hidden; }
+.session-timeline-dot { width: 13px; height: 13px; border: 2px solid var(--workspace-surface); border-radius: 50%; background: var(--workspace-accent); transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease; }
+.session-timeline-tick.dimmed .session-timeline-dot { background: var(--workspace-muted); opacity: .35; }
+.session-timeline-tick:hover, .session-timeline-tick:focus-visible { z-index: 2; }
+.session-timeline-tick:hover .session-timeline-dot, .session-timeline-tick:focus-visible .session-timeline-dot { opacity: 1; box-shadow: 0 0 0 3px #39ff8833, 0 0 12px #39ff8866; transform: scale(1.3); }
+.session-timeline-tick:focus-visible .session-timeline-dot { box-shadow: 0 0 0 3px #39ff88aa, 0 0 12px #39ff8866; }
+.session-timeline-tooltip { position: absolute; bottom: calc(100% + 4px); left: 50%; display: flex; width: max-content; max-width: 280px; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid var(--workspace-border); border-radius: 6px; background: var(--workspace-raised); box-shadow: 0 8px 24px #00000066; opacity: 0; pointer-events: none; transform: translate(-50%, 4px); transition: opacity .12s ease, transform .12s ease; visibility: hidden; }
 .session-timeline-tooltip.start { left: -4px; transform: translate(0, 4px); }
 .session-timeline-tooltip.end { right: -4px; left: auto; transform: translate(0, 4px); }
 .session-timeline-tick:hover .session-timeline-tooltip, .session-timeline-tick:focus-visible .session-timeline-tooltip { opacity: 1; transform: translate(-50%, 0); visibility: visible; }

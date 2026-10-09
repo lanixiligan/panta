@@ -9,7 +9,6 @@ import { findProject, getExampleProjects, getProjects } from './pages/Projects/p
 import SessionHistoryPage from './pages/SessionHistory/SessionHistoryPage.jsx';
 import SessionDetailPage from './pages/SessionHistory/SessionDetailPage.jsx';
 
-import ProfilePage from './pages/Profile/ProfilePage.jsx';
 import SettingsPage from './pages/Settings/SettingsPage.jsx';
 
 import SessionWorkspacePage from './pages/SessionWorkspace/SessionWorkspacePage.jsx';
@@ -18,7 +17,8 @@ import NotFoundPage from './pages/NotFoundPage.jsx';
 import AuthenticationPage from './pages/Authentication/AuthenticationPage.jsx';
 import SidebarNav from './components/navigation/SidebarNav.jsx';
 import Footer from './components/layout/Footer.jsx';
-import { getSessionById, getSessionListItems, getSessions, getWeeklySummary } from './dev-data/index.js';
+import { getSessionListItems, getWeeklySummary } from './sessions/sessionHelpers.js';
+import { getDummySessionById, getDummySessions } from './dummy-data/index.js';
 import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
 import { getGitHubMutuals, sendPresenceHeartbeat } from './api/presence.js';
 
@@ -78,14 +78,15 @@ export default function App() {
   const [mutualsError, setMutualsError] = useState('');
   const loadId = useRef(0);
   const endingSession = useRef(false);
-  const allDummySessions = useMemo(() => getSessions(), []);
+  const allDummySessions = useMemo(() => getDummySessions(), []);
   const analyticsSessions = useMemo(() => [...realSessions, ...allDummySessions], [realSessions, allDummySessions]);
   const sessionItems = getSessionListItems([...realSessions, ...allDummySessions])
     .sort((left, right) => new Date(right.startedAt) - new Date(left.startedAt));
   const projects = useMemo(() => getProjects(realSessions, repositories), [realSessions, repositories]);
   const exampleProjects = useMemo(() => getExampleProjects(), []);
   const routeProject = view === 'Project Detail' ? findProject([...projects, ...exampleProjects], route.owner, route.repo) : null;
-  const weeklySummary = getWeeklySummary(realSessions, new Date(now));
+  // Includes example sessions, like Recent sessions beside it; the card says when it does.
+  const weeklySummary = getWeeklySummary(analyticsSessions, new Date(now));
 
   useEffect(() => {
     function syncPathname() {
@@ -105,15 +106,16 @@ export default function App() {
     }
   }, [identity?.username, realSessions]);
 
-  function navigate(path) {
+  function navigate(path, state = {}) {
     if (path === window.location.pathname) return;
-    window.history.pushState({}, '', path);
+    window.history.pushState(state, '', path);
     setPathname(window.location.pathname);
   }
 
-  function openSession(sessionId) {
+  // `fromHistory` marks the entry so Back returns to Session History with its filters and scroll position.
+  function openSession(sessionId, { fromHistory = false } = {}) {
     setCompletedSession(null);
-    navigate(sessionDetailPath(sessionId));
+    navigate(sessionDetailPath(sessionId), fromHistory ? { returnToHistory: true } : {});
   }
 
   async function loadRepositories() {
@@ -393,6 +395,7 @@ export default function App() {
 
   return (
     <div className="app-shell app-shell-dark workspace-shell">
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <SidebarNav
         identity={identity}
         identityStatus={identityStatus}
@@ -407,7 +410,7 @@ export default function App() {
         mutualsError={mutualsError}
       />
       <div className={`workspace-main ${view === 'Session Detail' ? 'workspace-main-fit' : ''}`}>
-        <main className="app-main" id="main-content">
+        <main className="app-main" id="main-content" tabIndex={-1}>
         {view === 'Overview' && (
           <OverviewPage
             {...identityProps}
@@ -418,10 +421,8 @@ export default function App() {
             onFinishSession={finishSession}
             onNavigateToStart={() => navigate(routePaths['Session Workspace'])}
             onViewSessions={() => navigate(routePaths['Session History'])}
-            recentSessions={sessionItems.slice(0, 5)}
+            recentSessions={sessionItems.slice(0, 6)}
             weeklySummary={weeklySummary}
-            mutuals={mutuals}
-            mutualsLoading={mutualsLoading}
             onSelectSession={openSession}
           />
         )}
@@ -447,7 +448,7 @@ export default function App() {
         )}
         {view === 'Session History' && (
           identityStatus === 'authenticated'
-            ? <SessionHistoryPage sessions={sessionItems} onSelectSession={openSession} onBack={() => navigate(routePaths.Overview)} activeSession={activeSession} now={now} isEndingSession={isEndingSession} sessionEndingAt={sessionEndingAt} onFinish={finishSession} />
+            ? <SessionHistoryPage sessions={sessionItems} onSelectSession={(sessionId) => openSession(sessionId, { fromHistory: true })} onBack={() => navigate(routePaths.Overview)} activeSession={activeSession} now={now} isEndingSession={isEndingSession} sessionEndingAt={sessionEndingAt} onFinish={finishSession} />
             : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
         )}
         {view === 'Projects' && (
@@ -460,21 +461,20 @@ export default function App() {
             ? <ProjectDetailPage project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
             : <section className="dashboard-section"><h2>Project not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Projects</button></section>
         )}
-        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onSelectSession={openSession} onNavigate={navigate} />}
-        {view === 'Profile' && (
-          identityStatus === 'authenticated' && identity
-            ? <ProfilePage identity={identity} hasSessions={Boolean(activeSession)} onStart={() => navigate(routePaths['Session Workspace'])} />
-            : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
-        )}
+        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onNavigate={navigate} />}
         {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} />}
         {view === 'Session Detail' && (
-          (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getSessionById(route.sessionId))
+          (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId))
             ? <SessionDetailPage
                 key={route.sessionId}
-                session={completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getSessionById(route.sessionId)}
+                session={completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId)}
                 onRetryActivity={retrySessionActivity}
                 onDelete={deleteSession}
-                onBack={() => { setCompletedSession(null); navigate(routePaths['Session History']); }}
+                onBack={() => {
+                  setCompletedSession(null);
+                  if (window.history.state?.returnToHistory) window.history.back();
+                  else navigate(routePaths['Session History']);
+                }}
               />
             : <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths['Session History'])}>Back to Session History</button></section>
         )}

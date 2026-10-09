@@ -1,6 +1,6 @@
-.back-button { margin: 24px 0 0; padding: 7px 0; border: 0; background: none; color: #657184; font-size: 13px; cursor: pointer; }
-.back-button:hover { color: #326ed3; }
-.back-button:focus-visible { outline: 3px solid #3478f64c; outline-offset: 2px; }
+.back-button { display: inline-block; margin: 24px 0 0; padding: 7px 0; border: 0; background: none; color: var(--workspace-secondary); font-size: 13px; text-decoration: none; cursor: pointer; }
+.back-button:hover { color: var(--workspace-accent); }
+.back-button:focus-visible { border-radius: 4px; outline: 2px solid #39ff8899; outline-offset: 2px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .app-main, .app-footer { width: 100%; max-width: 1120px; margin: 0 auto; }
 .section-kicker { color: #829086; font: 10px 'DM Mono', monospace; letter-spacing: .12em; }

@@ -29,9 +29,9 @@ function MutualRow({ user }) {
   return (
     <a href={user.githubUrl} target="_blank" rel="noreferrer" className="sidebar-friend-link" title={`Open ${user.login}'s GitHub profile`}>
       {user.avatarUrl
-        ? <img src={user.avatarUrl} alt="" className="sidebar-friend-avatar" />
+        ? <img src={user.avatarUrl} alt="" className="sidebar-friend-avatar" width="22" height="22" loading="lazy" />
         : <span className="sidebar-friend-avatar sidebar-friend-avatar-fallback" aria-hidden="true">{user.login?.slice(0, 1)?.toUpperCase() || '?'}</span>}
-      <span className="sidebar-friend-copy"><strong>{user.login}</strong><small>@{user.login}</small></span>
+      <span className="sidebar-friend-copy"><strong translate="no">{user.login}</strong><small translate="no">@{user.login}</small></span>
       <i className={`sidebar-friend-state${online ? ' is-online' : ''}`} role="img" aria-label={online ? 'Online' : 'Offline'} />
     </a>
   );
@@ -69,7 +69,7 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
         <div className="sidebar-socials-content">
           <div className="sidebar-mutuals-total">Mutuals ({mutuals.length})</div>
           {loading || error ? (
-            <p className="sidebar-socials-note">{loading ? 'Loading mutuals…' : 'Unable to load GitHub mutuals.'}</p>
+            <p className="sidebar-socials-note">{loading ? 'Loading mutuals…' : 'Couldn’t load your GitHub mutuals. Panta will try again in a minute.'}</p>
           ) : mutuals.length === 0 ? (
             <p className="sidebar-socials-note">No GitHub mutuals yet.<br />Follow someone who follows you to build your mutuals.</p>
           ) : (
@@ -92,15 +92,15 @@ function formatElapsed(startedAt, now) {
   return `${hours}:${minutes}:${seconds}`;
 }
 
-function ActiveSessionIndicator({ session, now, onClick }) {
+function ActiveSessionIndicator({ session, now, onNavigate }) {
   if (!session) return null;
   const repository = session.repository?.name || session.repository?.full_name || 'Coding session';
   return (
-    <button className="sidebar-live-session" type="button" onClick={onClick} aria-label={`Open active session for ${repository}`}>
+    <a className="sidebar-live-session" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={`Open active session for ${repository}`}>
       <span className="live-session-heading"><i aria-hidden="true" /> LIVE</span>
       <strong>{repository}</strong>
       <span className="live-session-time">{formatElapsed(session.startedAt, now)}</span>
-    </button>
+    </a>
   );
 }
 
@@ -109,13 +109,17 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onLogout }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const rootRef = useRef(null);
+  const triggerRef = useRef(null);
 
   useEffect(() => {
     function closeOutside(event) {
       if (!rootRef.current?.contains(event.target)) setOpen(false);
     }
     function closeOnEscape(event) {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key !== 'Escape') return;
+      // Keyboard users land back on the button that opened the menu.
+      if (rootRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
+      setOpen(false);
     }
     document.addEventListener('pointerdown', closeOutside);
     document.addEventListener('keydown', closeOnEscape);
@@ -145,17 +149,16 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onLogout }) {
   return (
     <div className="sidebar-account" ref={rootRef}>
       {open && (
-        <div className="account-menu" role="menu" aria-label="Account menu">
-          <a role="menuitem" href={routePaths.Profile} aria-current={pathname === routePaths.Profile ? 'page' : undefined} className={pathname === routePaths.Profile ? 'account-menu-active' : undefined} onClick={(event) => { setOpen(false); followRouteLink(event, onNavigate); }}>Profile</a>
-          <a role="menuitem" href={profileUrl} target="_blank" rel="noreferrer">GitHub Profile <span aria-hidden="true">↗</span></a>
-          <a className={pathname === routePaths.Settings ? 'account-menu-active' : undefined} role="menuitem" href={routePaths.Settings} aria-current={pathname === routePaths.Settings ? 'page' : undefined} onClick={(event) => { setOpen(false); followRouteLink(event, onNavigate); }}>Settings</a>
+        <div className="account-menu" id="account-menu">
+          <a href={profileUrl} target="_blank" rel="noreferrer">GitHub Profile <span aria-hidden="true">↗</span></a>
+          <a className={pathname === routePaths.Settings ? 'account-menu-active' : undefined} href={routePaths.Settings} aria-current={pathname === routePaths.Settings ? 'page' : undefined} onClick={(event) => { setOpen(false); followRouteLink(event, onNavigate); }}>Settings</a>
           <div className="account-menu-divider" />
-          <button className="account-logout" type="button" role="menuitem" onClick={logout} disabled={busy}>{busy ? 'Signing out…' : 'Log out'}</button>
+          <button className="account-logout" type="button" onClick={logout} disabled={busy}>{busy ? 'Signing out…' : 'Log out'}</button>
           {error && <p role="alert">{error}</p>}
         </div>
       )}
-      <button className={`account-trigger${view === 'Settings' ? ' current-settings' : ''}`} type="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-        {identity.avatarUrl ? <img src={identity.avatarUrl} alt="" className="account-avatar" /> : <span className="account-avatar-placeholder" aria-hidden="true">{identity.username?.charAt(0)?.toUpperCase()}</span>}
+      <button ref={triggerRef} className={`account-trigger${view === 'Settings' ? ' current-settings' : ''}`} type="button" aria-controls="account-menu" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        {identity.avatarUrl ? <img src={identity.avatarUrl} alt="" className="account-avatar" width="30" height="30" /> : <span className="account-avatar-placeholder" aria-hidden="true">{identity.username?.charAt(0)?.toUpperCase()}</span>}
         <span className="account-copy"><strong>{displayName || identity.username}</strong><small>@{identity.username}</small></span>
         <span className="account-caret" aria-hidden="true">···</span>
       </button>
@@ -171,7 +174,7 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
       </a>
       <NavLinks pathname={pathname} onNavigate={onNavigate} />
       <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
-      <ActiveSessionIndicator session={activeSession} now={now} onClick={() => onNavigate(routePaths['Session Workspace'])} />
+      <ActiveSessionIndicator session={activeSession} now={now} onNavigate={onNavigate} />
       <div className="sidebar-bottom">
         {identityStatus === 'authenticated' && identity ? (
           <UserProfileMenu identity={identity} view={view} pathname={pathname} onNavigate={onNavigate} onLogout={onLogout} />

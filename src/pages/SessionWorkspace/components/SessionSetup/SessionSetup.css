@@ -11,7 +11,7 @@
 .repository-browser-filters input, .repository-browser-filters select { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--workspace-border); border-radius: 6px; outline: none; background: var(--workspace-sidebar); color: var(--workspace-text); font: 13px 'DM Sans', sans-serif; letter-spacing: 0; text-transform: none; }
 .repository-browser-filters select { font-size: 12px; }
 .repository-browser-filters input::placeholder { color: #5f796a; }
-.repository-browser-filters input:focus, .repository-browser-filters select:focus { border-color: #3d7a52; box-shadow: 0 0 0 3px #39ff881a; }
+.repository-browser-filters input:focus, .repository-browser-filters select:focus { border-color: #4fbf78; box-shadow: 0 0 0 3px #39ff8840; }
 
 .repository-select-list { display: flex; flex-direction: column; padding: 6px 0; }
 .repository-select-row { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; gap: 16px; width: 100%; min-width: 0; padding: 14px 24px; border: 0; border-top: 1px solid var(--workspace-divider); background: transparent; color: inherit; text-align: left; cursor: pointer; transition: background .14s ease; }
@@ -61,7 +61,8 @@
 .session-goal-form .dashboard-field > span small { color: var(--workspace-muted); font: 10px 'DM Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
 .dashboard-field input, .dashboard-field select { width: 100%; min-width: 0; height: 46px; padding: 0 14px; border: 1px solid var(--workspace-border); border-radius: 8px; outline: none; background: var(--workspace-sidebar); color: var(--workspace-text); font-size: 14px; }
 .dashboard-field input::placeholder { color: #5f796a; }
-.dashboard-field input:focus, .dashboard-field select:focus { border-color: #3d7a52; box-shadow: 0 0 0 3px #39ff881a; }
+.dashboard-field input:focus, .dashboard-field select:focus { border-color: #4fbf78; box-shadow: 0 0 0 3px #39ff8840; }
+.session-goal-error { margin: 0; color: #e0a397; font-size: 12px; }
 .session-goal-hint { margin: 0; color: var(--workspace-muted); font-size: 12px; line-height: 1.55; }
 
 /* Your history with the selected repository */

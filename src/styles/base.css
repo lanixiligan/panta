@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap');
 :root {
+  color-scheme: dark;
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #202733;
-  background: #f5f6f8;
+  color: var(--workspace-text);
+  background: var(--workspace-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -10,6 +10,15 @@
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--workspace-bg); }
 button, input { font: inherit; }
+a, button, input, select, label, [tabindex] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+h1, h2, h3 { text-wrap: balance; }
+.app-main:focus { outline: none; } /* focused only by the skip link, never interactive */
+.skip-link { position: absolute; z-index: 100; top: 12px; left: 12px; padding: 8px 14px; border-radius: 6px; background: var(--workspace-accent); color: #04230f; font-size: 13px; font-weight: 600; text-decoration: none; transform: translateY(-200%); }
+.skip-link:focus-visible { outline: 2px solid #9ae4b0; outline-offset: 3px; transform: none; }
+/* Motion is decorative everywhere in Panta, so reduced-motion users get none of it. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
 a { color: inherit; }
 .app-shell { max-width: 960px; margin: 0 auto; padding: 38px 28px 24px; }
 @media (max-width: 620px) {

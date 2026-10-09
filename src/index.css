@@ -27,7 +27,6 @@
 /* Other pages */
 @import './pages/Projects/ProjectsPage.css';
 @import './pages/Analytics/AnalyticsPage.css';
-@import './pages/Profile/ProfilePage.css';
 @import './pages/Settings/SettingsPage.css';
 @import './pages/Authentication/AuthenticationPage.css';
 @import './pages/NotFoundPage.css';

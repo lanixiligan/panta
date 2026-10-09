@@ -1,4 +1,5 @@
 import React from 'react';
+import { followRouteLink, routePaths } from '../routing.js';
 
 export default function NotFoundPage({ onGoHome }) {
   return (
@@ -9,24 +10,24 @@ export default function NotFoundPage({ onGoHome }) {
 
       <div className="not-found-content">
         <div className="not-found-code">
-          <span className="not-found-dot" />
+          <span className="not-found-dot" aria-hidden="true" />
           404
         </div>
 
         <h1>Page not found</h1>
 
         <p>
-          The page you're looking for doesn't exist, or may have moved.
+          The page you’re looking for doesn't exist, or may have moved.
         </p>
 
-        <button
+        <a
           className="not-found-action"
-          type="button"
-          onClick={onGoHome}
+          href={routePaths.Overview}
+          onClick={(event) => followRouteLink(event, () => onGoHome())}
         >
           <span>Back to Overview</span>
           <span aria-hidden="true">→</span>
-        </button>
+        </a>
       </div>
     </section>
   );

@@ -26,6 +26,11 @@
 .settings-disconnect-button { border: 1px solid #563d38; background: transparent; color: #d0a198; cursor: pointer; min-height: 34px; padding: 0 12px; border-radius: 6px; font-size: 12px; font-weight: 500; }
 .settings-disconnect-button:hover:not(:disabled) { border-color: #80534b; background: #1c1412; color: #e4b5ab; }
 .settings-disconnect-button:disabled { opacity: .6; cursor: wait; }
+.settings-disconnect-confirm { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; color: var(--workspace-secondary); font-size: 12px; }
+.settings-disconnect-button.is-danger { border-color: #6b3a32; background: #2a1512; color: #f0b3a6; }
+.settings-cancel-button { min-height: 34px; padding: 0 12px; border: 1px solid var(--workspace-border); border-radius: 6px; background: transparent; color: var(--workspace-secondary); font-size: 12px; cursor: pointer; }
+.settings-cancel-button:hover:not(:disabled) { color: var(--workspace-text); }
+.settings-cancel-button:focus-visible { outline: 2px solid #9ae4b0; outline-offset: 3px; }
 .settings-error { grid-column: 1 / -1; margin: -8px 0 0; color: #d9a79c; font-size: 12px; }
 .settings-about { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 15px 0 2px; }
 .settings-about-brand { display: flex; align-items: center; gap: 10px; }

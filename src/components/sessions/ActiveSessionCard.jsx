@@ -28,7 +28,7 @@ export default function ActiveSessionCard({ session, now, onFinish, isEnding = f
     <section className="active-session-card" aria-label="Active coding session">
       <div className="session-card-topline">
         <span className="section-kicker">ACTIVE SESSION</span>
-        <span className="active-status"><i /> LIVE</span>
+        <span className="active-status"><i aria-hidden="true" /> LIVE</span>
       </div>
       <div className="active-session-content">
         <div className="active-session-copy">
@@ -48,7 +48,7 @@ export default function ActiveSessionCard({ session, now, onFinish, isEnding = f
         <div className="active-session-activity-heading">
           <span className="section-kicker">GITHUB ACTIVITY</span>
           <span className={`active-status${activityStatus === 'syncing' || activityStatus === 'loading' ? ' syncing' : ''}`}>
-            <i /> {activityStatus === 'error' ? 'RETRYING' : activityStatus === 'syncing' || activityStatus === 'loading' ? 'SYNCING' : 'LIVE'}
+            <i aria-hidden="true" /> {activityStatus === 'error' ? 'RETRYING' : activityStatus === 'syncing' || activityStatus === 'loading' ? 'SYNCING' : 'LIVE'}
           </span>
         </div>
         {commits.length ? (

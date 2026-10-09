@@ -1,5 +1,6 @@
 import React from 'react';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
+import { followRouteLink, sessionDetailPath } from '../../../../routing.js';
 
 function repositoryFullName(repository) {
   return repository.fullName || repository.full_name || `${repository.owner?.login || repository.owner}/${repository.name}`;
@@ -79,7 +80,7 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
       <footer className="session-complete-footer">
         <p className="session-complete-note">Session duration is the time you chose to work. GitHub activity is what GitHub recorded during that timeframe; it is not an exact measure of coding time.</p>
         <div className="session-complete-actions">
-          <button className="subtle-action" type="button" onClick={() => onViewSession(session.id)}>View session <span aria-hidden="true">→</span></button>
+          <a className="subtle-action" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, () => onViewSession(session.id))}>View session <span aria-hidden="true">→</span></a>
           <button className="session-workspace-button" type="button" onClick={onStartAnother}>Start another session <span aria-hidden="true">→</span></button>
         </div>
       </footer>

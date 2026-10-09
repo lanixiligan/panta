@@ -1,5 +1,6 @@
 import { calculateSessionAnalytics } from '../../analytics/sessionAnalytics.js';
-import { dummyRepositories, getSessionListItems, getSessions } from '../../dev-data/index.js';
+import { getSessionListItems } from '../../sessions/sessionHelpers.js';
+import { dummyRepositories, getDummySessions } from '../../dummy-data/index.js';
 
 function repositoryFullName(repository = {}) {
   const owner = repository.owner?.login || repository.owner;
@@ -18,9 +19,9 @@ export function getProjects(sessions = [], repositories = []) {
   return buildProjects(sessions.filter((session) => session?.source !== 'placeholder'), repositories);
 }
 
-// Example projects built from the example sessions in dev-data, kept apart from real projects.
+// Example projects built from the example sessions in dummy-data, kept apart from real projects.
 export function getExampleProjects() {
-  return buildProjects(getSessions(), dummyRepositories);
+  return buildProjects(getDummySessions(), dummyRepositories);
 }
 
 function buildProjects(sessions, repositories) {

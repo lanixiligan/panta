@@ -81,7 +81,7 @@ export default function AuthControl({ loginLabel = 'Sign in with GitHub' }) {
       )}
       {status === 'authenticated' && user && (
         <div className="auth-user">
-          {user.avatarUrl && <img src={user.avatarUrl} alt="" className="auth-avatar" />}
+          {user.avatarUrl && <img src={user.avatarUrl} alt="" className="auth-avatar" width="27" height="27" />}
           <span className="auth-username">{user.username}</span>
           <button className="logout-button" type="button" onClick={handleLogout} disabled={busy}>
             {busy ? 'Signing out…' : 'Log out'}

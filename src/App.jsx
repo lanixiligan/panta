@@ -448,7 +448,7 @@ export default function App() {
         )}
         {view === 'Session History' && (
           identityStatus === 'authenticated'
-            ? <SessionHistoryPage sessions={sessionItems} onSelectSession={(sessionId) => openSession(sessionId, { fromHistory: true })} onBack={() => navigate(routePaths.Overview)} activeSession={activeSession} now={now} isEndingSession={isEndingSession} sessionEndingAt={sessionEndingAt} onFinish={finishSession} />
+            ? <SessionHistoryPage sessions={sessionItems} onSelectSession={(sessionId) => openSession(sessionId, { fromHistory: true })} onBack={() => navigate(routePaths.Overview)} />
             : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
         )}
         {view === 'Projects' && (

@@ -24,6 +24,7 @@
 
 /* Session History */
 @import './pages/SessionHistory/SessionHistoryPage.css';
+@import './pages/SessionHistory/components/DateRangePicker.css';
 @import './pages/SessionHistory/SessionDetailPage.css';
 
 /* Other pages */

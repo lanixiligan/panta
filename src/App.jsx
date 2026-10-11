@@ -435,19 +435,18 @@ export default function App() {
         mutualsLoading={mutualsLoading}
         mutualsError={mutualsError}
       />
-      <div className={`workspace-main ${view === 'Session Detail' ? 'workspace-main-fit' : ''}`}>
+      <div className={`workspace-main${view === 'Overview' ? ' workspace-main-fit' : ''}`}>
         <main className="app-main" id="main-content" tabIndex={-1}>
         {view === 'Overview' && (
           <OverviewPage
             {...identityProps}
             activeSession={activeSession}
             now={now}
-            isEndingSession={isEndingSession}
-            sessionEndingAt={sessionEndingAt}
-            onFinishSession={finishSession}
             onNavigateToStart={() => navigate(routePaths['Session Workspace'])}
             onViewSessions={() => navigate(routePaths['Session History'])}
-            recentSessions={sessionItems.slice(0, 6)}
+            recentSessions={sessionItems.slice(0, 5)}
+            calendarSessions={analyticsSessions}
+            onNavigate={navigate}
             weeklySummary={weeklySummary}
             onSelectSession={openSession}
           />

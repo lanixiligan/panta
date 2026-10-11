@@ -1,7 +1,8 @@
 import React from 'react';
-import ActiveSessionCard from '../../components/sessions/ActiveSessionCard.jsx';
+import { formatElapsed } from '../../sessions/sessionHelpers.js';
 import { followRouteLink, routePaths } from '../../routing.js';
 import { RecentSessions, WeeklySummary } from './components/DashboardSections.jsx';
+import WorkCalendar from '../../components/analytics/WorkCalendar.jsx';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -10,7 +11,7 @@ function greeting() {
   return 'Good evening';
 }
 
-export default function OverviewPage({ identity, identityStatus, identityError, onRetryIdentity, activeSession, now, isEndingSession, sessionEndingAt, onFinishSession, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, onSelectSession }) {
+export default function OverviewPage({ identity, identityStatus, identityError, onRetryIdentity, activeSession, now, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, onSelectSession, calendarSessions = [], onNavigate }) {
   if (identityStatus === 'loading') {
     return <section className="dashboard-loading" aria-label="Loading your dashboard"><div /><div /><div /></section>;
   }
@@ -32,17 +33,25 @@ export default function OverviewPage({ identity, identityStatus, identityError, 
     <div className="dashboard-home">
       <section className="dashboard-greeting">
         <div>
-          <span className="section-kicker">YOUR WORKSPACE · {new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date())}</span>
           <h1>{greeting()}, {name}.</h1>
-          <p>What are we getting together today?</p>
+          <p>{new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'short', day: 'numeric' }).format(new Date())} · What are we getting together today?</p>
         </div>
         {!activeSession && <a className="session-workspace-shortcut" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, () => onNavigateToStart())}>Start a session <span aria-hidden="true">→</span></a>}
       </section>
 
-      {activeSession && <ActiveSessionCard session={activeSession} now={now} onFinish={onFinishSession} isEnding={isEndingSession} endingAt={sessionEndingAt} />}
+      {activeSession && (
+        <a className="overview-live-session" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, () => onNavigateToStart())}>
+          <span className="overview-live-dot" aria-hidden="true" />
+          <span className="overview-live-repo">{activeSession.repository.name}</span>
+          <span className="overview-live-goal">{activeSession.goal || 'No goal set'}</span>
+          <span className="overview-live-time">{formatElapsed(now - new Date(activeSession.startedAt).getTime())}</span>
+          <span className="overview-live-open">Open session <span aria-hidden="true">→</span></span>
+        </a>
+      )}
 
       <div className="dashboard-grid">
         <RecentSessions sessions={recentSessions} onViewAll={onViewSessions} onSelectSession={onSelectSession} />
+        <WorkCalendar sessions={calendarSessions} onNavigate={onNavigate} browsable={false} />
         <WeeklySummary summary={weeklySummary} />
       </div>
     </div>

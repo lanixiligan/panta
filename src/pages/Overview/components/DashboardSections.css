@@ -1,6 +1,11 @@
 .dashboard-home .dashboard-section { border-radius: 8px; }
 .dashboard-home .dashboard-section-heading { align-items: baseline; margin-bottom: 12px; }
 .dashboard-home .dashboard-section-heading h2 { margin: 0; }
+/* The work calendar comes from Analytics; on Overview its frame and heading match the other cards. */
+.dashboard-grid > .analytics-section { gap: 12px; padding: 20px 22px; }
+.dashboard-grid > .analytics-section .analytics-section-heading { align-items: baseline; }
+.dashboard-grid > .analytics-section .analytics-section-heading h2 { font-size: 16px; letter-spacing: -.025em; }
+
 .dashboard-section-meta { color: #75867a; font: 11px 'DM Mono', monospace; }
 
 /* Recent sessions */
@@ -11,17 +16,21 @@
 .recent-session-row:focus-visible { outline: 2px solid #39ff8899; outline-offset: -2px; }
 .recent-session-main { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .recent-session-goal { overflow: hidden; color: var(--workspace-text); font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
-.recent-session-goal.empty { color: var(--workspace-muted); font-style: italic; }
+.recent-session-goal.is-repo { font: 500 14px 'DM Mono', monospace; }
 .recent-session-meta { display: flex; min-width: 0; align-items: center; gap: 7px; color: #7d8c81; font-size: 11px; white-space: nowrap; }
 .recent-session-meta > [aria-hidden] { color: #4d6155; }
 .recent-session-repo { overflow: hidden; color: #91b8a0; font: 11px 'DM Mono', monospace; text-overflow: ellipsis; }
-.session-source-badge { flex: 0 0 auto; padding: 1px 5px; border: 1px solid #3a433c; border-radius: 4px; color: #a5aea7; font: 9px 'DM Mono', monospace; letter-spacing: .04em; }
+.session-source-badge { flex: 0 0 auto; padding: 0 5px; border: 1px dashed #354139; border-radius: 4px; color: var(--workspace-muted); font: 10px 'DM Mono', monospace; }
 .recent-session-commits { color: var(--workspace-muted); font: 11px 'DM Mono', monospace; white-space: nowrap; }
 .recent-session-duration { color: var(--workspace-secondary); font: 12px 'DM Mono', monospace; text-align: right; white-space: nowrap; }
 
-/* Recent sessions on the left; this week's totals and daily chart stacked on the right. Both columns share top and bottom edges. */
-.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr); gap: 14px; }
-.dashboard-side { display: flex; min-width: 0; flex-direction: column; gap: 14px; }
+/* Recent sessions, the work calendar, and this week side by side on wide screens; all three share top and bottom edges. */
+.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.dashboard-grid > .analytics-section { order: 1; grid-column: 1 / -1; }
+@media (min-width: 1280px) {
+  .dashboard-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .dashboard-grid > .analytics-section { order: 0; grid-column: auto; }
+}
 .weekly-section { display: flex; flex-direction: column; padding: 18px 20px; }
 .weekly-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .weekly-metric { display: flex; min-width: 0; flex-direction: column; gap: 5px; padding: 12px 0 12px 16px; border-left: 1px solid var(--workspace-divider); }
@@ -30,7 +39,8 @@
 .weekly-metric:nth-child(n + 3) { border-top: 1px solid var(--workspace-divider); padding-bottom: 0; }
 .weekly-metric strong { overflow: hidden; color: #d6e6d9; font: 22px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
 .weekly-metric span { color: var(--workspace-secondary); font-size: 11px; }
-.weekly-days { flex: 1; }
+.weekly-days { display: flex; flex: 1; flex-direction: column; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--workspace-divider); }
+.weekly-days-heading { margin: 0; color: var(--workspace-secondary); font-size: 13px; font-weight: 500; }
 .session-activity-chart { display: flex; min-height: 96px; flex: 1; align-items: stretch; gap: 8px; }
 .activity-day { display: flex; flex: 1; flex-direction: column; align-items: center; gap: 6px; color: #78857b; font: 10px 'DM Mono', monospace; }
 .activity-bar-track { display: flex; width: min(100%, 28px); flex: 1; align-items: flex-end; overflow: hidden; border-radius: 4px; background: #19211b; }
@@ -42,6 +52,16 @@
 
 @media (max-width: 900px) {
   .dashboard-grid { grid-template-columns: 1fr; }
+}
+/* Fitted to the window: the cards keep their natural height, shrinking only if the window is short; recent sessions then show as many whole rows as fit. */
+@media (min-width: 1280px) and (min-height: 620px) {
+  .workspace-main-fit .dashboard-home { min-height: 0; flex: 1 1 auto; }
+  .workspace-main-fit .dashboard-grid { min-height: 0; flex: 0 1 auto; grid-template-rows: minmax(0, 1fr); }
+  .workspace-main-fit .recent-section, .workspace-main-fit .weekly-section { display: flex; min-height: 0; flex-direction: column; overflow: hidden; }
+  .workspace-main-fit .recent-session-list { min-height: 0; flex: 1 1 auto; margin: 0 -10px; padding: 0 10px; overflow: hidden; }
+  .workspace-main-fit .weekly-days { min-height: 0; }
+  .workspace-main-fit .session-activity-chart { min-height: 48px; }
+  .workspace-main-fit .dashboard-grid > .analytics-section { min-height: 0; overflow: hidden; }
 }
 @media (max-width: 680px) {
   .recent-session-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }

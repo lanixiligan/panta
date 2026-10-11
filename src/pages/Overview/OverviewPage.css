@@ -4,6 +4,15 @@
 a.session-workspace-shortcut { text-decoration: none; }
 .session-workspace-shortcut:hover { border-color: #6dffa6; background: #6dffa6; color: #04230f; }
 .session-workspace-shortcut:focus-visible { outline: 2px solid #9ae4b0; outline-offset: 3px; }
+.overview-live-session { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 13px 18px; border: 1px solid #2f5c3f; border-radius: 8px; background: var(--workspace-surface); box-shadow: inset 2px 0 0 var(--workspace-accent); color: inherit; text-decoration: none; transition: background-color .12s ease; }
+.overview-live-session:hover { background: var(--workspace-raised); }
+.overview-live-session:focus-visible { outline: 2px solid #39ff8899; outline-offset: 2px; }
+.overview-live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 6px #39ff8866; }
+.overview-live-repo { color: var(--workspace-text); font: 500 13px 'DM Mono', monospace; }
+.overview-live-goal { overflow: hidden; color: var(--workspace-secondary); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.overview-live-time { color: var(--workspace-text); font: 15px 'DM Mono', monospace; font-variant-numeric: tabular-nums; }
+.overview-live-open { color: var(--workspace-secondary); font-size: 12px; }
+.overview-live-session:hover .overview-live-open { color: var(--workspace-accent); }
 .dashboard-loading { display: flex; flex-direction: column; gap: 14px; }
 .dashboard-loading div { height: 65px; border: 1px solid var(--workspace-border); border-radius: 8px; background: linear-gradient(90deg, #111712, #161e18, #111712); background-size: 200% 100%; animation: shimmer 1.4s ease-in-out infinite; }
 .dashboard-loading div:first-child { height: 54px; width: 46%; border: 0; background: #171e18; }
@@ -17,5 +26,7 @@ a.session-workspace-shortcut { text-decoration: none; }
 }
 @media (max-width: 680px) {
   .dashboard-home { gap: 16px; }
+  .overview-live-session { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .overview-live-goal, .overview-live-open { display: none; }
   .dashboard-greeting { align-items: flex-start; }
 }

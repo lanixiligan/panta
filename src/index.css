@@ -11,6 +11,7 @@
 @import './components/sessions/ActiveSessionCard.css';
 @import './components/sessions/EditableGoal.css';
 @import './components/filters/FilterSelect.css';
+@import './components/analytics/WorkCalendar.css';
 
 /* Overview */
 @import './pages/Overview/OverviewPage.css';

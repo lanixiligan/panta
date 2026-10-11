@@ -35,7 +35,7 @@ export function updateSearchParams(updates) {
 export function followRouteLink(event, navigate) {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
-  navigate(event.currentTarget.pathname);
+  navigate(`${event.currentTarget.pathname}${event.currentTarget.search}`);
 }
 
 export function resolveRoute(pathname) {

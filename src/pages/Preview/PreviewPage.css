@@ -1,0 +1,9 @@
+/* Public preview: the Session detail page for one example session, under a slim banner. */
+.preview-screen { min-height: 100vh; min-height: 100dvh; background: var(--workspace-bg); color: var(--workspace-text); }
+.preview-banner { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 10px 20px; border-bottom: 1px solid var(--workspace-divider); background: var(--workspace-surface); font-size: 13px; }
+.preview-banner-label { color: var(--workspace-secondary); font: 11px 'DM Mono', monospace; letter-spacing: .08em; text-transform: uppercase; }
+.preview-banner-action { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 6px; background: var(--workspace-accent); color: #04230f; font-weight: 600; text-decoration: none; }
+.preview-banner-action:hover { background: #6dffa6; }
+.preview-banner-action:focus-visible { outline: 2px solid #9ae4b0; outline-offset: 2px; }
+.preview-main { width: 100%; max-width: 1240px; margin: 0 auto; padding: 32px clamp(16px, 5vw, 56px) 56px; }
+.preview-main .session-detail-badge { display: none; }

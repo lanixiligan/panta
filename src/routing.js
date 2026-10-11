@@ -5,6 +5,7 @@ export const routePaths = {
   Projects: '/projects',
   Analytics: '/analytics',
   Settings: '/settings',
+  Preview: '/preview',
 };
 
 export function sessionDetailPath(sessionId) {
@@ -66,5 +67,6 @@ export function resolveRoute(pathname) {
   }
   if (normalizedPath === '/analytics') return { view: 'Analytics' };
   if (normalizedPath === '/settings') return { view: 'Settings' };
+  if (normalizedPath === '/preview') return { view: 'Preview' };
   return { view: 'Not Found' };
 }

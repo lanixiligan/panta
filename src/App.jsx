@@ -15,6 +15,7 @@ import SessionWorkspacePage from './pages/SessionWorkspace/SessionWorkspacePage.
 import AnalyticsPage from './pages/Analytics/AnalyticsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import AuthenticationPage from './pages/Authentication/AuthenticationPage.jsx';
+import PreviewPage from './pages/Preview/PreviewPage.jsx';
 import SidebarNav from './components/navigation/SidebarNav.jsx';
 import Footer from './components/layout/Footer.jsx';
 import { getSessionListItems, getWeeklySummary } from './sessions/sessionHelpers.js';
@@ -408,6 +409,9 @@ export default function App() {
     onRetryIdentity: loadWorkspace,
     onRetryRepositories: () => identity && loadRepositories(),
   };
+
+  // The example-session preview is public, so visitors can see a recap before signing in.
+  if (view === 'Preview') return <PreviewPage onNavigate={navigate} signedIn={identityStatus === 'authenticated'} />;
 
   if (identityStatus !== 'authenticated') {
     return (

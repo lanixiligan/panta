@@ -34,7 +34,7 @@ Sign-in needs `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_CA
 - `App.jsx` owns essentially all application state: identity, repositories, the active session, the completed session, real sessions, mutuals, and a shared `now` ticker. It also runs the polling effects: active-session commits and the presence heartbeat every 30s, and a mutuals refresh. Pages are presentational and receive data plus callbacks as props.
 - Session lifecycle in `App.jsx`: `startSession` creates in-memory `activeSession` state, which is lost on reload. Polling merges in live commits (messages and times only). `finishSession` fetches the final commits with file and line stats and stores the session in `localStorage` under `panta.sessions.<username>`.
 - `src/api/*.js` are thin `fetch` wrappers for `/api/*` that turn failures into user-facing `Error` messages.
-- `src/dummy-data/` contains only example sessions and repositories marked `source: 'placeholder'` (`getDummySessions`, `getDummySessionById`). `src/sessions/sessionHelpers.js` holds the session helpers (`getSessionListItems`, `getSessionDurationMinutes`, `getWeeklySummary`) that work on both real and example sessions. `src/analytics/sessionAnalytics.js` computes the totals and breakdowns used by Analytics and, per project, by Projects. Example data is mixed into Overview, Session History, Analytics, and Projects and labeled as examples there. `pages/Projects/projectHistory.js` builds real projects (`getProjects`) only from real completed sessions, grouped by GitHub repo ID, and example projects (`getExampleProjects`) separately. Only the Projects pages see example projects; the session workspace's repository history uses real projects only.
+- `src/dummy-data/` contains only example sessions and repositories marked `source: 'placeholder'` (`getDummySessions`, `getDummySessionById`). `src/sessions/sessionHelpers.js` holds the session helpers (`getSessionListItems`, `getSessionDurationMinutes`, `getWeeklySummary`) that work on both real and example sessions. `src/analytics/sessionAnalytics.js` computes the totals and breakdowns used by Analytics and, per project, by Projects. Example data is mixed into Overview, Session History, Analytics, and Projects and labeled as examples there. `pages/Projects/projectHistory.js` builds real projects (`getProjects`) only from real completed sessions, grouped by GitHub repo ID, and example projects (`getExampleProjects`) separately. Example projects appear on the Projects pages and, for example repositories listed in the session workspace, in its repository history. Example repositories can be selected there but can't start a session.
 
 ### Code layout
 
@@ -52,6 +52,23 @@ These come from the README's design principles. Preserve them in UI and data cha
 - A session with zero commits is valid.
 - Show values that were never recorded as unavailable, not as `0`.
 - Only commits GitHub attributes to the signed-in account are counted.
+
+## UI and copy
+
+The UI is deliberately minimal and easy on the eyes. Only necessary details belong on a page. When adding or changing UI:
+
+- Show each number once per page. A total shown in a card doesn't also go in a heading, caption, or tooltip.
+- Label values and don't add explanatory sentences under them ("Session time", not "The time you set aside for this session").
+- Use short labels over sentences ("Unavailable", "No commits"). Empty states are one line.
+- Keep at most one note per page (for example, the session-time-versus-GitHub-activity note or the example-data note).
+- Don't add kickers, badges, or captions that repeat nearby content. Badges mark exceptions only (`Example`, a non-completed status).
+- Make the whole row or card the link instead of adding a separate "View …" link.
+- Prefer removing a duplicate panel over adding one. Propose new panels, sections, or features before building them.
+- Stay within the `--workspace-*` tokens in `src/styles/tokens.css` and the DM Sans and DM Mono fonts. Propose any new color first. Don't add animated or WebGL backgrounds.
+- Navigation uses `<a href>` with `followRouteLink`, never a `<button>`. Destructive actions need a confirmation step.
+- Interactive elements need a visible `:focus-visible` style, and decorative elements need `aria-hidden="true"`. Motion must respect `prefers-reduced-motion` (the global rule is in `base.css`).
+- Keep filters, toggles, and ranges in the URL with `readSearchParam` and `updateSearchParams` from `routing.js`.
+- In UI copy, use `…` not `...`, and curly quotes and apostrophes.
 
 ## Conventions
 

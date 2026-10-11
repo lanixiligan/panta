@@ -15,7 +15,7 @@ A session represents a focused period of work on a single GitHub repository.
 **Choose a repository → Start a session → Work → End the session → Review the recap**
 
 1. You choose one of the GitHub repositories Panta can access.
-2. You start a session, optionally with a goal. Panta records the start time.
+2. You start a session with a goal, what you plan to work on. Panta records the start time. The goal can be edited during the session and afterwards, but not cleared.
 3. While the session runs, Panta checks the repository for new commits every 30 seconds.
 4. When you end the session, Panta records the end time and retrieves the commits for the full session window, including files changed and lines added and deleted.
 
@@ -33,18 +33,18 @@ A session is valid even when no commits were made. Work that has not been pushed
 Sessions run inside the Session Workspace (`/session-workspace`, labeled **Start a session** in the navigation). It is one page with three phases:
 
 1. **Session Setup** — browse, search, filter, and sort the repositories Panta can access; select one; optionally describe what you are working on; start the session. A side panel shows your Panta history with the selected repository, or your recent work across repositories when none is selected.
-2. **Active Session** — an elapsed-time timer, the repository and goal, the GitHub sync status, and the commits detected so far. You can open the repository on GitHub or end the session.
+2. **Active Session** — an elapsed-time timer, the repository and goal (editable), the GitHub sync status, and the commits detected so far. You can open the repository on GitHub, end the session, or cancel it without recording anything.
 3. **Session Recap** — the session duration and time range, the repository and goal, the commit, file, and line totals from the final sync, and the commits made during the session. From here you can view the session in Session History or start another session.
 
 ## Features
 
 ### Overview
 
-A one-screen dashboard with a greeting, the active session (when one is running), and a shortcut to start a session. The six most recent sessions fill the left column. The right column stacks **This week**, with the current Monday-to-Sunday totals (sessions, session time, commits, projects), and **Session time by day** for the same week. Like the rest of the dashboard they include example sessions, and the chart says so when it does. The page fits a normal window without scrolling; a short window scrolls the page rather than the session list.
+A one-screen dashboard with a greeting, a one-line link to the active session (when one is running), and a shortcut to start a session. Three cards sit side by side: the five most recent sessions, **When you work** (the same month calendar as Analytics, where a day with sessions opens Session History for that day), and **This week**, with the current Monday-to-Sunday totals (sessions, session time, commits, projects) and session time by day. Like the rest of the dashboard they include example sessions and say so. On wide windows the page fits without scrolling; below 1280px the calendar moves under the other two cards and the page scrolls.
 
 ### Session History
 
-A searchable list of completed sessions with repository and sort filters. Sessions are grouped into collapsible months, each heading showing that month's session count and declared session time, and load 30 at a time with **Show more** (collapsed months don't use up that count). The search, repository filter, sort, number of loaded sessions, and collapsed months are kept in the URL, so going back from a session returns to the same list and scroll position, and a filtered view can be shared as a link. Each session has a detail page that fits the window on desktop. A summary card keeps the declared session time (duration, start, and end) separate from the GitHub activity recorded in that window (commits, lines, and the branches the commits landed on). The Commit Timeline plots when each commit landed and lists the commits, each linking to GitHub. Files touched lists every changed file with its line changes and a breakdown by file type; selecting a file filters the commits to the ones that touched it, and the selection is kept in the URL. **Check GitHub again** re-fetches the window and merges the result with the stored commits, which picks up commits pushed after the session ended without losing commits from branches deleted since. Recorded sessions can be deleted from their detail page.
+A searchable list of completed sessions with repository, date, and sort filters. The date picker is a calendar for choosing any span of days, with days that have sessions marked, plus Today, Week, and Month quick picks and Clear; the Analytics calendar links here with a single day selected. Sessions are grouped into collapsible months, each heading showing that whole month's session count and declared session time, and are split into pages of 30. The search, filters, sort, page, and collapsed months are kept in the URL, so going back from a session returns to the same list and scroll position, and a filtered view can be shared as a link. Each session has a detail page: the goal (editable), the repository, date, and time window, then one line of figures that keeps the declared session time apart from what GitHub recorded (commits, lines, files, and branches when they're not just `main`). Commits are shown oldest first on a vertical timeline, each linking to GitHub, beside the files changed with their line changes and a breakdown by file type; selecting a file filters the commits to the ones that touched it, and the selection is kept in the URL. **Check GitHub again** re-fetches the window and merges the result with the stored commits, which picks up commits pushed after the session ended without losing commits from branches deleted since. Recorded sessions can be deleted from their detail page.
 
 ### Projects
 
@@ -54,13 +54,13 @@ Each project card keeps the total session time and session count separate from t
 
 ### Analytics
 
-Aggregated views of completed sessions over 7 days, 30 days, 90 days, or all time, each organized around a question:
+Aggregated views of completed sessions for this week (Monday first, matching Overview), this month, or all time, each organized around a question:
 
 - **Summary** — session time, sessions, and active days (days with at least one session, out of the days in the period). Commits live in **What GitHub recorded**.
 - **What GitHub recorded** — one line with the commits and lines added and deleted during sessions, how many sessions had commits, and how many have no recorded activity.
-- **Session time** — per day, or per week for ranges longer than 45 days, with a tooltip for sessions and commits in each bar. Like the calendar and Projects, a session counts entirely toward the day it started.
+- **Session time** — per day across the whole week or month (days still ahead are shown empty), or per week for all time when it spans more than 45 days, with a tooltip for sessions and commits in each bar. Like the calendar and Projects, a session counts entirely toward the day it started.
 - **Where your time went** — the five projects with the most session time and their share of the period, then one line totalling the rest; real projects link to their Projects page.
-- **When you work** — a month calendar with each date shaded by its session time (credited to the day a session started). Hovering or focusing a date shows its session time, session count, and repositories; arrows move between months, back to your first session. It follows the example-session toggle but not the time range.
+- **When you work** — a month calendar with each date shaded by its session time (credited to the day a session started). Hovering or focusing a date shows its session time, session count, and repositories, and a date with sessions links to Session History filtered to that day; arrows move between months, back to your first session. It follows the example-session toggle but not the time range.
 
 Values that were never recorded are shown as unavailable rather than zero. Analytics includes the example sessions from `src/dummy-data/` by default; **Include example sessions** turns them off, and the page notes when they are part of the totals. The range, the examples toggle, and the month shown in the calendar are kept in the URL.
 
@@ -84,8 +84,9 @@ Settings shows your account and GitHub connection, links to the GitHub App insta
 | `/projects/:owner/:repo` | Project detail |
 | `/analytics` | Analytics |
 | `/settings` | Settings |
+| `/preview` | Public example-session preview (no sign-in needed) |
 
-Any other path renders the Not Found view. Signed-out users see the authentication page regardless of the route.
+Any other path renders the Not Found view. Signed-out users see the authentication page regardless of the route, except `/preview`, which shows a handcrafted example session in the Session detail layout so visitors can see a recap before signing in. Nothing links to it yet; it will become a read-only demo once the designs are final.
 
 Routing is implemented in `src/routing.js` and `src/App.jsx` with the History API; there is no router library.
 
@@ -181,7 +182,6 @@ panta/
     │   ├── layout/Footer.jsx (+ .css)
     │   ├── navigation/SidebarNav.jsx (+ .css)        # Navigation, socials, account menu
     │   └── sessions/
-    │       ├── ActiveSessionCard.jsx (+ .css)         # Used by Overview and Session History
     │       └── SessionCommitList.jsx (+ .css)
     ├── dummy-data/           # Example-only data (source: 'placeholder')
     │   ├── index.js

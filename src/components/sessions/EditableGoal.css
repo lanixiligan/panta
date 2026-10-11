@@ -1,0 +1,9 @@
+.editable-goal { display: flex; align-items: center; gap: 10px; }
+.editable-goal > span { min-width: 0; }
+.editable-goal.empty > span { color: var(--workspace-muted); }
+.editable-goal-button { display: inline-grid; width: 28px; height: 28px; flex: 0 0 auto; place-items: center; padding: 0; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--workspace-muted); font-style: normal; cursor: pointer; transition: color .15s, border-color .15s, background-color .15s; }
+.editable-goal:hover .editable-goal-button { color: var(--workspace-secondary); }
+.editable-goal-button:hover { border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-accent); }
+.editable-goal-button:focus-visible { outline: 2px solid #39ff8899; outline-offset: 2px; }
+.editable-goal-input { display: block; width: 100%; box-sizing: border-box; padding: 2px 8px; border: 1px solid #4fbf78; border-radius: 6px; outline: none; background: var(--workspace-sidebar); box-shadow: 0 0 0 3px #39ff8840; color: var(--workspace-text); font: inherit; letter-spacing: inherit; }
+.editable-goal-input::placeholder { color: var(--workspace-muted); }

@@ -1,3 +1,11 @@
+/* Actions under the active session */
+.continue-session-button { display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 12px; border: 1px solid var(--workspace-border); border-radius: 6px; background: var(--workspace-raised); color: var(--workspace-text); font-size: 12px; font-weight: 500; text-decoration: none; }
+.continue-session-button:hover { border-color: #2f5d40; background: #1b3324; }
+.continue-session-button:focus-visible, .finish-session-button:focus-visible { outline: 2px solid #39ff8899; outline-offset: 2px; }
+.finish-session-button { min-height: 34px; padding: 0 14px; border: 1px solid #7a3a34; border-radius: 6px; background: #2a1412; color: #ff9b8f; font-size: 12px; font-weight: 500; cursor: pointer; }
+.finish-session-button:hover:not(:disabled) { border-color: #b4524a; background: #3a1916; color: #ffc0b7; }
+.finish-session-button:disabled { opacity: .6; cursor: wait; }
+
 /* Active Session: the timer is the centerpiece; activity is the evidence. */
 .session-workspace-already-active { display: flex; flex-direction: column; gap: 26px; }
 
@@ -34,11 +42,17 @@
 .session-console-empty { display: flex; flex-direction: column; gap: 6px; padding: 22px 2px; border-bottom: 1px solid var(--workspace-divider); }
 .session-console-empty strong { color: var(--workspace-text); font-size: 14px; font-weight: 500; }
 .session-console-empty p { margin: 0; color: var(--workspace-muted); font-size: 13px; }
-.session-console-checked { min-height: 16px; margin: 10px 2px 0; color: var(--workspace-muted); font-size: 12px; }
 
 /* End Session stays available, but secondary to the timer and activity */
 .session-console-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-top: 18px; border-top: 1px solid var(--workspace-divider); }
-.session-console-actions .finish-session-button { margin-left: auto; }
+.session-console-actions .finish-session-button { margin-left: 0; }
+.session-console-actions > .cancel-session-button, .cancel-session-confirm { margin-left: auto; }
+.cancel-session-button { min-height: 34px; padding: 0 12px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--workspace-muted); font: inherit; font-size: 12px; cursor: pointer; }
+.cancel-session-button:hover { border-color: var(--workspace-border); color: var(--workspace-secondary); }
+.cancel-session-button.danger { border-color: #6b3a32; background: #2a1512; color: #f0b3a6; }
+.cancel-session-button.danger:hover { border-color: #a5544a; color: #ffd0c6; }
+.cancel-session-confirm { display: flex; align-items: center; gap: 6px; color: var(--workspace-secondary); font-size: 12px; }
+.cancel-session-confirm > span { margin-right: 4px; }
 
 /* Desktop frame: activity fills the space and its list scrolls */
 @media (min-width: 681px) {
@@ -57,8 +71,10 @@
   .session-console-time { font-size: clamp(46px, 15vw, 60px); }
   .session-console-repo { font-size: 13px; }
   .session-console-actions { flex-direction: column; align-items: stretch; }
-  .session-console-actions .finish-session-button, .session-console-actions .continue-session-button { justify-content: center; margin-left: 0; min-height: 44px; }
+  .session-console-actions .finish-session-button, .session-console-actions .continue-session-button, .session-console-actions > .cancel-session-button { justify-content: center; margin-left: 0; min-height: 44px; }
+  .cancel-session-confirm { flex-wrap: wrap; justify-content: center; margin-left: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .session-console-status i, .session-console-sync i { animation: none; }
 }
+.cancel-session-button:focus-visible { outline: 2px solid #39ff8899; outline-offset: 2px; }

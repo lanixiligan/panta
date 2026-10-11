@@ -76,3 +76,12 @@ export function getWeeklySummary(sessions = [], referenceDate = new Date()) {
     days,
   };
 }
+
+// "01:05:09": elapsed time as hours, minutes, and seconds.
+export function formatElapsed(milliseconds) {
+  const seconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  return [hours, minutes, remainingSeconds].map((value) => String(value).padStart(2, '0')).join(':');
+}

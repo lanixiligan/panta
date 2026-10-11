@@ -28,6 +28,7 @@
 .sessions-page, .projects-page { display: flex; flex-direction: column; gap: 22px; }
 .repository-visibility { display: inline-flex; align-items: center; width: max-content; padding: 3px 6px; border: 1px solid #334238; border-radius: 4px; color: #aab8ad; font: 10px 'DM Mono', monospace; letter-spacing: .06em; white-space: nowrap; }
 .repository-visibility.private { border-color: #395341; color: #afd3b5; }
+.repository-visibility.example { border-style: dashed; color: var(--workspace-muted); }
 @media (max-width: 520px) {
   .session-empty-state { grid-template-columns: auto minmax(0, 1fr); }
   .session-empty-state .subtle-action { grid-column: 2; justify-self: start; }

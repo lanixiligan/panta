@@ -18,7 +18,7 @@ import AuthenticationPage from './pages/Authentication/AuthenticationPage.jsx';
 import SidebarNav from './components/navigation/SidebarNav.jsx';
 import Footer from './components/layout/Footer.jsx';
 import { getSessionListItems, getWeeklySummary } from './sessions/sessionHelpers.js';
-import { getDummySessionById, getDummySessions } from './dummy-data/index.js';
+import { dummyRepositories, getDummySessionById, getDummySessions } from './dummy-data/index.js';
 import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
 import { getGitHubMutuals, sendPresenceHeartbeat } from './api/presence.js';
 
@@ -84,6 +84,17 @@ export default function App() {
     .sort((left, right) => new Date(right.startedAt) - new Date(left.startedAt));
   const projects = useMemo(() => getProjects(realSessions, repositories), [realSessions, repositories]);
   const exampleProjects = useMemo(() => getExampleProjects(), []);
+  // Example repositories shaped like GitHub's, so the session workspace can list them beside real ones.
+  const exampleRepositories = useMemo(() => dummyRepositories.map((repository) => ({
+    id: repository.id,
+    name: repository.name,
+    full_name: repository.fullName,
+    description: repository.description,
+    language: repository.language,
+    private: false,
+    updated_at: exampleProjects.find((project) => project.key === `id:${repository.id}`)?.lastWorkedAt ?? null,
+    isExample: true,
+  })), [exampleProjects]);
   const routeProject = view === 'Project Detail' ? findProject([...projects, ...exampleProjects], route.owner, route.repo) : null;
   // Includes example sessions, like Recent sessions beside it; the card says when it does.
   const weeklySummary = getWeeklySummary(analyticsSessions, new Date(now));
@@ -293,6 +304,11 @@ export default function App() {
     setActiveSession({ id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, source: 'github', repository, goal, startedAt, status: 'active', commits: [], activitySyncStatus: 'loading', activityCheckedAt: null, activityError: '' });
   }
 
+  function cancelSession() {
+    if (!activeSession || endingSession.current) return;
+    setActiveSession(null);
+  }
+
   async function finishSession() {
     if (!activeSession || endingSession.current) return;
     endingSession.current = true;
@@ -349,6 +365,10 @@ export default function App() {
     const withGoal = (session) => session?.id === sessionId ? { ...session, goal } : session;
     setRealSessions((current) => current.map(withGoal));
     setCompletedSession(withGoal);
+  }
+
+  function updateActiveGoal(goal) {
+    setActiveSession((current) => current && { ...current, goal });
   }
 
   function deleteSession(sessionId) {
@@ -445,10 +465,14 @@ export default function App() {
             isEndingSession={isEndingSession}
             sessionEndingAt={sessionEndingAt}
             onFinish={finishSession}
+            onCancel={cancelSession}
+            onUpdateGoal={updateActiveGoal}
             onViewCompletedSession={(sessionId) => navigate(sessionDetailPath(sessionId))}
             onStartAnother={() => setCompletedSession(null)}
             onRetryActivity={retrySessionActivity}
             projects={projects}
+            exampleRepositories={exampleRepositories}
+            exampleProjects={exampleProjects}
             onNavigate={navigate}
           />
         )}

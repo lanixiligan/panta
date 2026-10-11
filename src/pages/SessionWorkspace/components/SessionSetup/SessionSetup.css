@@ -3,11 +3,12 @@
 
 /* Repository browser — the dominant surface */
 .repository-browser { display: flex; min-width: 0; flex-direction: column; border: 1px solid var(--workspace-border); border-radius: 12px; background: var(--workspace-surface); }
-.repository-browser-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 22px 24px 0; }
-.repository-browser-heading h2 { margin: 6px 0 0; color: var(--workspace-text); font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
+.repository-browser-column { display: flex; min-width: 0; flex-direction: column; padding-top: 4px; }
+.repository-browser-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.repository-browser-heading h2 { margin: 0; color: var(--workspace-text); font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
 .repository-browser-count { color: var(--workspace-muted); font: 12px 'DM Mono', monospace; white-space: nowrap; }
 .repository-browser-filters { display: grid; grid-template-columns: minmax(150px, 1.3fr) minmax(100px, .7fr) minmax(112px, .75fr) minmax(142px, .85fr); gap: 10px; padding: 18px 24px; border-bottom: 1px solid var(--workspace-divider); }
-.repository-browser-filters label { display: flex; min-width: 0; flex-direction: column; gap: 6px; color: var(--workspace-muted); font: 10px 'DM Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+.repository-browser-filters label, .repository-browser-filter { display: flex; min-width: 0; flex-direction: column; gap: 6px; color: var(--workspace-muted); font: 10px 'DM Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
 .repository-browser-filters input, .repository-browser-filters select { width: 100%; min-width: 0; height: 38px; padding: 0 11px; border: 1px solid var(--workspace-border); border-radius: 6px; outline: none; background: var(--workspace-sidebar); color: var(--workspace-text); font: 13px 'DM Sans', sans-serif; letter-spacing: 0; text-transform: none; }
 .repository-browser-filters select { font-size: 12px; }
 .repository-browser-filters input::placeholder { color: #5f796a; }
@@ -26,8 +27,7 @@
 .repository-select-heading { display: flex; min-width: 0; align-items: center; gap: 10px; }
 .repository-select-heading strong { overflow: hidden; color: #cfe6d6; font: 500 15px 'DM Mono', monospace; letter-spacing: -.01em; text-overflow: ellipsis; white-space: nowrap; }
 .repository-select-row.selected .repository-select-heading strong { color: var(--workspace-text); font-weight: 600; }
-.repository-select-heading .repository-visibility, .selected-repository-meta .repository-visibility { padding: 2px 6px; font-size: 10px; text-transform: capitalize; }
-.repository-select-fullname { overflow: hidden; color: var(--workspace-muted); font: 12px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
+.repository-select-heading .repository-visibility, .selected-repository-heading .repository-visibility { padding: 2px 6px; font-size: 10px; text-transform: capitalize; }
 .repository-select-description { display: -webkit-box; overflow: hidden; margin-top: 2px; color: var(--workspace-secondary); font-size: 13px; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .repository-select-meta { display: flex; align-items: flex-end; flex-direction: column; gap: 6px; color: var(--workspace-muted); font: 11px 'DM Mono', monospace; white-space: nowrap; }
 .repository-select-language { display: inline-flex; align-items: center; gap: 6px; color: var(--workspace-secondary); }
@@ -44,37 +44,41 @@
 
 /* Session rail — sits on the page, concludes the setup */
 .session-workspace-selection { display: flex; min-width: 0; flex-direction: column; padding: 4px 0 0; }
-.session-workspace-selection h2 { margin: 6px 0 14px; color: var(--workspace-text); font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
+.session-workspace-selection h2 { margin: 0 0 14px; color: var(--workspace-text); font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
 .selected-repository-summary { display: flex; height: 106px; align-items: center; gap: 14px; padding: 16px; border: 1px solid #2f5d40; border-radius: 10px; background: var(--workspace-raised); box-shadow: inset 0 2px 0 #39ff8899; }
-.selected-repository-mark { display: grid; width: 38px; height: 38px; flex: 0 0 auto; place-items: center; border: 1px solid #2f5d40; border-radius: 8px; background: #16301f; color: var(--workspace-accent); font: 500 15px 'DM Mono', monospace; }
 .selected-repository-details { display: flex; min-width: 0; flex: 1; flex-direction: column; align-items: flex-start; gap: 5px; }
+.selected-repository-heading { display: flex; max-width: 100%; min-width: 0; align-items: center; gap: 8px; }
+.selected-repository-heading .repository-visibility { flex: 0 0 auto; }
 .selected-repository-details strong { max-width: 100%; overflow: hidden; color: var(--workspace-text); font: 500 16px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
 .selected-repository-fullname { max-width: 100%; overflow: hidden; color: var(--workspace-secondary); font: 12px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
-.selected-repository-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 3px; color: var(--workspace-secondary); font-size: 12px; }
+.selected-repository-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 3px; color: var(--workspace-secondary); font-size: 12px; }
 .repository-selection-empty { display: flex; height: 106px; flex-direction: column; justify-content: center; gap: 5px; padding: 16px; border: 1px dashed #2c4a36; border-radius: 10px; }
-.repository-selection-empty strong { color: var(--workspace-text); font-size: 14px; font-weight: 500; }
-.repository-selection-empty p { margin: 0; color: var(--workspace-muted); font-size: 13px; line-height: 1.5; }
+.repository-selection-empty strong { color: var(--workspace-secondary); font-size: 14px; font-weight: 500; }
 
 .session-goal-form { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--workspace-divider); }
 .dashboard-field { display: flex; min-width: 0; flex-direction: column; gap: 10px; }
-.session-goal-form .dashboard-field > span { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; color: var(--workspace-text); font-size: 15px; font-weight: 500; }
-.session-goal-form .dashboard-field > span small { color: var(--workspace-muted); font: 10px 'DM Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+.session-goal-form .dashboard-field > span { display: flex; align-items: baseline; gap: 6px; color: var(--workspace-text); font-size: 15px; font-weight: 500; }
 .dashboard-field input, .dashboard-field select { width: 100%; min-width: 0; height: 46px; padding: 0 14px; border: 1px solid var(--workspace-border); border-radius: 8px; outline: none; background: var(--workspace-sidebar); color: var(--workspace-text); font-size: 14px; }
 .dashboard-field input::placeholder { color: #5f796a; }
 .dashboard-field input:focus, .dashboard-field select:focus { border-color: #4fbf78; box-shadow: 0 0 0 3px #39ff8840; }
-.session-goal-error { margin: 0; color: #e0a397; font-size: 12px; }
 .session-goal-hint { margin: 0; color: var(--workspace-muted); font-size: 12px; line-height: 1.55; }
 
 /* Your history with the selected repository */
-.repository-history { display: flex; min-height: 236px; flex-direction: column; gap: 6px; margin-top: 22px; padding-bottom: 24px; }
-.repository-history-totals, .repository-history-last-worked, .repository-history-last-session strong, .repository-history-last-session > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.repository-history-totals { margin: 6px 0 0; color: var(--workspace-text); font: 500 14px 'DM Mono', monospace; }
-.repository-history-last-worked strong { color: var(--workspace-text); font-weight: 500; }
-.repository-history-last-worked, .repository-history-empty { margin: 0; color: var(--workspace-secondary); font-size: 13px; line-height: 1.5; }
-.repository-history-last-session { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; padding: 14px 16px; border: 1px solid var(--workspace-border); border-radius: 10px; background: var(--workspace-surface); }
-.repository-history-last-session strong { color: var(--workspace-text); font-size: 14px; font-weight: 500; line-height: 1.4; }
-.repository-history-last-session > span:last-child { color: var(--workspace-muted); font: 12px 'DM Mono', monospace; }
-.repository-history-link { align-self: flex-start; margin-top: 8px; color: var(--workspace-secondary); font-size: 13px; text-decoration: none; }
+.repository-history { display: flex; flex-direction: column; margin-top: 22px; padding-bottom: 24px; }
+.repository-history-recent-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.repository-history-heading { margin: 0; color: var(--workspace-text); font-size: 15px; font-weight: 500; letter-spacing: -.01em; }
+.repository-history-list { margin: 0; padding: 0; overflow: hidden; border: 1px solid var(--workspace-border); border-radius: 10px; background: var(--workspace-surface); list-style: none; }
+.repository-history-list li { height: 67px; box-sizing: border-box; }
+.repository-history-list li + li { border-top: 1px solid var(--workspace-divider); }
+.repository-history-filler { display: flex; align-items: center; padding: 0 16px; color: var(--workspace-muted); font-size: 13px; }
+.repository-history-session { display: flex; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; gap: 5px; padding: 0 16px; color: inherit; text-decoration: none; }
+.repository-history-session:hover { background: var(--workspace-raised); }
+.repository-history-session:focus-visible { outline: 2px solid #39ff8899; outline-offset: -2px; }
+.repository-history-session strong, .repository-history-session span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.repository-history-session strong { color: var(--workspace-text); font-size: 14px; font-weight: 500; line-height: 1.4; }
+.repository-history-session strong.empty { color: var(--workspace-muted); }
+.repository-history-session span { color: var(--workspace-muted); font: 12px 'DM Mono', monospace; }
+.repository-history-link { flex: 0 0 auto; color: var(--workspace-secondary); font-size: 13px; text-decoration: none; }
 .repository-history-link:hover { color: var(--workspace-accent); }
 .repository-history-link:focus-visible { outline: 2px solid #39ff8899; outline-offset: 3px; }
 
@@ -89,7 +93,8 @@
 /* Desktop frame: the repository list scrolls inside the browser */
 @media (min-width: 681px) {
   .session-workspace-layout { min-height: 0; align-items: stretch; }
-  .repository-browser { min-height: 0; overflow: hidden; }
+  .repository-browser-column { min-height: 0; }
+  .repository-browser { min-height: 0; flex: 1 1 auto; overflow: hidden; }
   .repository-browser-heading, .repository-browser-filters { flex: 0 0 auto; }
   .repository-select-list { min-height: 0; flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #2f5d40 transparent; scrollbar-width: thin; }
   .session-workspace-selection { min-height: 0; overflow-y: auto; }
@@ -105,7 +110,6 @@
   .session-workspace-selection { padding: 20px; border: 1px solid var(--workspace-border); border-radius: 12px; background: var(--workspace-surface); }
 }
 @media (max-width: 520px) {
-  .repository-browser-heading { padding: 18px 16px 0; }
   .repository-browser-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 14px 16px; }
   .repository-select-row { gap: 12px; padding: 14px 16px; }
   .repository-browser-error { align-items: flex-start; margin: 14px 16px; }

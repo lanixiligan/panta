@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
-import { followRouteLink, projectDetailPath, routePaths } from '../../../../routing.js';
-import { formatCount, formatLastWorked, formatProjectDuration } from '../../../Projects/projectHistory.js';
+import React from 'react';
+import { followRouteLink, projectDetailPath, sessionDetailPath } from '../../../../routing.js';
+import { formatCount, formatProjectDuration } from '../../../Projects/projectHistory.js';
+import FilterSelect from '../../../../components/filters/FilterSelect.jsx';
 
 function repositoryVisibility(repository) {
+  if (repository.isExample) return 'example';
   return repository.visibility || (repository.private ? 'private' : 'public');
+}
+
+function formatSessionDate(value) {
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(value));
 }
 
 function formatUpdatedAt(value) {
@@ -26,10 +32,9 @@ function RepositoryRow({ repository, selected, onSelect }) {
       <span className="repository-select-indicator" aria-hidden="true">{selected ? '✓' : ''}</span>
       <span className="repository-select-main">
         <span className="repository-select-heading">
-          <strong>{repository.name}</strong>
+          <strong title={repository.full_name}>{repository.name}</strong>
           <span className={`repository-visibility ${visibility}`}>{visibility}</span>
         </span>
-        <span className="repository-select-fullname">{repository.full_name || repository.name}</span>
         {repository.description && <span className="repository-select-description">{repository.description}</span>}
       </span>
       <span className="repository-select-meta">
@@ -40,183 +45,168 @@ function RepositoryRow({ repository, selected, onSelect }) {
   );
 }
 
-// Where you left off: the selected repository's Panta history, or your recent work overall.
-function sessionHistorySummary(project, projects, hasSelection) {
-  if (hasSelection) {
-    if (!project) return { kicker: 'YOUR HISTORY HERE', empty: 'No Panta sessions here yet. This will be your first.' };
-    return {
-      kicker: 'YOUR HISTORY HERE',
-      sessions: project.sessionCount,
-      durationMs: project.totalDurationMs,
-      commits: project.activity.commits.total,
-      lastWorkedAt: project.lastWorkedAt,
-      lastSession: project.sessions[0],
-      link: { href: projectDetailPath(project.fullName), label: 'View project' },
-    };
-  }
-  if (!projects.length) return { kicker: 'YOUR RECENT WORK', empty: 'No Panta sessions yet. Your first session starts here.' };
-  const latest = projects[0];
-  const commitTotals = projects.map((item) => item.activity.commits.total).filter((total) => total !== null);
-  return {
-    kicker: 'YOUR RECENT WORK',
-    sessions: projects.reduce((sum, item) => sum + item.sessionCount, 0),
-    durationMs: projects.reduce((sum, item) => sum + item.totalDurationMs, 0),
-    commits: commitTotals.length ? commitTotals.reduce((sum, total) => sum + total, 0) : null,
-    lastWorkedAt: latest.lastWorkedAt,
-    lastWorkedIn: latest.name,
-    lastSession: latest.sessions[0],
-    link: { href: routePaths.Projects, label: 'View all projects' },
-  };
-}
+const RECENT_SESSION_ROWS = 4;
 
-function RepositoryHistory({ project, projects, hasSelection, onNavigate }) {
-  const summary = sessionHistorySummary(project, projects, hasSelection);
+// The selected repository's latest sessions, always in a four-row frame so the panel keeps its shape.
+function RepositoryHistory({ project, onNavigate }) {
+  const sessions = project ? project.sessions.slice(0, RECENT_SESSION_ROWS) : [];
+  const fillers = RECENT_SESSION_ROWS - sessions.length;
   return (
-    <section className="repository-history" aria-label={hasSelection ? 'Your history in this repository' : 'Your recent work'}>
-      <span className="section-kicker">{summary.kicker}</span>
-      {summary.empty ? <p className="repository-history-empty">{summary.empty}</p> : (
-        <>
-          <p className="repository-history-totals">
-            {formatCount(summary.sessions, 'session')} · {formatProjectDuration(summary.durationMs)}
-            {summary.commits !== null && <> · {formatCount(summary.commits, 'commit')}</>}
-          </p>
-          <p className="repository-history-last-worked">
-            Last worked {formatLastWorked(summary.lastWorkedAt)}{summary.lastWorkedIn && <> in <strong>{summary.lastWorkedIn}</strong></>}
-          </p>
-          {summary.lastSession && (
-            <div className="repository-history-last-session">
-              <span className="section-kicker">LAST SESSION</span>
-              <strong>{summary.lastSession.goal || 'No goal set'}</strong>
+    <section className="repository-history" aria-labelledby="repository-history-heading">
+      <div className="repository-history-recent-heading">
+        <h3 id="repository-history-heading" className="repository-history-heading">Recent sessions</h3>
+        {project && <a className="repository-history-link" href={projectDetailPath(project.fullName)} onClick={(event) => followRouteLink(event, onNavigate)}>View project <span aria-hidden="true">→</span></a>}
+      </div>
+      <ul className="repository-history-list">
+        {sessions.map((session) => (
+          <li key={session.id}>
+            <a className="repository-history-session" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, onNavigate)}>
+              <strong className={session.goal ? '' : 'empty'}>{session.goal || 'No goal set'}</strong>
               <span>
-                {summary.lastWorkedIn && `${summary.lastWorkedIn} · `}
-                {formatProjectDuration(summary.lastSession.durationMinutes * 60_000)}
-                {summary.lastSession.hasActivity ? ` · ${formatCount(summary.lastSession.commitCount, 'commit')}` : ''}
+                {formatSessionDate(session.startedAt)} · {formatProjectDuration(session.durationMinutes * 60_000)}
+                {session.hasActivity ? ` · ${formatCount(session.commitCount, 'commit')}` : ''}
               </span>
-            </div>
-          )}
-          <a className="repository-history-link" href={summary.link.href} onClick={(event) => followRouteLink(event, onNavigate)}>{summary.link.label} <span aria-hidden="true">→</span></a>
-        </>
-      )}
+            </a>
+          </li>
+        ))}
+        {Array.from({ length: fillers }, (_, index) => (
+          <li key={`empty-${index}`} className="repository-history-filler" aria-hidden={sessions.length > 0 || index > 0 ? 'true' : undefined}>
+            {!sessions.length && index === 0 && <span>No sessions yet</span>}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
 
-export default function SessionSetup({ selectedProject, projects = [], onNavigate, repositories, loading, error, onRetry, selectedRepository, selectedRepositoryId, setSelectedRepositoryId, goal, setGoal, handleSubmit, query, setQuery, type, setType, language, setLanguage, sort, setSort, languages, filteredRepositories }) {
-  const [needsRepository, setNeedsRepository] = useState(false);
-
-  // Start stays clickable; pressing it before choosing a repository explains what's missing.
-  function submit(event) {
-    if (!selectedRepository) {
-      event.preventDefault();
-      setNeedsRepository(true);
-      return;
-    }
-    handleSubmit(event);
-  }
+export default function SessionSetup({ selectedProject, onNavigate, repositories, loading, error, onRetry, selectedRepository, selectedRepositoryId, setSelectedRepositoryId, goal, setGoal, handleSubmit, query, setQuery, type, setType, language, setLanguage, sort, setSort, languages, filteredRepositories }) {
+  // Start is enabled once a repository is chosen and the goal isn't blank.
+  const canStart = Boolean(selectedRepository) && Boolean(goal.trim());
 
   return (
     <div className="session-workspace-layout">
-      <section className="repository-browser" aria-labelledby="repository-browser-heading">
+      <section className="repository-browser-column" aria-labelledby="repository-browser-heading">
         <div className="repository-browser-heading">
-          <div><span className="section-kicker">01 · REPOSITORY</span><h2 id="repository-browser-heading">Choose where you’re working</h2></div>
-          {!loading && !error && <span className="repository-browser-count">{filteredRepositories.length} of {repositories.length}</span>}
+          <h2 id="repository-browser-heading">Choose a repository</h2>
+          {!loading && !error && filteredRepositories.length < repositories.length && <span className="repository-browser-count">{filteredRepositories.length} of {repositories.length}</span>}
         </div>
 
-        <div className="repository-browser-filters">
-          <label className="repository-search-field">
-            <span>Search</span>
-            <input type="search" name="repository-search" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a repository…" />
-          </label>
-          <label>
-            <span>Type</span>
-            <select value={type} onChange={(event) => setType(event.target.value)}>
-              <option value="all">All types</option>
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-            </select>
-          </label>
-          <label>
-            <span>Language</span>
-            <select value={language} onChange={(event) => setLanguage(event.target.value)}>
-              <option value="all">All languages</option>
-              {languages.map((value) => <option value={value} key={value}>{value}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>Sort</span>
-            <select value={sort} onChange={(event) => setSort(event.target.value)}>
-              <option value="updated">Recently updated</option>
-              <option value="name">Name A–Z</option>
-            </select>
-          </label>
-        </div>
-
-        {loading && <p className="repository-browser-state" role="status"><span className="dashboard-spinner" />Loading repositories…</p>}
-        {error && (
-          <div className="repository-browser-error" role="alert">
-            <div><strong>Could not load repositories</strong><p>{error}</p></div>
-            <button type="button" onClick={onRetry}>Try again</button>
-          </div>
-        )}
-        {!loading && !error && repositories.length === 0 && (
-          <div className="repository-browser-state">
-            <strong>No repositories available</strong>
-            <p>No repositories were returned for this GitHub account. Check repository access in Settings.</p>
-          </div>
-        )}
-        {!loading && !error && repositories.length > 0 && filteredRepositories.length === 0 && (
-          <div className="repository-browser-state">
-            <strong>No repositories found</strong>
-            <p>Try a different search or filter.</p>
-          </div>
-        )}
-        {!loading && !error && filteredRepositories.length > 0 && (
-          <div className="repository-select-list" role="group" aria-label="Repositories">
-            {filteredRepositories.map((repository) => (
-              <RepositoryRow
-                key={repository.id}
-                repository={repository}
-                selected={String(repository.id) === selectedRepositoryId}
-                onSelect={setSelectedRepositoryId}
+        <div className="repository-browser">
+          <div className="repository-browser-filters">
+            <label className="repository-search-field">
+              <span>Search</span>
+              <input type="search" name="repository-search" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a repository…" />
+            </label>
+            <div className="repository-browser-filter">
+              <span id="repository-type-label">Type</span>
+              <FilterSelect
+                labelId="repository-type-label"
+                icon={<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8Z" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" /><circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" strokeWidth="1.3" /></svg>}
+                value={type}
+                options={[['all', 'All types'], ['public', 'Public'], ['private', 'Private']]}
+                onChange={setType}
               />
-            ))}
+            </div>
+            <div className="repository-browser-filter">
+              <span id="repository-language-label">Language</span>
+              <FilterSelect
+                labelId="repository-language-label"
+                icon={<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.3" /><circle cx="8" cy="8" r="2.25" fill="currentColor" /></svg>}
+                value={language}
+                options={[['all', 'All languages'], ...languages.map((value) => [value, value])]}
+                onChange={setLanguage}
+              />
+            </div>
+            <div className="repository-browser-filter">
+              <span id="repository-sort-label">Sort</span>
+              <FilterSelect
+                labelId="repository-sort-label"
+                icon={<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M5 3v10M2.5 10.5 5 13l2.5-2.5M11 13V3M8.5 5.5 11 3l2.5 2.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                value={sort}
+                options={[['updated', 'Recently updated'], ['name', 'Name A–Z']]}
+                onChange={setSort}
+              />
+            </div>
           </div>
-        )}
+
+          {loading && <p className="repository-browser-state" role="status"><span className="dashboard-spinner" />Loading repositories…</p>}
+          {error && (
+            <div className="repository-browser-error" role="alert">
+              <div><strong>Could not load repositories</strong><p>{error}</p></div>
+              <button type="button" onClick={onRetry}>Try again</button>
+            </div>
+          )}
+          {!loading && !error && repositories.length === 0 && (
+            <div className="repository-browser-state">
+              <strong>No repositories available</strong>
+              <p>No repositories were returned for this GitHub account. Check repository access in Settings.</p>
+            </div>
+          )}
+          {!loading && !error && repositories.length > 0 && filteredRepositories.length === 0 && (
+            <div className="repository-browser-state">
+              <strong>No repositories found</strong>
+              <p>Try a different search or filter.</p>
+            </div>
+          )}
+          {!loading && !error && filteredRepositories.length > 0 && (
+            <div className="repository-select-list" role="group" aria-label="Repositories">
+              {filteredRepositories.map((repository) => (
+                <RepositoryRow
+                  key={repository.id}
+                  repository={repository}
+                  selected={String(repository.id) === selectedRepositoryId}
+                  onSelect={setSelectedRepositoryId}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       <aside className="session-workspace-selection" aria-labelledby="selected-repository-heading">
-        <span className="section-kicker">02 · SESSION</span>
         <h2 id="selected-repository-heading">Working in</h2>
         {selectedRepository ? (
           <div className="selected-repository-summary">
-            <span className="selected-repository-mark" aria-hidden="true">{selectedRepository.name?.slice(0, 1).toUpperCase() || 'R'}</span>
             <span className="selected-repository-details">
-              <strong>{selectedRepository.name}</strong>
+              <span className="selected-repository-heading">
+                <strong>{selectedRepository.name}</strong>
+                <span className={`repository-visibility ${repositoryVisibility(selectedRepository)}`}>{repositoryVisibility(selectedRepository)}</span>
+              </span>
               <span className="selected-repository-fullname">{selectedRepository.full_name || selectedRepository.name}</span>
               <span className="selected-repository-meta">
-                <span className={`repository-visibility ${repositoryVisibility(selectedRepository)}`}>{repositoryVisibility(selectedRepository)}</span>
                 {selectedRepository.language && <span>{selectedRepository.language}</span>}
+                {selectedRepository.html_url && !selectedRepository.isExample && <a className="text-link" href={selectedRepository.html_url} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>}
               </span>
             </span>
           </div>
         ) : (
           <div className="repository-selection-empty">
-            <strong>No repository selected</strong>
-            <p>Choose one from your repositories.</p>
+            <strong>No repository selected yet</strong>
           </div>
         )}
 
-        <RepositoryHistory project={selectedProject} projects={projects} hasSelection={Boolean(selectedRepository)} onNavigate={onNavigate} />
+        {selectedRepository && <RepositoryHistory project={selectedProject} onNavigate={onNavigate} />}
 
-        <form className="session-goal-form" onSubmit={submit}>
+        <form className="session-goal-form" onSubmit={handleSubmit}>
           <label className="dashboard-field" htmlFor="session-goal">
-            <span>What are you working on? <small>Optional</small></span>
-            <input id="session-goal" name="goal" autoComplete="off" value={goal} onChange={(event) => setGoal(event.target.value)} maxLength={160} placeholder="e.g. Refactor the session timer…" />
+            <span>Goal for this session</span>
+            <input
+              id="session-goal"
+              name="goal"
+              autoComplete="off"
+              required
+              value={goal}
+              onChange={(event) => setGoal(event.target.value)}
+              maxLength={160}
+              placeholder="e.g. Refactor the session timer…"
+            />
           </label>
-          <button className="session-workspace-button" type="submit" disabled={loading || Boolean(error)}>
-            Start session <span aria-hidden="true">→</span>
+          <button className="session-workspace-button" type="submit" disabled={!canStart || loading || Boolean(error) || Boolean(selectedRepository?.isExample)}>
+            {!selectedRepository ? 'Choose a repository first'
+              : selectedRepository.isExample ? 'Examples can’t be tracked'
+                : !goal.trim() ? 'Add a goal first'
+                  : <>Start session <span aria-hidden="true">→</span></>}
           </button>
-          {needsRepository && !selectedRepository && <p className="session-goal-error" role="alert">Choose a repository first, then start the session.</p>}
           <p className="session-goal-hint">Session time starts when you press Start. GitHub activity is tracked automatically.</p>
         </form>
 

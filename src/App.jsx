@@ -345,6 +345,12 @@ export default function App() {
     setRealSessions((current) => current.map((item) => item.id === session.id ? session : item));
   }
 
+  function updateSessionGoal(sessionId, goal) {
+    const withGoal = (session) => session?.id === sessionId ? { ...session, goal } : session;
+    setRealSessions((current) => current.map(withGoal));
+    setCompletedSession(withGoal);
+  }
+
   function deleteSession(sessionId) {
     setRealSessions((current) => current.filter((session) => session.id !== sessionId));
     setCompletedSession((current) => current?.id === sessionId ? null : current);
@@ -470,6 +476,7 @@ export default function App() {
                 session={completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId)}
                 onRetryActivity={retrySessionActivity}
                 onDelete={deleteSession}
+                onUpdateGoal={updateSessionGoal}
                 onBack={() => {
                   setCompletedSession(null);
                   if (window.history.state?.returnToHistory) window.history.back();

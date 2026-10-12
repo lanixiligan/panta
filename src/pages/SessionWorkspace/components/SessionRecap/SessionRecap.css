@@ -1,31 +1,31 @@
 /* Session Recap: the result first, then the evidence, then what's next. */
 .session-complete-card { display: flex; width: 100%; flex-direction: column; gap: 26px; }
 
-.session-recap-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 24px 40px; padding: 26px 32px 28px; border: 1px solid var(--workspace-border); border-radius: 14px; background: var(--workspace-surface); box-shadow: inset 0 2px 0 #2f5d40; }
+.session-recap-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 24px 40px; padding: 26px 32px 28px; border: 1px solid var(--workspace-border); border-radius: 14px; background: var(--workspace-surface); box-shadow: inset 0 2px 0 var(--workspace-border-strong); }
 .session-recap-result { display: flex; flex-direction: column; gap: 8px; }
 .session-recap-status { display: inline-flex; align-items: center; gap: 9px; color: var(--workspace-secondary); font: 11px 'DM Mono', monospace; letter-spacing: .14em; text-transform: uppercase; }
-.session-recap-status i { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid #2f5d40; border-radius: 50%; background: #16301f; color: var(--workspace-accent); font-size: 10px; font-style: normal; letter-spacing: 0; }
-.session-recap-duration { color: var(--workspace-text); font: 400 clamp(44px, 5.4vw, 64px) 'DM Mono', monospace; letter-spacing: -.05em; line-height: 1; }
+.session-recap-status i { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--workspace-border-strong); border-radius: 50%; background: var(--workspace-raised); color: var(--workspace-accent-soft); font-size: 11px; font-style: normal; letter-spacing: 0; }
+.session-recap-duration { color: var(--workspace-text); font: 400 clamp(44px, calc(5.4vw / var(--ui-zoom)), 64px) 'DM Mono', monospace; letter-spacing: -.05em; line-height: 1; }
 .session-recap-range { color: var(--workspace-muted); font-size: 12px; }
 .session-recap-context { min-width: 0; padding-left: 40px; border-left: 1px solid var(--workspace-divider); }
 .session-recap-repo { margin: 0 0 6px; overflow: hidden; color: var(--workspace-muted); font: 12px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
 .session-recap-context h2 { margin: 0; overflow: hidden; color: var(--workspace-text); font: 500 20px 'DM Mono', monospace; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
 .session-recap-goal { margin: 8px 0 0; color: var(--workspace-secondary); font-size: 15px; line-height: 1.45; }
-.session-complete-id { display: block; margin-top: 12px; color: #4f6b5a; font: 11px 'DM Mono', monospace; }
+.session-complete-id { display: block; margin-top: 12px; color: var(--workspace-faint); font: 11px 'DM Mono', monospace; }
 .session-complete-id code { color: inherit; font: inherit; }
 
 .session-recap-stats { display: flex; gap: 28px; margin: 0; }
 .session-recap-stats > div { display: flex; flex-direction: column-reverse; gap: 6px; }
 .session-recap-stats dt { color: var(--workspace-muted); font-size: 12px; white-space: nowrap; }
 .session-recap-stats dd { margin: 0; color: var(--workspace-text); font: 500 22px 'DM Mono', monospace; letter-spacing: -.02em; white-space: nowrap; }
-.session-complete-additions { color: var(--workspace-accent); }
-.session-complete-deletions { color: #ff8a80; }
+.session-complete-additions { color: var(--workspace-additions); }
+.session-complete-deletions { color: var(--workspace-danger); }
 .session-complete-diff-separator { color: var(--workspace-muted); }
 
 /* Evidence — sits on the page */
 .session-complete-activity { display: flex; min-width: 0; flex-direction: column; }
 .session-recap-section-heading { padding: 0 2px 14px; border-bottom: 1px solid var(--workspace-divider); }
-.session-recap-section-heading h3 { margin: 6px 0 0; color: var(--workspace-text); font-size: 17px; font-weight: 500; letter-spacing: -.02em; }
+.session-recap-section-heading h3 { margin: 6px 0 0; color: var(--workspace-text); font-size: 16px; font-weight: 500; letter-spacing: -.02em; }
 .session-complete-commits .session-commit-list li { padding: 13px 2px; border-top: 0; border-bottom: 1px solid var(--workspace-divider); }
 .session-complete-commits .session-commit-list-recap .session-commit-row-main { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "message time" "sha sha"; row-gap: 5px; }
 .session-complete-commits .session-commit-row-main code { color: var(--workspace-muted); font-size: 11px; }
@@ -47,7 +47,7 @@
   .session-complete-card { min-height: 0; }
   .session-recap-hero, .session-complete-footer { flex: 0 0 auto; }
   .session-complete-activity, .session-complete-commits { display: flex; min-height: 0; flex: 1 1 auto; flex-direction: column; }
-  .session-complete-commits .session-commit-list { min-height: 0; flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #2f5d40 transparent; scrollbar-width: thin; }
+  .session-complete-commits .session-commit-list { min-height: 0; flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: var(--workspace-border-hover) transparent; scrollbar-width: thin; }
 }
 @media (max-width: 1000px) {
   .session-recap-hero { grid-template-columns: auto minmax(0, 1fr); }

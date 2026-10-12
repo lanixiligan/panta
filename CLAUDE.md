@@ -42,7 +42,9 @@ Pages live in feature folders under `src/pages/<Feature>/`, with page-only compo
 
 ### Styles
 
-Plain CSS. Each component and page has a same-named `.css` next to its `.jsx`, but **components never import CSS**. `src/index.css` is an ordered `@import` manifest (tokens, base, shared, components, then pages). Every new stylesheet must be added there in the right cascade position. Color tokens live in `src/styles/tokens.css`.
+Plain CSS. Each component and page has a same-named `.css` next to its `.jsx`, but **components never import CSS**. `src/index.css` is an ordered `@import` manifest (tokens, base, shared, components, then pages). Every new stylesheet must be added there in the right cascade position. Color tokens live in `src/styles/tokens.css`. Components use those tokens, never raw hex values (translucent glows and shadows excepted).
+
+On large screens `base.css` scales the whole interface with CSS `zoom` (`--ui-zoom`: 1.125 from 1500px wide, 1.25 from 1800px). Zoom also scales viewport units, so write them as `calc(100vh / var(--ui-zoom))`, never bare `vh`, `dvh`, or `vw`. Media queries still see the real window size.
 
 ## Product invariants
 

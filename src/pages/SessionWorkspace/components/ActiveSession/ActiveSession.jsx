@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import EditableGoal from '../../../../components/sessions/EditableGoal.jsx';
+import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
 import { formatElapsed } from '../../../../sessions/sessionHelpers.js';
 
@@ -11,10 +12,11 @@ function shortAgo(value, now) {
   return `${Math.floor(seconds / 3600)}h ago`;
 }
 
+// Sits under the GitHub activity heading, so it doesn't repeat "GitHub" except where it reads oddly without it.
 function syncLabel(status, isEnding, checkedAt, now) {
   if (isEnding) return 'Syncing final activity…';
-  if (status === 'error') return 'GitHub sync failed · retrying';
-  if (checkedAt) return `Checked GitHub ${shortAgo(checkedAt, now)}`;
+  if (status === 'error') return 'Couldn’t reach GitHub · retrying';
+  if (checkedAt) return `Checked ${shortAgo(checkedAt, now)}`;
   return 'Checking GitHub…';
 }
 
@@ -41,29 +43,38 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
 
   return (
     <section className="session-workspace-already-active" aria-label="Active coding session">
-      <div className="session-console-hero">
+      {/* Left: what you declared (the session and its controls). Right: what GitHub observed. */}
+      <div className="session-console-panel">
         <span className="session-console-status"><i aria-hidden="true" /> ACTIVE SESSION</span>
+        <div className="session-console-timer" aria-label={`Elapsed time ${elapsed}`}>
+          <span className="session-console-time">{elapsed}</span>
+        </div>
         <div className="session-console-context">
           <p className="session-console-repo">{repository.full_name || repository.name}</p>
           <EditableGoal as="h2" goal={session.goal} onSave={isEnding ? undefined : onUpdateGoal} />
-          <div className="session-console-meta">
-            {repository.language && <span>{repository.language}</span>}
-            <span>One repository. One thing at a time.</span>
-          </div>
+          {repository.language && <p className="session-console-meta">{repository.language}</p>}
         </div>
-        <div className="session-console-timer" aria-label={`Elapsed time ${elapsed}`}>
-          <span className="session-console-time">{elapsed}</span>
-          <span className="session-console-sync" data-status={isEnding ? 'ending' : activityStatus}><i aria-hidden="true" /> {syncLabel(activityStatus, isEnding, session.activityCheckedAt, now)}</span>
+        <div className="session-console-actions">
+          <a className="continue-session-button" href={repository.html_url} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>
+          {onCancel && !isEnding && <CancelSession onCancel={onCancel} />}
+          <button className="finish-session-button" type="button" onClick={onFinish} disabled={isEnding}>
+            {isEnding ? 'Syncing final activity…' : 'End Session'}
+          </button>
         </div>
       </div>
 
       <section className="session-console-activity" aria-labelledby="session-console-activity-heading" aria-live="polite">
         <div className="session-console-activity-heading">
-          <div><span className="section-kicker">GITHUB ACTIVITY</span><h3 id="session-console-activity-heading">Observed during this session</h3></div>
+          <div>
+            <h3 id="session-console-activity-heading">GitHub activity</h3>
+            <span className="session-console-sync" data-status={isEnding ? 'ending' : activityStatus}><i aria-hidden="true" /> {syncLabel(activityStatus, isEnding, session.activityCheckedAt, now)}</span>
+          </div>
           <span className="session-console-count"><strong>{commits.length}</strong> {commits.length === 1 ? 'commit' : 'commits'}</span>
         </div>
         {commits.length ? (
-          <SessionCommitList commits={commits} mode="active" timestampMode="relative" now={now} order="newest" />
+          <ScrollArea watch={commits.length}>
+            <SessionCommitList commits={commits} mode="active" timestampMode="relative" now={now} order="newest" linkRows repositoryUrl={repository.html_url} />
+          </ScrollArea>
         ) : (
           <div className="session-console-empty">
             <strong>{activityStatus === 'loading' ? 'Checking GitHub for session commits…' : 'Waiting for GitHub activity…'}</strong>
@@ -71,14 +82,6 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
           </div>
         )}
       </section>
-
-      <div className="session-console-actions">
-        <a className="continue-session-button" href={repository.html_url} target="_blank" rel="noreferrer">Continue in repository <span aria-hidden="true">↗</span></a>
-        {onCancel && !isEnding && <CancelSession onCancel={onCancel} />}
-        <button className="finish-session-button" type="button" onClick={onFinish} disabled={isEnding}>
-          {isEnding ? 'Syncing final activity…' : 'End Session'}
-        </button>
-      </div>
     </section>
   );
 }

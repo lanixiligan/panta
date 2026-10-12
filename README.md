@@ -30,17 +30,17 @@ A session is valid even when no commits were made. Work that has not been pushed
 
 ## The Session Workspace
 
-Sessions run inside the Session Workspace (`/session-workspace`, labeled **Start a session** in the navigation). It is one page with three phases:
+Sessions run inside the Session Workspace (`/session-workspace`, opened from the accent **Session Workspace** button at the foot of the sidebar, which shows the live session instead while one is running). It is one page with three phases:
 
 1. **Session Setup** — browse, search, filter, and sort the repositories Panta can access; select one; optionally describe what you are working on; start the session. A side panel shows your Panta history with the selected repository, or your recent work across repositories when none is selected.
-2. **Active Session** — an elapsed-time timer, the repository and goal (editable), the GitHub sync status, and the commits detected so far. You can open the repository on GitHub, end the session, or cancel it without recording anything.
+2. **Active Session** — two columns. On the left, the session you declared: the elapsed-time timer at the top, then the repository and goal (editable), with the actions at the bottom (view the repository on GitHub, cancel without recording anything, or end the session). On the right, GitHub activity: when GitHub was last checked (“Checked 12s ago”), then the commits detected so far, newest first, in a list that fills the page and scrolls on its own. Narrow screens stack the two.
 3. **Session Recap** — the session duration and time range, the repository and goal, the commit, file, and line totals from the final sync, and the commits made during the session. From here you can view the session in Session History or start another session.
 
 ## Features
 
 ### Overview
 
-A one-screen dashboard with a greeting, a one-line link to the active session (when one is running), and a shortcut to start a session. Three cards sit side by side: the five most recent sessions, **When you work** (the same month calendar as Analytics, where a day with sessions opens Session History for that day), and **This week**, with the current Monday-to-Sunday totals (sessions, session time, commits, projects) and session time by day. Like the rest of the dashboard they include example sessions and say so. On wide windows the page fits without scrolling; below 1280px the calendar moves under the other two cards and the page scrolls.
+A one-screen dashboard that never scrolls on windows 1024×600 and larger. Under the greeting, one line shows the next step: the running session (with its timer), or **Continue where you left off**, which opens the Session Workspace with the repository of your latest real session already selected (`?repo=<id>`). Below it, **This week** shows the current Monday-to-Sunday totals in one row (sessions, session time, commits, projects), followed by the five most recent sessions and **When you work**, the current month's calendar from Analytics, where a day with sessions opens Session History for that day. Like the rest of the dashboard they include example sessions while example data is shown, and say so. Smaller windows stack the cards and scroll.
 
 ### Session History
 
@@ -50,7 +50,7 @@ A searchable list of completed sessions with repository, date, and sort filters.
 
 A project is a GitHub repository that has become part of your Panta work history. Projects are derived from your completed sessions — a repository appears here only after you complete a session in it — and are grouped by GitHub repository ID.
 
-Each project card keeps the total session time and session count separate from the GitHub activity recorded for it (commits and line changes, shown as unavailable when none was recorded), followed by a 7-day activity strip and when you last worked in it. A list view shows the same values as a table. Projects can be sorted by last worked, total time, or number of sessions; the sort, the grid or list view, and the examples toggle are kept in the URL. A project's page shows its declared session time (total, average, and longest session) and its GitHub activity (commits, files changed, and line changes) as separate panels, a chart of session time per day over the last 30 days, and the sessions recorded for it, each linking to its Session History entry. Example projects built from the example sessions in `src/dummy-data/` are shown alongside your own, labeled as examples; **Include example projects** turns them off.
+Each project card keeps the total session time and session count separate from the GitHub activity recorded for it (commits and line changes, shown as unavailable when none was recorded), followed by a 7-day activity strip and when you last worked in it. A list view shows the same values as a table. Projects can be sorted by last worked, total time, or number of sessions; the sort and the grid or list view are kept in the URL. A project's page shows its declared session time (total, average, and longest session) and its GitHub activity (commits, files changed, and line changes) as separate panels, a chart of session time per day over the last 30 days, and the sessions recorded for it, each linking to its Session History entry. Example projects built from the example sessions in `src/dummy-data/` are shown alongside your own, labeled as examples.
 
 ### Analytics
 
@@ -60,9 +60,9 @@ Aggregated views of completed sessions for this week (Monday first, matching Ove
 - **What GitHub recorded** — one line with the commits and lines added and deleted during sessions, how many sessions had commits, and how many have no recorded activity.
 - **Session time** — per day across the whole week or month (days still ahead are shown empty), or per week for all time when it spans more than 45 days, with a tooltip for sessions and commits in each bar. Like the calendar and Projects, a session counts entirely toward the day it started.
 - **Where your time went** — the five projects with the most session time and their share of the period, then one line totalling the rest; real projects link to their Projects page.
-- **When you work** — a month calendar with each date shaded by its session time (credited to the day a session started). Hovering or focusing a date shows its session time, session count, and repositories, and a date with sessions links to Session History filtered to that day; arrows move between months, back to your first session. It follows the example-session toggle but not the time range.
+- **When you work** — a month calendar with each date shaded by its session time (credited to the day a session started). Hovering or focusing a date shows its session time, session count, and repositories, and a date with sessions links to Session History filtered to that day; arrows move between months, back to your first session. It ignores the time range.
 
-Values that were never recorded are shown as unavailable rather than zero. Analytics includes the example sessions from `src/dummy-data/` by default; **Include example sessions** turns them off, and the page notes when they are part of the totals. The range, the examples toggle, and the month shown in the calendar are kept in the URL.
+Values that were never recorded are shown as unavailable rather than zero. Analytics includes the example sessions from `src/dummy-data/` while example data is shown, and the page notes when they are part of the totals. The range and the month shown in the calendar are kept in the URL.
 
 ### Socials
 
@@ -70,7 +70,7 @@ A collapsible sidebar section listing your GitHub mutuals (people you follow who
 
 ### Settings
 
-Settings shows your account and GitHub connection, links to the GitHub App installation page to manage repository access, and lets you disconnect (sign out) after a confirmation step.
+Settings is a narrow column of three cards. **Account** shows your avatar, name, and username with a link to your GitHub profile, and **Sign out**, which ends the login but keeps your saved sessions in the browser (it asks first only when a session is running). **GitHub** shows the connection status and links to the GitHub App installation page to manage repository access. **Session history** has **Delete session history**, which, after a confirmation, removes the real sessions saved in this browser; example data is unaffected. Signing out never revokes Panta’s GitHub App authorization; that is done in GitHub’s settings.
 
 ## Routes
 
@@ -146,6 +146,8 @@ Panta does not use a database.
 ### Example (Dummy) Data
 
 `src/dummy-data/` contains illustrative example data marked as examples (`source: 'placeholder'`): 25 example repositories, five handcrafted example sessions, and about 150 generated ones (`generatedSessions.js`). The generated sessions are deterministic, never overlap, and are placed over the last 120 days relative to today, so recent-period views always have data. They include sessions with no commits and sessions whose GitHub activity was never recorded. Their commits and activity totals are made up and were never retrieved from GitHub. They keep Overview, Session History, Analytics, and Projects populated during development and are labeled as examples wherever they appear. Example projects are kept separate from real ones, so they never affect the project history shown when starting a session. They are not a mock of the GitHub API.
+
+**Show example data** in the sidebar hides or shows all of it at once: example sessions, projects, and the example repositories in the session workspace. The choice is remembered in the browser (`localStorage`, `panta.showExamples`) and defaults to shown. Direct links to an example session or project still open while examples are hidden.
 
 The folder holds only example data; `index.js` exposes it as `getDummySessions()` and `getDummySessionById()`. The session list and weekly summary helpers live in `src/sessions/sessionHelpers.js` and the analytics calculation in `src/analytics/sessionAnalytics.js`; both work on real and example sessions alike.
 

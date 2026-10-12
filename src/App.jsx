@@ -58,6 +58,18 @@ function summarizeCommits(commits) {
   };
 }
 
+const SHOW_EXAMPLES_KEY = 'panta.showExamples';
+const NO_EXAMPLES = [];
+
+// Examples are shown until the viewer turns them off; storage can be unavailable, so it only ever falls back to shown.
+function readShowExamples() {
+  try {
+    return window.localStorage.getItem(SHOW_EXAMPLES_KEY) !== 'off';
+  } catch {
+    return true;
+  }
+}
+
 export default function App() {
   const [pathname, setPathname] = useState(() => window.location.pathname);
   const route = resolveRoute(pathname);
@@ -79,12 +91,18 @@ export default function App() {
   const [mutualsError, setMutualsError] = useState('');
   const loadId = useRef(0);
   const endingSession = useRef(false);
+  const [showExamples, setShowExamples] = useState(readShowExamples);
   const allDummySessions = useMemo(() => getDummySessions(), []);
-  const analyticsSessions = useMemo(() => [...realSessions, ...allDummySessions], [realSessions, allDummySessions]);
-  const sessionItems = getSessionListItems([...realSessions, ...allDummySessions])
+  // The sidebar's "Show example data" setting hides every example session, project, and repository at once.
+  const visibleDummySessions = showExamples ? allDummySessions : NO_EXAMPLES;
+  const analyticsSessions = useMemo(() => [...realSessions, ...visibleDummySessions], [realSessions, visibleDummySessions]);
+  const sessionItems = getSessionListItems(analyticsSessions)
     .sort((left, right) => new Date(right.startedAt) - new Date(left.startedAt));
   const projects = useMemo(() => getProjects(realSessions, repositories), [realSessions, repositories]);
-  const exampleProjects = useMemo(() => getExampleProjects(), []);
+  // Overview offers to continue in the repository of the latest real session; examples never count.
+  const lastRealSession = useMemo(() => realSessions.reduce((latest, session) => (!latest || new Date(session.startedAt) > new Date(latest.startedAt) ? session : latest), null), [realSessions]);
+  const allExampleProjects = useMemo(() => getExampleProjects(), []);
+  const exampleProjects = showExamples ? allExampleProjects : NO_EXAMPLES;
   // Example repositories shaped like GitHub's, so the session workspace can list them beside real ones.
   const exampleRepositories = useMemo(() => dummyRepositories.map((repository) => ({
     id: repository.id,
@@ -96,7 +114,8 @@ export default function App() {
     updated_at: exampleProjects.find((project) => project.key === `id:${repository.id}`)?.lastWorkedAt ?? null,
     isExample: true,
   })), [exampleProjects]);
-  const routeProject = view === 'Project Detail' ? findProject([...projects, ...exampleProjects], route.owner, route.repo) : null;
+  // Direct links to an example project keep working while examples are hidden.
+  const routeProject = view === 'Project Detail' ? findProject([...projects, ...allExampleProjects], route.owner, route.repo) : null;
   // Includes example sessions, like Recent sessions beside it; the card says when it does.
   const weeklySummary = getWeeklySummary(analyticsSessions, new Date(now));
 
@@ -305,6 +324,15 @@ export default function App() {
     setActiveSession({ id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, source: 'github', repository, goal, startedAt, status: 'active', commits: [], activitySyncStatus: 'loading', activityCheckedAt: null, activityError: '' });
   }
 
+  function toggleExamples(value) {
+    setShowExamples(value);
+    try {
+      window.localStorage.setItem(SHOW_EXAMPLES_KEY, value ? 'on' : 'off');
+    } catch {
+      // The setting still applies for this visit.
+    }
+  }
+
   function cancelSession() {
     if (!activeSession || endingSession.current) return;
     setActiveSession(null);
@@ -370,6 +398,12 @@ export default function App() {
 
   function updateActiveGoal(goal) {
     setActiveSession((current) => current && { ...current, goal });
+  }
+
+  // Clears every real session saved in this browser; the storage effect then writes the empty list.
+  function deleteSessionHistory() {
+    setRealSessions([]);
+    setCompletedSession(null);
   }
 
   function deleteSession(sessionId) {
@@ -438,8 +472,10 @@ export default function App() {
         mutuals={mutuals}
         mutualsLoading={mutualsLoading}
         mutualsError={mutualsError}
+        showExamples={showExamples}
+        onToggleExamples={toggleExamples}
       />
-      <div className={`workspace-main${view === 'Overview' ? ' workspace-main-fit' : ''}`}>
+      <div className={`workspace-main${view === 'Overview' || view === 'Settings' ? ' workspace-main-fit' : ''}`}>
         <main className="app-main" id="main-content" tabIndex={-1}>
         {view === 'Overview' && (
           <OverviewPage
@@ -447,6 +483,7 @@ export default function App() {
             activeSession={activeSession}
             now={now}
             onNavigateToStart={() => navigate(routePaths['Session Workspace'])}
+            lastSession={lastRealSession}
             onViewSessions={() => navigate(routePaths['Session History'])}
             recentSessions={sessionItems.slice(0, 5)}
             calendarSessions={analyticsSessions}
@@ -481,7 +518,7 @@ export default function App() {
         )}
         {view === 'Session History' && (
           identityStatus === 'authenticated'
-            ? <SessionHistoryPage sessions={sessionItems} onSelectSession={(sessionId) => openSession(sessionId, { fromHistory: true })} onBack={() => navigate(routePaths.Overview)} />
+            ? <SessionHistoryPage sessions={sessionItems} onSelectSession={(sessionId) => openSession(sessionId, { fromHistory: true })} />
             : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
         )}
         {view === 'Projects' && (
@@ -495,7 +532,7 @@ export default function App() {
             : <section className="dashboard-section"><h2>Project not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Projects</button></section>
         )}
         {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} />}
-        {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} />}
+        {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} onDeleteHistory={deleteSessionHistory} />}
         {view === 'Session Detail' && (
           (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId))
             ? <SessionDetailPage

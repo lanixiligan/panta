@@ -28,33 +28,19 @@ export function WeeklySummary({ summary }) {
     { label: 'Commits', value: summary.commitCount ?? '—', title: summary.commitCount === null ? 'No GitHub activity recorded this week' : undefined },
     { label: 'Projects', value: summary.repositoryCount },
   ];
-  const maxMinutes = Math.max(1, ...summary.days.map(({ sessionMinutes }) => sessionMinutes));
 
   return (
-    <section className="dashboard-section weekly-section" aria-labelledby="weekly-heading">
-      <div className="dashboard-section-heading">
+    <section className="dashboard-section weekly-strip" aria-labelledby="weekly-heading">
+      <div className="weekly-strip-heading">
         <h2 id="weekly-heading">This week</h2>
         <span className="dashboard-section-meta">
           {formatDate(summary.start, { month: 'short', day: 'numeric' })} – {formatDate(summary.end, { month: 'short', day: 'numeric' })}
           {summary.includesExamples && ' · includes examples'}
         </span>
       </div>
-      <div className="weekly-metrics">
-        {metrics.map((metric) => <div className="weekly-metric" key={metric.label} title={metric.title}><strong>{metric.value}</strong><span>{metric.label}</span></div>)}
-      </div>
-      <div className="weekly-days">
-        <h3 className="weekly-days-heading">Session time by day</h3>
-        <div className="session-activity-chart" role="img" aria-label={`Session time by day this week: ${summary.days.filter((day) => !day.isFuture).map((day) => `${day.label} ${formatDuration(day.sessionMinutes)}`).join(', ')}`}>
-          {summary.days.map((day) => (
-            <div className={`activity-day ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}`} key={day.date} title={day.isFuture ? undefined : `${day.label}: ${formatDuration(day.sessionMinutes)}`}>
-              <span className="activity-bar-track">
-                {day.sessionMinutes > 0 && <i style={{ height: `${Math.max(6, (day.sessionMinutes / maxMinutes) * 100)}%` }} />}
-              </span>
-              <span>{day.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <dl className="weekly-metrics">
+        {metrics.map((metric) => <div className="weekly-metric" key={metric.label} title={metric.title}><dt>{metric.label}</dt><dd>{metric.value}</dd></div>)}
+      </dl>
     </section>
   );
 }

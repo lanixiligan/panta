@@ -191,17 +191,10 @@ function AnalyticsEmptyState({ range, hasAnySessions, onShowAllTime }) {
 }
 
 export default function AnalyticsPage({ sessions = [], onNavigate }) {
-  // Range and the examples toggle live in the URL (?range=, ?examples=off) so links and reloads keep the view.
+  // The range lives in the URL (?range=) so links and reloads keep the view.
   const [range, setRangeState] = useState(() => (timeRanges.some(({ value }) => value === readSearchParam('range')) ? readSearchParam('range') : DEFAULT_RANGE));
   const setRange = (value) => { setRangeState(value); updateSearchParams({ range: value === DEFAULT_RANGE ? null : value }); };
-  const hasExamples = sessions.some((session) => session.source === 'placeholder');
-  const [includeExamples, setIncludeExamplesState] = useState(() => readSearchParam('examples') !== 'off');
-  const setIncludeExamples = (value) => { setIncludeExamplesState(value); updateSearchParams({ examples: value ? null : 'off' }); };
-  const visibleSessions = useMemo(
-    () => (includeExamples ? sessions : sessions.filter((session) => session.source !== 'placeholder')),
-    [sessions, includeExamples],
-  );
-  const analytics = useMemo(() => calculateSessionAnalytics(visibleSessions, range), [visibleSessions, range]);
+  const analytics = useMemo(() => calculateSessionAnalytics(sessions, range), [sessions, range]);
   const hasSessions = analytics.sessionCount > 0;
 
   return (
@@ -216,12 +209,6 @@ export default function AnalyticsPage({ sessions = [], onNavigate }) {
           </p>
         </div>
         <div className="analytics-controls">
-          {hasExamples && (
-            <label className="analytics-example-toggle">
-              <input type="checkbox" checked={includeExamples} onChange={(event) => setIncludeExamples(event.target.checked)} />
-              Include example sessions
-            </label>
-          )}
           <div className="analytics-time-range" role="group" aria-label="Time range">
             {timeRanges.map(({ value, label }) => (
               <button key={value} type="button" aria-pressed={range === value} className={range === value ? 'selected' : ''} onClick={() => setRange(value)}>{label}</button>
@@ -237,7 +224,7 @@ export default function AnalyticsPage({ sessions = [], onNavigate }) {
           <SessionTimeChart timeline={analytics.timeline} />
           <div className="analytics-grid">
             <ProjectBreakdown projects={analytics.projects} onNavigate={onNavigate} />
-            <WorkCalendar sessions={visibleSessions} onNavigate={onNavigate} />
+            <WorkCalendar sessions={sessions} onNavigate={onNavigate} />
           </div>
           <p className="session-history-boundary">
             {analytics.includesExamples ? 'Includes example sessions. ' : ''}Session time is what you declared; GitHub activity is what GitHub recorded during it.

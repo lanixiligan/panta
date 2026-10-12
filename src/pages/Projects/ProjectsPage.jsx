@@ -161,16 +161,14 @@ function ProjectTable({ projects, activity, maxMinutes, onNavigate }) {
 }
 
 export default function ProjectsPage({ projects: realProjects = [], exampleProjects = [], onNavigate, onStartSession }) {
-  // Sort, layout, and the examples toggle live in the URL (?sort=, ?view=list, ?examples=off).
+  // Sort and layout live in the URL (?sort=, ?view=list).
   const [sort, setSortState] = useState(() => (sortOptions.some(([value]) => value === readSearchParam('sort')) ? readSearchParam('sort') : 'recent'));
   const [layout, setLayoutState] = useState(() => (readSearchParam('view') === 'list' ? 'list' : 'grid'));
-  const [includeExamples, setIncludeExamplesState] = useState(() => readSearchParam('examples') !== 'off');
   const setSort = (value) => { setSortState(value); updateSearchParams({ sort: value === 'recent' ? null : value }); };
   const setLayout = (value) => { setLayoutState(value); updateSearchParams({ view: value === 'grid' ? null : value }); };
-  const setIncludeExamples = (value) => { setIncludeExamplesState(value); updateSearchParams({ examples: value ? null : 'off' }); };
   const projects = useMemo(
-    () => (includeExamples ? [...realProjects, ...exampleProjects].sort((left, right) => right.lastWorkedAt - left.lastWorkedAt) : realProjects),
-    [realProjects, exampleProjects, includeExamples],
+    () => [...realProjects, ...exampleProjects].sort((left, right) => right.lastWorkedAt - left.lastWorkedAt),
+    [realProjects, exampleProjects],
   );
   const sortedProjects = useMemo(() => sortProjects(projects, sort), [projects, sort]);
   const activity = useMemo(() => new Map(projects.map((project) => [project.key, recentDailyMinutes(project, ACTIVITY_DAYS)])), [projects]);
@@ -180,7 +178,6 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
   return (
     <div className="projects-page">
       <section className="page-intro">
-        <span className="section-kicker">PROJECTS</span>
         <h1>Projects</h1>
         <p>Every repository you’ve worked on through Panta, with the time you declared and what GitHub saw.</p>
       </section>
@@ -194,12 +191,6 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
                   <button key={value} type="button" className={sort === value ? 'is-active' : undefined} aria-pressed={sort === value} onClick={() => setSort(value)}>{label}</button>
                 ))}
               </div>
-              {exampleProjects.length > 0 && (
-                <label className="analytics-example-toggle project-example-toggle">
-                  <input type="checkbox" checked={includeExamples} onChange={(event) => setIncludeExamples(event.target.checked)} />
-                  Include example projects
-                </label>
-              )}
             </div>
             <div className="project-segmented is-icons" role="group" aria-label="Layout">
               <button type="button" className={layout === 'grid' ? 'is-active' : undefined} aria-pressed={layout === 'grid'} aria-label="Grid view" onClick={() => setLayout('grid')}>

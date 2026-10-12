@@ -3,6 +3,7 @@ import SessionSetup from './components/SessionSetup/SessionSetup.jsx';
 import ActiveSession from './components/ActiveSession/ActiveSession.jsx';
 import SessionRecap from './components/SessionRecap/SessionRecap.jsx';
 import { findProjectForRepository } from '../Projects/projectHistory.js';
+import { readSearchParam, updateSearchParams } from '../../routing.js';
 
 const phases = [
   { key: 'setup', label: 'Setup', name: 'Session setup' },
@@ -21,7 +22,9 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
   const [type, setType] = useState('all');
   const [language, setLanguage] = useState('all');
   const [sort, setSort] = useState('updated');
-  const [selectedRepositoryId, setSelectedRepositoryId] = useState('');
+  // The selected repository lives in the URL (?repo=<id>), so Overview's "Continue" can open the workspace with it chosen.
+  const [selectedRepositoryId, setSelectedRepositoryIdState] = useState(() => readSearchParam('repo') || '');
+  const setSelectedRepositoryId = (value) => { setSelectedRepositoryIdState(value); updateSearchParams({ repo: value || null }); };
   const [goal, setGoal] = useState('');
 
   const repositories = useMemo(() => (githubRepositories.length ? [...githubRepositories, ...exampleRepositories] : githubRepositories), [githubRepositories, exampleRepositories]);

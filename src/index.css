@@ -6,6 +6,7 @@
 /* Shared components */
 @import './components/navigation/SidebarNav.css';
 @import './components/layout/Footer.css';
+@import './components/layout/ScrollArea.css';
 @import './components/auth/AuthControl.css';
 @import './components/sessions/SessionCommitList.css';
 @import './components/sessions/EditableGoal.css';

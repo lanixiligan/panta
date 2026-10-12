@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { followRouteLink, routePaths } from '../../routing.js';
 import DateRangePicker, { readRange, rangeBounds, toDayString, writeRange } from './components/DateRangePicker.jsx';
 import FilterSelect from '../../components/filters/FilterSelect.jsx';
 
@@ -196,7 +195,7 @@ function EmptyHistory({ hasFilters }) {
   );
 }
 
-export default function SessionHistoryPage({ sessions = [], onSelectSession, onBack }) {
+export default function SessionHistoryPage({ sessions = [], onSelectSession }) {
   const initial = useMemo(readHistoryParams, []);
   const [query, setQuery] = useState(initial.query);
   const [repository, setRepository] = useState(initial.repository);
@@ -285,7 +284,6 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession, onB
   return (
     <div className="sessions-page session-history-page" ref={pageRef}>
       <section className="page-intro">
-        <a className="session-history-back" href={routePaths.Overview} onClick={(event) => followRouteLink(event, () => onBack())}>← Overview</a>
         <div className="session-history-title-row">
           <div>
             <h1>Session History</h1>

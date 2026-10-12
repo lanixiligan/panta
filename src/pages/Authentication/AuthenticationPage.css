@@ -1,5 +1,5 @@
 /* Sign-in: the wordmark, the tagline, and one button, centred on the app background. */
-.auth-screen { position: relative; display: grid; min-height: 100vh; min-height: 100dvh; grid-template-rows: auto 1fr auto; justify-items: center; padding: clamp(28px, 6vh, 56px) 22px; overflow-x: hidden; background: var(--workspace-bg); color: var(--workspace-text); }
+.auth-screen { position: relative; display: grid; min-height: calc(100vh / var(--ui-zoom)); min-height: calc(100dvh / var(--ui-zoom)); grid-template-rows: auto 1fr auto; justify-items: center; padding: clamp(28px, calc(6vh / var(--ui-zoom)), 56px) 22px; overflow-x: hidden; background: var(--workspace-bg); color: var(--workspace-text); }
 /* A soft green glow behind the wordmark. */
 .auth-background-canvas { position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 55% 45% at 50% 46%, #39ff8817 0%, #39ff8808 45%, transparent 75%), var(--workspace-bg); }
 .auth-motto, .auth-hero { position: relative; z-index: 1; }
@@ -17,23 +17,23 @@
 .auth-flow i { position: absolute; top: 50%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 8px #39ff8855; opacity: .3; animation: auth-flow-dot 5s ease-in-out infinite; animation-delay: calc(var(--i) * .6s); }
 @keyframes auth-flow-dot { 0%, 22%, 100% { opacity: .3; } 8% { opacity: 1; } }
 
-.auth-hero h1 { margin: 0; color: var(--workspace-text); font-size: clamp(84px, 15vw, 176px); font-weight: 600; letter-spacing: -.05em; line-height: .9; }
-.auth-tagline { margin: 2px 0 0; color: var(--workspace-text); font-size: clamp(19px, 2.4vw, 28px); font-weight: 500; letter-spacing: -.01em; }
+.auth-hero h1 { margin: 0; color: var(--workspace-text); font-size: clamp(84px, calc(15vw / var(--ui-zoom)), 176px); font-weight: 600; letter-spacing: -.05em; line-height: .9; }
+.auth-tagline { margin: 2px 0 0; color: var(--workspace-text); font-size: clamp(19px, calc(2.4vw / var(--ui-zoom)), 28px); font-weight: 500; letter-spacing: -.01em; }
 
-.auth-subline { max-width: 640px; text-wrap: balance; margin: 12px 0 40px; color: var(--workspace-secondary); font-size: clamp(14px, 1.3vw, 16px); line-height: 1.55; }
+.auth-subline { max-width: 640px; text-wrap: balance; margin: 12px 0 40px; color: var(--workspace-secondary); font-size: clamp(14px, calc(1.3vw / var(--ui-zoom)), 16px); line-height: 1.55; }
 .auth-screen .auth-control { display: flex; flex-direction: column; align-items: center; }
-.auth-screen .github-sign-in { min-height: 44px; justify-content: center; gap: 9px; padding: 0 0 0 18px; overflow: hidden; border: 1px solid var(--workspace-accent); border-radius: 6px; background: var(--workspace-accent); color: #04230f; font-size: 14px; font-weight: 600; transition: background .15s ease, border-color .15s ease; }
-.auth-screen .github-sign-in:hover { border-color: #6dffa6; background: #6dffa6; }
+.auth-screen .github-sign-in { min-height: 44px; justify-content: center; gap: 9px; padding: 0 0 0 18px; overflow: hidden; border: 1px solid var(--workspace-action-border); border-radius: 6px; background: var(--workspace-action); color: var(--workspace-action-text); font-size: 14px; font-weight: 600; transition: background .15s ease, border-color .15s ease; }
+.auth-screen .github-sign-in:hover { border-color: var(--workspace-action-border); background: var(--workspace-action-hover); }
 /* The arrow sits in its own darker segment at the end of the button. */
 .auth-screen .github-sign-in::after { display: grid; align-self: stretch; width: 40px; margin-left: 9px; place-items: center; border-left: 1px solid #04230f26; background: #04230f1a; content: '→'; font-size: 15px; transition: background .15s ease; }
 .auth-screen .github-sign-in:hover::after { background: #04230f29; }
-.auth-screen .github-sign-in:focus-visible, .auth-screen .auth-identity-error button:focus-visible { outline: 2px solid #9ae4b0; outline-offset: 3px; }
+.auth-screen .github-sign-in:focus-visible, .auth-screen .auth-identity-error button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; }
 .auth-screen .github-mark { width: 16px; height: 16px; }
 .auth-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 24px; }
 .auth-screen .auth-checking, .auth-screen-checking { margin: 0; color: var(--workspace-secondary); font-size: 13px; }
-.auth-screen .auth-message { position: static; width: 100%; max-width: 360px; margin-top: 11px; border-color: #554339; background: #1b1712; color: #d6b59a; box-shadow: none; font-size: 11px; }
-.auth-identity-error { display: flex; align-items: flex-start; justify-content: space-between; gap: 11px; width: min(100%, 360px); margin: 0 0 14px; padding: 9px 10px; border: 1px solid #543a34; border-radius: 6px; background: #18130f; color: #d9a79c; font-size: 11px; line-height: 1.5; text-align: left; }
-.auth-identity-error button { flex: 0 0 auto; padding: 0; border: 0; background: transparent; color: #e3c2b5; font-size: 11px; text-decoration: underline; cursor: pointer; }
+.auth-screen .auth-message { position: static; width: 100%; max-width: 360px; margin-top: 11px; border-color: var(--workspace-danger-border); background: var(--workspace-danger-bg); color: var(--workspace-danger); box-shadow: none; font-size: 11px; }
+.auth-identity-error { display: flex; align-items: flex-start; justify-content: space-between; gap: 11px; width: min(100%, 360px); margin: 0 0 14px; padding: 9px 10px; border: 1px solid var(--workspace-danger-border); border-radius: 6px; background: var(--workspace-danger-bg); color: var(--workspace-danger); font-size: 11px; line-height: 1.5; text-align: left; }
+.auth-identity-error button { flex: 0 0 auto; padding: 0; border: 0; background: transparent; color: var(--workspace-danger); font-size: 11px; text-decoration: underline; cursor: pointer; }
 
 @media (max-width: 560px) {
   .auth-screen { padding: 20px 16px; }

@@ -1,7 +1,8 @@
 import React from 'react';
-import { followRouteLink, projectDetailPath, sessionDetailPath } from '../../../../routing.js';
+import { followRouteLink, projectDetailPath, routePaths, sessionDetailPath } from '../../../../routing.js';
 import { formatCount, formatProjectDuration } from '../../../Projects/projectHistory.js';
 import FilterSelect from '../../../../components/filters/FilterSelect.jsx';
+import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 
 function repositoryVisibility(repository) {
   if (repository.isExample) return 'example';
@@ -36,18 +37,18 @@ function RepositoryRow({ repository, selected, onSelect }) {
           <span className={`repository-visibility ${visibility}`}>{visibility}</span>
         </span>
         {repository.description && <span className="repository-select-description">{repository.description}</span>}
-      </span>
-      <span className="repository-select-meta">
-        {repository.language && <span className="repository-select-language">{repository.language}</span>}
-        {updatedAt && <span>Updated {updatedAt}</span>}
+        <span className="repository-select-meta">
+          <span className={`repository-select-language${repository.language ? '' : ' is-none'}`}>{repository.language || 'No language'}</span>
+          {updatedAt && <><span aria-hidden="true">·</span><span>Updated {updatedAt}</span></>}
+        </span>
       </span>
     </button>
   );
 }
 
-const RECENT_SESSION_ROWS = 4;
+const RECENT_SESSION_ROWS = 2;
 
-// The selected repository's latest sessions, always in a four-row frame so the panel keeps its shape.
+// The selected repository's latest sessions, always in a two-row frame so the panel keeps its shape.
 function RepositoryHistory({ project, onNavigate }) {
   const sessions = project ? project.sessions.slice(0, RECENT_SESSION_ROWS) : [];
   const fillers = RECENT_SESSION_ROWS - sessions.length;
@@ -88,7 +89,6 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
       <section className="repository-browser-column" aria-labelledby="repository-browser-heading">
         <div className="repository-browser-heading">
           <h2 id="repository-browser-heading">Choose a repository</h2>
-          {!loading && !error && filteredRepositories.length < repositories.length && <span className="repository-browser-count">{filteredRepositories.length} of {repositories.length}</span>}
         </div>
 
         <div className="repository-browser">
@@ -101,7 +101,6 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
               <span id="repository-type-label">Type</span>
               <FilterSelect
                 labelId="repository-type-label"
-                icon={<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8Z" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" /><circle cx="8" cy="8" r="2" fill="none" stroke="currentColor" strokeWidth="1.3" /></svg>}
                 value={type}
                 options={[['all', 'All types'], ['public', 'Public'], ['private', 'Private']]}
                 onChange={setType}
@@ -111,7 +110,6 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
               <span id="repository-language-label">Language</span>
               <FilterSelect
                 labelId="repository-language-label"
-                icon={<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.3" /><circle cx="8" cy="8" r="2.25" fill="currentColor" /></svg>}
                 value={language}
                 options={[['all', 'All languages'], ...languages.map((value) => [value, value])]}
                 onChange={setLanguage}
@@ -121,7 +119,6 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
               <span id="repository-sort-label">Sort</span>
               <FilterSelect
                 labelId="repository-sort-label"
-                icon={<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M5 3v10M2.5 10.5 5 13l2.5-2.5M11 13V3M8.5 5.5 11 3l2.5 2.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                 value={sort}
                 options={[['updated', 'Recently updated'], ['name', 'Name A–Z']]}
                 onChange={setSort}
@@ -143,22 +140,33 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
             </div>
           )}
           {!loading && !error && repositories.length > 0 && filteredRepositories.length === 0 && (
-            <div className="repository-browser-state">
-              <strong>No repositories found</strong>
-              <p>Try a different search or filter.</p>
-            </div>
+            // Private repositories only appear once the user grants Panta access to them on GitHub.
+            type === 'private' && !repositories.some((repository) => repository.private && !repository.isExample) ? (
+              <div className="repository-browser-state">
+                <strong>No private repositories shared with Panta</strong>
+                <p>Give Panta access to private repositories under Repository access.</p>
+                <a className="repository-browser-state-link" href={routePaths.Settings} onClick={(event) => followRouteLink(event, onNavigate)}>Go to Settings <span aria-hidden="true">→</span></a>
+              </div>
+            ) : (
+              <div className="repository-browser-state">
+                <strong>No repositories found</strong>
+                <p>Try a different search or filter.</p>
+              </div>
+            )
           )}
           {!loading && !error && filteredRepositories.length > 0 && (
-            <div className="repository-select-list" role="group" aria-label="Repositories">
-              {filteredRepositories.map((repository) => (
-                <RepositoryRow
-                  key={repository.id}
-                  repository={repository}
-                  selected={String(repository.id) === selectedRepositoryId}
-                  onSelect={setSelectedRepositoryId}
-                />
-              ))}
-            </div>
+            <ScrollArea className="repository-scroll" watch={filteredRepositories.length}>
+              <div className="repository-select-list" role="group" aria-label="Repositories">
+                {filteredRepositories.map((repository) => (
+                  <RepositoryRow
+                    key={repository.id}
+                    repository={repository}
+                    selected={String(repository.id) === selectedRepositoryId}
+                    onSelect={setSelectedRepositoryId}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </div>
       </section>
@@ -189,7 +197,7 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
 
         <form className="session-goal-form" onSubmit={handleSubmit}>
           <label className="dashboard-field" htmlFor="session-goal">
-            <span>Goal for this session</span>
+            <span>Session goal</span>
             <input
               id="session-goal"
               name="goal"
@@ -198,16 +206,15 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
               value={goal}
               onChange={(event) => setGoal(event.target.value)}
               maxLength={160}
-              placeholder="e.g. Refactor the session timer…"
+              placeholder="e.g. Fix the login redirect bug"
             />
           </label>
           <button className="session-workspace-button" type="submit" disabled={!canStart || loading || Boolean(error) || Boolean(selectedRepository?.isExample)}>
             {!selectedRepository ? 'Choose a repository first'
               : selectedRepository.isExample ? 'Examples can’t be tracked'
                 : !goal.trim() ? 'Add a goal first'
-                  : <>Start session <span aria-hidden="true">→</span></>}
+                  : 'Start session'}
           </button>
-          <p className="session-goal-hint">Session time starts when you press Start. GitHub activity is tracked automatically.</p>
         </form>
 
       </aside>

@@ -30,9 +30,9 @@
 .sidebar-bottom { position: relative; margin-top: auto; border-top: 1px solid var(--workspace-border); }
 /* Session Workspace: the main action, pinned above the example-data setting and the account. */
 .sidebar-workspace { margin-top: auto; padding-bottom: 12px; }
-.sidebar-workspace-link { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid var(--workspace-action-border); border-radius: 6px; background: var(--workspace-action); color: var(--workspace-action-text); font-size: 13px; font-weight: 600; text-decoration: none; transition: background .15s ease, border-color .15s ease; }
-.sidebar-workspace-link:hover { border-color: var(--workspace-action-border); background: var(--workspace-action-hover); }
-.sidebar-workspace-link[aria-current="page"] { box-shadow: 0 0 0 3px #39ff8826; }
+.sidebar-workspace-link { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid var(--workspace-border-hover); border-radius: 6px; background: var(--workspace-sidebar); color: var(--workspace-accent-soft); font-size: 13px; font-weight: 600; text-decoration: none; transition: color .15s ease, border-color .15s ease; }
+.sidebar-workspace-link:hover { border-color: var(--workspace-level-4); color: var(--workspace-text); }
+.sidebar-workspace-link[aria-current="page"] { border-color: var(--workspace-level-4); color: var(--workspace-text); }
 .sidebar-workspace-link:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
 .sidebar-live-session[aria-current="page"] { border-color: var(--workspace-border-hover); }
 /* "Show example data": one setting for every page, just above the account. */

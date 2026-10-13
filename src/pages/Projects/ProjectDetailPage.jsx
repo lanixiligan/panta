@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { formatCount, formatLastWorked, formatProjectDuration, recentDailyMinutes } from './projectHistory.js';
 import { followRouteLink, routePaths } from '../../routing.js';
+import RepositoryName from '../../components/repository/RepositoryName.jsx';
 
 const CHART_DAYS = 30;
 
@@ -187,10 +188,8 @@ export default function ProjectDetailPage({ project, onBack, onSelectSession }) 
             : <span className="session-complete-label"><i aria-hidden="true" /> PROJECT</span>}
           {!project.isExample && project.visibility && <span className={`project-badge is-${project.visibility}`}>{project.visibility}</span>}
         </div>
-        <h1>{project.name}</h1>
-        {project.htmlUrl && !project.isExample
-          ? <a className="project-detail-repo" href={project.htmlUrl} target="_blank" rel="noreferrer">{project.fullName} <span aria-hidden="true">↗</span></a>
-          : <span className="project-detail-repo">{project.fullName}</span>}
+        <h1><RepositoryName name={project.fullName} /></h1>
+        {project.htmlUrl && !project.isExample && <a className="project-detail-repo" href={project.htmlUrl} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>}
         {project.description && <p className="project-detail-description">{project.description}</p>}
         <p className="project-detail-dates">
           Last worked <strong>{formatLastWorked(project.lastWorkedAt)}</strong>

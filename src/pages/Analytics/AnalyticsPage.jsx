@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { calculateSessionAnalytics } from '../../analytics/sessionAnalytics.js';
 import { followRouteLink, projectDetailPath, readSearchParam, updateSearchParams } from '../../routing.js';
 import WorkCalendar from '../../components/analytics/WorkCalendar.jsx';
+import RepositoryName from '../../components/repository/RepositoryName.jsx';
 
 const timeRanges = [
   { value: 'week', label: 'This week' },
@@ -127,7 +128,7 @@ function ProjectBreakdown({ projects, onNavigate }) {
             const content = (
               <>
                 <span className="analytics-project-name">
-                  <strong>{project.name}</strong>
+                  <strong><RepositoryName name={project.fullName} /></strong>
                   <small>{formatCount(project.sessionCount, 'session')}{project.commits !== null ? ` · ${formatCount(project.commits, 'commit')}` : ''}</small>
                 </span>
                 <span className="analytics-project-share">{Math.round(project.share * 100)}%</span>

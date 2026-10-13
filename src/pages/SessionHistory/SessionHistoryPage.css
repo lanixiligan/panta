@@ -60,8 +60,6 @@
 }
 .history-groups { display: flex; flex-direction: column; gap: 20px; }
 .history-month-heading { position: sticky; top: 0; z-index: 1; padding-top: 10px; background: var(--workspace-bg); }
-.history-pager { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 8px; color: var(--workspace-muted); font: 12px 'DM Mono', monospace; }
-.history-pager .subtle-action:disabled { opacity: .35; cursor: default; }
 .history-groups > .session-history-boundary { margin: -12px 0 0; }
 .history-month-heading { align-items: center; }
 .history-month-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; margin-left: -4px; padding: 0 6px 0 4px; border: 0; border-radius: 6px; background: none; color: var(--workspace-text); cursor: pointer; }

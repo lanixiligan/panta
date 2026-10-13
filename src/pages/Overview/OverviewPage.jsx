@@ -3,6 +3,7 @@ import { formatElapsed } from '../../sessions/sessionHelpers.js';
 import { followRouteLink, routePaths } from '../../routing.js';
 import { RecentSessions, WeeklySummary } from './components/DashboardSections.jsx';
 import WorkCalendar from '../../components/analytics/WorkCalendar.jsx';
+import RepositoryName from '../../components/repository/RepositoryName.jsx';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -44,7 +45,7 @@ export default function OverviewPage({ identity, identityStatus, identityError, 
       {activeSession ? (
         <a className="overview-next" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, () => onNavigateToStart())}>
           <span className="overview-live-dot" aria-hidden="true" />
-          <span className="overview-next-repo">{activeSession.repository.name}</span>
+          <RepositoryName className="overview-next-repo" repository={activeSession.repository} />
           <span className="overview-next-goal">{activeSession.goal || 'No goal set'}</span>
           <span className="overview-live-time">{formatElapsed(now - new Date(activeSession.startedAt).getTime())}</span>
           <span className="overview-next-action">Open session <span aria-hidden="true">→</span></span>
@@ -52,7 +53,7 @@ export default function OverviewPage({ identity, identityStatus, identityError, 
       ) : lastSession?.repository?.id != null && (
         <a className="overview-next" href={`${routePaths['Session Workspace']}?repo=${encodeURIComponent(lastSession.repository.id)}`} onClick={(event) => followRouteLink(event, onNavigate)}>
           <span className="overview-next-label">Continue where you left off</span>
-          <span className="overview-next-repo">{lastSession.repository.name}</span>
+          <RepositoryName className="overview-next-repo" repository={lastSession.repository} />
           <span className="overview-next-goal">{lastSession.goal}</span>
           <time className="overview-next-date" dateTime={lastSession.startedAt}>{formatDay(lastSession.startedAt)}</time>
           <span className="overview-next-action">Continue <span aria-hidden="true">→</span></span>

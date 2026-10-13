@@ -2,6 +2,7 @@ import React from 'react';
 import { getDummySessionById } from '../../../dummy-data/index.js';
 import { getSessionDurationMinutes } from '../../../sessions/sessionHelpers.js';
 import { followRouteLink, routePaths } from '../../../routing.js';
+import RepositoryName from '../../../components/repository/RepositoryName.jsx';
 
 // The same handcrafted example session the preview page shows.
 const GLIMPSE_SESSION_ID = 'session-001';
@@ -28,7 +29,7 @@ export default function SessionGlimpse({ onNavigate }) {
       <span className="auth-glimpse-header" aria-hidden="true">
         <span className="auth-glimpse-title">
           <strong>{session.goal}</strong>
-          <span>{session.repository.name}</span>
+          <RepositoryName repository={session.repository} />
         </span>
         <span className="auth-glimpse-stats">
           <span>{formatDuration(getSessionDurationMinutes(session))}</span>

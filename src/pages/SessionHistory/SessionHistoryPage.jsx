@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import DateRangePicker, { readRange, rangeBounds, toDayString, writeRange } from './components/DateRangePicker.jsx';
 import FilterSelect from '../../components/filters/FilterSelect.jsx';
+import Pager from '../../components/navigation/Pager.jsx';
+import RepositoryName from '../../components/repository/RepositoryName.jsx';
 
 const sortOptions = [
   ['newest', 'Newest first'],
@@ -95,7 +97,7 @@ function formatCount(value, singular, plural = `${singular}s`) {
 
 function RepositoryLabel({ session }) {
   const fullName = session.repositoryFullName || session.repositoryName || 'Unknown repository';
-  return <span className="history-row-repo" title={fullName}>{fullName.split('/').pop()}</span>;
+  return <RepositoryName className="history-row-repo" name={fullName} />;
 }
 
 function SessionActivityStats({ session }) {
@@ -337,17 +339,7 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession }) {
             {groups.map((group) => (
               <SessionHistoryGroup key={group.key} groupKey={group.key} {...group} collapsible={isChronological} onToggle={() => toggleMonth(group.key)} onSelectSession={selectSession} />
             ))}
-            {pageCount > 1 && (
-              <nav className="history-pager" aria-label="Session history pages">
-                <button className="subtle-action" type="button" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
-                  <span aria-hidden="true">←</span> Previous
-                </button>
-                <span aria-live="polite">Page {currentPage} of {pageCount}</span>
-                <button className="subtle-action" type="button" onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pageCount}>
-                  Next <span aria-hidden="true">→</span>
-                </button>
-              </nav>
-            )}
+            <Pager page={currentPage} pageCount={pageCount} onChange={goToPage} label="Session history pages" />
             {filteredSessions.some((session) => session.isPlaceholder) && (
               <p className="session-history-boundary">Example sessions are illustrative; their GitHub activity was not retrieved from GitHub.</p>
             )}

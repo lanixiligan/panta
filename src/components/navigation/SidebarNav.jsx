@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import AuthControl from '../auth/AuthControl.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { followRouteLink, routePaths } from '../../routing.js';
+import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
 
 const items = [
   { label: 'Overview', view: 'Overview', path: routePaths.Overview, icon: '▣' },
@@ -102,11 +103,11 @@ function SessionWorkspaceLink({ session, now, pathname, onNavigate }) {
       </a>
     );
   }
-  const repository = session.repository?.name || session.repository?.full_name || 'Coding session';
+  const repository = repositoryFullName(session.repository) || 'Coding session';
   return (
     <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={`Open active session for ${repository}`}>
       <span className="live-session-heading"><i aria-hidden="true" /> LIVE</span>
-      <strong>{repository}</strong>
+      <strong>{session.repository ? <RepositoryName name={repository} /> : repository}</strong>
       <span className="live-session-time">{formatElapsed(session.startedAt, now)}</span>
     </a>
   );

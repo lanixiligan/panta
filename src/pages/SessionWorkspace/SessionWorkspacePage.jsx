@@ -36,7 +36,7 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
     return repositories
       .filter((repository) => {
         // Search matches the repository name only, not the owner or the description.
-        const matchesQuery = !normalizedQuery || repository.name?.toLocaleLowerCase().includes(normalizedQuery);
+        const matchesQuery = !normalizedQuery || (repository.full_name || repository.name)?.toLocaleLowerCase().includes(normalizedQuery);
         const matchesType = type === 'all' || (type === 'private' ? repository.private : !repository.private);
         const matchesLanguage = language === 'all' || repository.language === language;
         return matchesQuery && matchesType && matchesLanguage;

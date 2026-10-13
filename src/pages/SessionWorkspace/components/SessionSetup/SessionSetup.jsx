@@ -3,6 +3,8 @@ import { followRouteLink, projectDetailPath, routePaths, sessionDetailPath } fro
 import { formatCount, formatProjectDuration } from '../../../Projects/projectHistory.js';
 import FilterSelect from '../../../../components/filters/FilterSelect.jsx';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
+import RepositoryName from '../../../../components/repository/RepositoryName.jsx';
+import RepositoryLanguage from '../../../../components/repository/RepositoryLanguage.jsx';
 
 function repositoryVisibility(repository) {
   if (repository.isExample) return 'example';
@@ -33,12 +35,12 @@ function RepositoryRow({ repository, selected, onSelect }) {
       <span className="repository-select-indicator" aria-hidden="true">{selected ? '✓' : ''}</span>
       <span className="repository-select-main">
         <span className="repository-select-heading">
-          <strong title={repository.full_name}>{repository.name}</strong>
+          <strong><RepositoryName repository={repository} /></strong>
           <span className={`repository-visibility ${visibility}`}>{visibility}</span>
         </span>
         {repository.description && <span className="repository-select-description">{repository.description}</span>}
         <span className="repository-select-meta">
-          <span className={`repository-select-language${repository.language ? '' : ' is-none'}`}>{repository.language || 'No language'}</span>
+          <RepositoryLanguage language={repository.language} />
           {updatedAt && <><span aria-hidden="true">·</span><span>Updated {updatedAt}</span></>}
         </span>
       </span>
@@ -177,12 +179,11 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
           <div className="selected-repository-summary">
             <span className="selected-repository-details">
               <span className="selected-repository-heading">
-                <strong>{selectedRepository.name}</strong>
+                <strong><RepositoryName repository={selectedRepository} /></strong>
                 <span className={`repository-visibility ${repositoryVisibility(selectedRepository)}`}>{repositoryVisibility(selectedRepository)}</span>
               </span>
-              <span className="selected-repository-fullname">{selectedRepository.full_name || selectedRepository.name}</span>
               <span className="selected-repository-meta">
-                {selectedRepository.language && <span>{selectedRepository.language}</span>}
+                {selectedRepository.language && <RepositoryLanguage language={selectedRepository.language} />}
                 {selectedRepository.html_url && !selectedRepository.isExample && <a className="text-link" href={selectedRepository.html_url} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>}
               </span>
             </span>

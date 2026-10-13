@@ -3,6 +3,8 @@ import EditableGoal from '../../../../components/sessions/EditableGoal.jsx';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
 import { formatElapsed } from '../../../../sessions/sessionHelpers.js';
+import RepositoryName from '../../../../components/repository/RepositoryName.jsx';
+import RepositoryLanguage from '../../../../components/repository/RepositoryLanguage.jsx';
 
 // "12s ago", "3m ago": compact enough to sit under the timer.
 function shortAgo(value, now) {
@@ -50,9 +52,9 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
           <span className="session-console-time">{elapsed}</span>
         </div>
         <div className="session-console-context">
-          <p className="session-console-repo">{repository.full_name || repository.name}</p>
+          <p className="session-console-repo"><RepositoryName repository={repository} /></p>
           <EditableGoal as="h2" goal={session.goal} onSave={isEnding ? undefined : onUpdateGoal} />
-          {repository.language && <p className="session-console-meta">{repository.language}</p>}
+          {repository.language && <p className="session-console-meta"><RepositoryLanguage language={repository.language} /></p>}
         </div>
         <div className="session-console-actions">
           <a className="continue-session-button" href={repository.html_url} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>
@@ -78,7 +80,7 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
         ) : (
           <div className="session-console-empty">
             <strong>{activityStatus === 'loading' ? 'Checking GitHub for session commits…' : 'Waiting for GitHub activity…'}</strong>
-            <p>Commits you push to {repository.name} during this session will appear here.</p>
+            <p>Commits you push to <RepositoryName repository={repository} /> during this session will appear here.</p>
           </div>
         )}
       </section>

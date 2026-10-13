@@ -1,0 +1,5 @@
+/* Repository language: GitHub's language color dot, then the name. */
+.repository-language { display: inline-flex; align-items: center; gap: 6px; color: var(--workspace-secondary); white-space: nowrap; }
+.repository-language i { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--language-color, var(--workspace-level-3)); }
+.repository-language.is-none { color: var(--workspace-muted); }
+.repository-language.is-none i { border: 1px solid var(--workspace-faint); background: transparent; }

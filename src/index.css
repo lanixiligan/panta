@@ -5,6 +5,7 @@
 
 /* Shared components */
 @import './components/navigation/SidebarNav.css';
+@import './components/navigation/Pager.css';
 @import './components/layout/Footer.css';
 @import './components/layout/ScrollArea.css';
 @import './components/auth/AuthControl.css';
@@ -12,6 +13,8 @@
 @import './components/sessions/EditableGoal.css';
 @import './components/filters/FilterSelect.css';
 @import './components/analytics/WorkCalendar.css';
+@import './components/repository/RepositoryName.css';
+@import './components/repository/RepositoryLanguage.css';
 
 /* Overview */
 @import './pages/Overview/OverviewPage.css';
@@ -30,6 +33,7 @@
 
 /* Other pages */
 @import './pages/Projects/ProjectsPage.css';
+@import './pages/Projects/components/ProjectCard.css';
 @import './pages/Analytics/AnalyticsPage.css';
 @import './pages/Settings/SettingsPage.css';
 @import './pages/Authentication/AuthenticationPage.css';

@@ -29,10 +29,6 @@
 .repository-select-heading .repository-visibility, .selected-repository-heading .repository-visibility { padding: 2px 6px; font-size: 11px; text-transform: capitalize; }
 .repository-select-description { display: -webkit-box; overflow: hidden; margin-top: 2px; color: var(--workspace-secondary); font-size: 13px; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .repository-select-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 2px; color: var(--workspace-muted); font: 11px 'DM Mono', monospace; white-space: nowrap; }
-.repository-select-language { display: inline-flex; align-items: center; gap: 6px; color: var(--workspace-secondary); }
-.repository-select-language::before { width: 6px; height: 6px; border-radius: 50%; content: ''; background: var(--workspace-level-3); }
-.repository-select-language.is-none { color: var(--workspace-muted); }
-.repository-select-language.is-none::before { border: 1px solid var(--workspace-faint); background: transparent; }
 
 .repository-browser-state { padding: 28px 24px; color: var(--workspace-text); font-size: 14px; }
 .repository-browser-state strong { font-weight: 500; }
@@ -54,7 +50,6 @@
 .selected-repository-heading { display: flex; max-width: 100%; min-width: 0; align-items: center; gap: 8px; }
 .selected-repository-heading .repository-visibility { flex: 0 0 auto; }
 .selected-repository-details strong { max-width: 100%; overflow: hidden; color: var(--workspace-text); font: 500 16px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
-.selected-repository-fullname { max-width: 100%; overflow: hidden; color: var(--workspace-secondary); font: 12px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
 .selected-repository-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 3px; color: var(--workspace-secondary); font-size: 12px; }
 .repository-selection-empty { display: flex; height: 106px; flex-direction: column; justify-content: center; gap: 5px; padding: 16px; border: 1px dashed var(--workspace-border); border-radius: 10px; }
 .repository-selection-empty strong { color: var(--workspace-secondary); font-size: 14px; font-weight: 500; }

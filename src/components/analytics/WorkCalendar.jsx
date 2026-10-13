@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
+import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
 
 // "When you work": a month calendar shaded by session time, used on Analytics and Overview.
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -45,7 +46,7 @@ function dailySessionTotals(sessions) {
     const day = days.get(key) || { durationMs: 0, sessionCount: 0, repositories: new Set() };
     day.durationMs += endedAt - startedAt;
     day.sessionCount += 1;
-    const name = session.repository?.name || session.repository?.fullName;
+    const name = repositoryFullName(session.repository);
     if (name) day.repositories.add(name);
     days.set(key, day);
   });
@@ -146,7 +147,7 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
           >
             <span>{formatDate(active.date, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
             <strong>{active.sessionCount ? formatDuration(active.durationMs) : 'No sessions'}</strong>
-            {active.sessionCount > 0 && <small>{formatCount(active.sessionCount, 'session')} · {[...active.repositories].slice(0, 3).join(', ')}{active.repositories.size > 3 ? ` +${active.repositories.size - 3}` : ''}</small>}
+            {active.sessionCount > 0 && <small>{formatCount(active.sessionCount, 'session')} · {[...active.repositories].slice(0, 3).map((name, index) => <React.Fragment key={name}>{index > 0 && ', '}<RepositoryName name={name} /></React.Fragment>)}{active.repositories.size > 3 ? ` +${active.repositories.size - 3}` : ''}</small>}
           </div>
         )}
       </div>

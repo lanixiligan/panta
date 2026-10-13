@@ -3,6 +3,8 @@ import { getSessionDurationMinutes } from '../../sessions/sessionHelpers.js';
 import { orderCommits } from '../../components/sessions/SessionCommitList.jsx';
 import EditableGoal from '../../components/sessions/EditableGoal.jsx';
 import { followRouteLink, routePaths } from '../../routing.js';
+import RepositoryName from '../../components/repository/RepositoryName.jsx';
+import ScrollArea from '../../components/layout/ScrollArea.jsx';
 
 const FILE_TYPE_LIMIT = 5;
 
@@ -106,8 +108,8 @@ function getCompareUrl(session, commits, branches) {
 function RepositoryLink({ repository }) {
   const fullName = getRepositoryName(repository);
   return (
-    <a className="session-detail-repo" href={getRepositoryUrl(repository)} target="_blank" rel="noreferrer" title={fullName}>
-      {fullName.slice(fullName.lastIndexOf('/') + 1)}<span aria-hidden="true"> ↗</span>
+    <a className="session-detail-repo" href={getRepositoryUrl(repository)} target="_blank" rel="noreferrer">
+      <RepositoryName name={fullName} /><span aria-hidden="true"> ↗</span>
     </a>
   );
 }
@@ -181,10 +183,10 @@ function SessionStats({ session, isPlaceholder, commits, files, branches, onRetr
   );
 }
 
-// Commits on a vertical rail, oldest first: when each landed and what it changed, in one list.
+// Commits on a vertical rail, newest first: when each landed and what it changed, in one list.
 function CommitTimeline({ commits, primaryBranch, compareUrl, selectedFile, onClearFile }) {
   const touchesFile = (commit) => !selectedFile || (commit.files || []).some(({ filename }) => filename === selectedFile);
-  const visibleCommits = orderCommits(commits, 'oldest').filter(touchesFile);
+  const visibleCommits = orderCommits(commits, 'newest').filter(touchesFile);
 
   return (
     <section className="session-detail-section session-detail-commits" aria-labelledby="session-commits-heading">
@@ -198,37 +200,39 @@ function CommitTimeline({ commits, primaryBranch, compareUrl, selectedFile, onCl
           <button type="button" onClick={onClearFile} aria-label="Show all commits">×</button>
         </div>
       )}
-      <ol className="session-timeline" aria-label="Session commits">
-        {visibleCommits.map((commit) => {
-          const message = commit.message?.split('\n')[0] || 'Commit message unavailable';
-          const hasLines = Array.isArray(commit.files);
-          // Only commits outside the session's main branch get a branch tag.
-          const otherBranches = commit.branches?.length && !commit.branches.includes(primaryBranch) ? commit.branches : [];
-          const content = (
-            <>
-              <time dateTime={commit.timestamp || undefined}>{isValidDate(commit.timestamp) ? formatTime(commit.timestamp) : '—'}</time>
-              <span className="session-timeline-dot" aria-hidden="true" />
-              <span className="session-timeline-body">
-                <span className="session-timeline-message">{message}</span>
-                <span className="session-timeline-meta">
-                  <code className="session-timeline-sha" translate="no">{commit.sha?.slice(0, 7) || 'Unknown'}{commit.htmlUrl && <span aria-hidden="true"> ↗</span>}</code>
-                  {otherBranches.map((branch) => <code key={branch} className="session-timeline-branch" translate="no">{branch}</code>)}
+      <ScrollArea className="session-detail-scroll" watch={visibleCommits.length}>
+        <ol className="session-timeline" aria-label="Session commits">
+          {visibleCommits.map((commit) => {
+            const message = commit.message?.split('\n')[0] || 'Commit message unavailable';
+            const hasLines = Array.isArray(commit.files);
+            // Only commits outside the session's main branch get a branch tag.
+            const otherBranches = commit.branches?.length && !commit.branches.includes(primaryBranch) ? commit.branches : [];
+            const content = (
+              <>
+                <time dateTime={commit.timestamp || undefined}>{isValidDate(commit.timestamp) ? formatTime(commit.timestamp) : '—'}</time>
+                <span className="session-timeline-dot" aria-hidden="true" />
+                <span className="session-timeline-body">
+                  <span className="session-timeline-message">{message}</span>
+                  <span className="session-timeline-meta">
+                    <code className="session-timeline-sha" translate="no">{commit.sha?.slice(0, 7) || 'Unknown'}{commit.htmlUrl && <span aria-hidden="true"> ↗</span>}</code>
+                    {otherBranches.map((branch) => <code key={branch} className="session-timeline-branch" translate="no">{branch}</code>)}
+                  </span>
                 </span>
-              </span>
-              <span className="session-timeline-lines">
-                {hasLines && <><span className="history-additions">+{commit.additions ?? 0}</span> <span className="history-deletions">−{commit.deletions ?? 0}</span></>}
-              </span>
-            </>
-          );
-          return (
-            <li key={commit.sha}>
-              {commit.htmlUrl
-                ? <a href={commit.htmlUrl} target="_blank" rel="noreferrer" title="Open commit on GitHub">{content}</a>
-                : <div>{content}</div>}
-            </li>
-          );
-        })}
-      </ol>
+                <span className="session-timeline-lines">
+                  {hasLines && <><span className="history-additions">+{commit.additions ?? 0}</span> <span className="history-deletions">−{commit.deletions ?? 0}</span></>}
+                </span>
+              </>
+            );
+            return (
+              <li key={commit.sha}>
+                {commit.htmlUrl
+                  ? <a href={commit.htmlUrl} target="_blank" rel="noreferrer" title="Open commit on GitHub">{content}</a>
+                  : <div>{content}</div>}
+              </li>
+            );
+          })}
+        </ol>
+      </ScrollArea>
     </section>
   );
 }
@@ -244,39 +248,41 @@ function FilesSection({ files, selectedFile, onSelectFile }) {
       <div className="session-detail-section-heading">
         <h2 id="session-files-heading">Files</h2>
       </div>
-      <ul className="session-file-list">
-        {files.map((file) => {
-          const slash = file.filename.lastIndexOf('/');
-          const changes = file.additions + file.deletions;
-          const isSelected = selectedFile === file.filename;
-          const tag = FILE_STATUS_TAGS[file.status];
-          return (
-            <li key={file.filename}>
-              <button
-                type="button"
-                className={isSelected ? 'selected' : ''}
-                aria-pressed={isSelected}
-                title={`${file.filename} — show the commits that touched it`}
-                onClick={() => onSelectFile(isSelected ? null : file.filename)}
-              >
-                <span className="session-file-path" translate="no">
-                  {slash >= 0 && <span>{file.filename.slice(0, slash + 1)}</span>}{file.filename.slice(slash + 1)}
-                </span>
-                {tag ? <span className={`session-file-tag ${file.status}`}>{tag}</span> : <span />}
-                <span className="session-file-lines"><span className="history-additions">+{file.additions}</span> <span className="history-deletions">−{file.deletions}</span></span>
-                <span className="session-file-bar" aria-hidden="true">
-                  <span style={{ width: `${(changes / maxChanges) * 100}%` }}>
-                    {changes > 0 && <>
-                      <span className="additions" style={{ flexGrow: file.additions }} />
-                      <span className="deletions" style={{ flexGrow: file.deletions }} />
-                    </>}
+      <ScrollArea className="session-detail-scroll" watch={files.length}>
+        <ul className="session-file-list">
+          {files.map((file) => {
+            const slash = file.filename.lastIndexOf('/');
+            const changes = file.additions + file.deletions;
+            const isSelected = selectedFile === file.filename;
+            const tag = FILE_STATUS_TAGS[file.status];
+            return (
+              <li key={file.filename}>
+                <button
+                  type="button"
+                  className={isSelected ? 'selected' : ''}
+                  aria-pressed={isSelected}
+                  title={`${file.filename} — show the commits that touched it`}
+                  onClick={() => onSelectFile(isSelected ? null : file.filename)}
+                >
+                  <span className="session-file-path" translate="no">
+                    {slash >= 0 && <span>{file.filename.slice(0, slash + 1)}</span>}{file.filename.slice(slash + 1)}
                   </span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                  {tag ? <span className={`session-file-tag ${file.status}`}>{tag}</span> : <span />}
+                  <span className="session-file-lines"><span className="history-additions">+{file.additions}</span> <span className="history-deletions">−{file.deletions}</span></span>
+                  <span className="session-file-bar" aria-hidden="true">
+                    <span style={{ width: `${(changes / maxChanges) * 100}%` }}>
+                      {changes > 0 && <>
+                        <span className="additions" style={{ flexGrow: file.additions }} />
+                        <span className="deletions" style={{ flexGrow: file.deletions }} />
+                      </>}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </ScrollArea>
       {fileTypes.length > 0 && (
         <div className="session-file-types" aria-label="Lines changed by file type">
           <div className="session-file-types-bar" aria-hidden="true">

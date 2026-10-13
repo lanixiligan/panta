@@ -8,8 +8,9 @@
 .dashboard-greeting p, .page-intro p { margin: 0; color: var(--workspace-secondary); }
 .active-session-card, .dashboard-section, .session-empty-state, .dashboard-access-state { border: 1px solid var(--workspace-border); background: var(--workspace-surface); }
 /* Primary actions use a softer green than the neon accent, with dark green text. */
-.session-workspace-button { cursor: pointer; border: 1px solid var(--workspace-action-border); background: var(--workspace-action); color: var(--workspace-action-text); font-size: 13px; font-weight: 600; border-radius: 6px; min-height: 38px; padding: 0 18px; }
-.session-workspace-button:disabled { cursor: not-allowed; border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-muted); }
+/* Primary button: a dark face with a green border. */
+.session-workspace-button { cursor: pointer; border: 1px solid var(--workspace-border-hover); background: var(--workspace-sidebar); color: var(--workspace-accent-soft); font-size: 13px; font-weight: 600; border-radius: 6px; min-height: 38px; padding: 0 18px; transition: color .15s ease, border-color .15s ease; }
+.session-workspace-button:disabled { cursor: not-allowed; border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-muted); box-shadow: none; }
 .dashboard-spinner { display: inline-block; width: 11px; height: 11px; margin-right: 6px; vertical-align: -2px; border: 1px solid var(--workspace-faint); border-top-color: var(--workspace-accent-soft); border-radius: 50%; animation: spin .8s linear infinite; }
 .dashboard-error { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--workspace-danger-border); border-radius: 6px; background: var(--workspace-danger-bg); color: var(--workspace-danger); font-size: 12px; }
 .dashboard-error button { border: 0; background: transparent; color: var(--workspace-danger); font-size: 12px; text-decoration: underline; cursor: pointer; }
@@ -53,7 +54,7 @@
 .dashboard-greeting h1, .page-intro h1 { max-width: 820px; margin-top: 10px; font-size: clamp(26px, calc(2.8vw / var(--ui-zoom)), 34px); letter-spacing: -.035em; }
 .dashboard-greeting p, .page-intro p { color: var(--workspace-secondary); font-size: 14px; line-height: 1.5; }
 .active-session-card, .dashboard-section, .session-empty-state, .dashboard-access-state { border-radius: 8px; }
-.session-workspace-button:hover:not(:disabled) { background: var(--workspace-action-hover); border-color: var(--workspace-action-border); }
+.session-workspace-button:hover:not(:disabled) { border-color: var(--workspace-level-4); color: var(--workspace-text); }
 .dashboard-section-heading h2 { font-size: 16px; }
 .session-detail-heading h1 { font-size: clamp(26px, calc(2.8vw / var(--ui-zoom)), 34px); }
 .session-complete-label { display: inline-flex; align-items: center; gap: 7px; font: 11px 'DM Mono', monospace; color: var(--workspace-accent-soft); letter-spacing: .1em; }

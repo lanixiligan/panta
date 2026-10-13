@@ -11,14 +11,15 @@
 .session-detail-page .session-detail-heading { margin-top: 14px; padding-bottom: 0; border-bottom: 0; }
 .session-detail-page .session-detail-heading h1 { margin: 0 0 10px; }
 .session-detail-heading h1.empty { color: var(--workspace-muted); font-style: italic; font-weight: 400; }
-.session-detail-heading > .session-detail-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin: 0; color: var(--workspace-secondary); font-size: 13px; }
-.session-detail-heading > .session-detail-meta span { padding: 0; }
+.session-detail-heading > .session-detail-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin: 0; color: var(--workspace-text); font-size: 13px; font-weight: 500; }
+/* The shared heading rule dims every span; here only the separators stay faint. */
+.session-detail-heading > .session-detail-meta span { padding: 0; color: inherit; }
 .session-detail-heading > .session-detail-meta > [aria-hidden] { color: var(--workspace-faint); }
-.session-detail-repo { color: var(--workspace-text); font: 500 13px 'DM Mono', monospace; text-decoration: none; }
-.session-detail-repo > span { color: var(--workspace-muted); }
+.session-detail-repo { color: var(--workspace-text); font: 600 13px 'DM Mono', monospace; text-decoration: none; }
+.session-detail-repo > span[aria-hidden] { color: var(--workspace-muted); }
 .session-detail-repo:hover, .session-detail-repo:hover > span { color: var(--workspace-accent-soft); }
 .session-detail-repo:focus-visible { border-radius: 3px; outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
-.session-detail-badge { margin-left: 4px; padding: 1px 6px; border: 1px dashed var(--workspace-border); border-radius: 4px; color: var(--workspace-muted); font: 11px 'DM Mono', monospace; }
+.session-detail-heading > .session-detail-meta .session-detail-badge { margin-left: 4px; padding: 1px 6px; border: 1px dashed var(--workspace-border-strong); border-radius: 4px; color: var(--workspace-secondary); font: 500 11px 'DM Mono', monospace; }
 
 /* One line of figures */
 .session-stats { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 14px 24px; margin-top: 28px; padding: 20px 0; border-top: 1px solid var(--workspace-divider); border-bottom: 1px solid var(--workspace-divider); }
@@ -62,7 +63,7 @@
 .session-timeline li:last-child > *::before { bottom: calc(100% - 18px); }
 .session-timeline li:only-child > *::before { display: none; }
 .session-timeline time { padding-top: 1px; color: var(--workspace-muted); font: 12px 'DM Mono', monospace; text-align: right; white-space: nowrap; }
-.session-timeline-dot { position: relative; z-index: 1; width: 12px; height: 12px; margin-top: 3px; border: 2px solid var(--workspace-bg); border-radius: 50%; background: var(--workspace-accent); }
+.session-timeline-dot { position: relative; z-index: 1; width: 12px; height: 12px; margin-top: 3px; border: 2px solid var(--workspace-bg); border-radius: 50%; background: var(--workspace-level-2); transition: background .15s ease, box-shadow .15s ease, transform .15s ease; }
 .session-timeline-body { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .session-timeline-message { overflow: hidden; color: var(--workspace-text); font-size: 14px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .session-timeline-meta { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -73,7 +74,8 @@
 .session-timeline-lines { padding-top: 1px; font: 12px 'DM Mono', monospace; white-space: nowrap; }
 .session-timeline a:hover { background: var(--workspace-surface); }
 .session-timeline a:hover .session-timeline-message { color: var(--workspace-text); }
-.session-timeline a:hover .session-timeline-dot { box-shadow: 0 0 0 3px #39ff8833; }
+/* The commit under the cursor (or keyboard focus) lights up its dot on the rail. */
+.session-timeline li > :hover .session-timeline-dot, .session-timeline a:focus-visible .session-timeline-dot { background: var(--workspace-accent); box-shadow: 0 0 0 3px #39ff8833, 0 0 12px 2px #39ff88a6; transform: scale(1.15); }
 .session-timeline a:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
 
 /* Files */
@@ -108,6 +110,16 @@
 .session-file-types .type-5 { background: #5f796a; }
 
 .session-detail-page > .session-history-boundary { margin: 36px 0 0; }
+
+/* On screens big enough, the page fits the window and the commit and file lists scroll inside it. */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .workspace-main-fit .session-detail-page { min-height: 0; flex: 1 1 auto; }
+  .workspace-main-fit .session-detail-body { min-height: 0; flex: 1 1 auto; align-items: stretch; grid-template-rows: minmax(0, 1fr); }
+  .workspace-main-fit .session-detail-section { display: flex; min-height: 0; flex-direction: column; }
+  .workspace-main-fit .session-detail-section > :not(.session-detail-scroll) { flex: 0 0 auto; }
+  .workspace-main-fit .session-detail-scroll > .scroll-area-content > * { min-height: 0; overflow-y: auto; padding-right: 18px; }
+  .workspace-main-fit .session-detail-page > .session-history-boundary { flex: 0 0 auto; margin-top: 24px; }
+}
 
 @media (max-width: 900px) {
   .session-detail-body { grid-template-columns: minmax(0, 1fr); gap: 32px; }

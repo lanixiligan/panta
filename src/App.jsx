@@ -475,7 +475,7 @@ export default function App() {
         showExamples={showExamples}
         onToggleExamples={toggleExamples}
       />
-      <div className={`workspace-main${view === 'Overview' || view === 'Settings' ? ' workspace-main-fit' : ''}`}>
+      <div className={`workspace-main${['Overview', 'Settings', 'Session Detail'].includes(view) ? ' workspace-main-fit' : ''}`}>
         <main className="app-main" id="main-content" tabIndex={-1}>
         {view === 'Overview' && (
           <OverviewPage

@@ -42,7 +42,6 @@
   .workspace-main:has(.session-workspace-page) .app-main { display: flex; min-height: 0; flex: 1 1 auto; padding-bottom: 20px; }
   .session-workspace-page { width: 100%; min-height: 0; flex: 1 1 auto; }
   .session-workspace-header { flex: 0 0 auto; }
-  .session-workspace-page > .session-complete-card,
   .session-workspace-page > .session-workspace-already-active,
   .session-workspace-page > .session-workspace-layout { min-height: 0; flex: 1 1 auto; }
 }

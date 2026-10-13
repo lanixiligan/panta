@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { followRouteLink, routePaths } from '../../../routing.js';
+import RepositoryName from '../../../components/repository/RepositoryName.jsx';
 
 function formatDuration(minutes) {
   const hours = Math.floor(minutes / 60);
@@ -24,7 +25,7 @@ function followSessionLink(event, onSelect, sessionId) {
 export function WeeklySummary({ summary }) {
   const metrics = [
     { label: 'Sessions', value: summary.sessionCount },
-    { label: 'Session time', value: formatDuration(summary.sessionMinutes) },
+    { label: 'Session time', value: summary.sessionCount ? formatDuration(summary.sessionMinutes) : '0m' },
     { label: 'Commits', value: summary.commitCount ?? '—', title: summary.commitCount === null ? 'No GitHub activity recorded this week' : undefined },
     { label: 'Projects', value: summary.repositoryCount },
   ];
@@ -56,9 +57,9 @@ function RecentSessionRow({ session, onSelect }) {
     <a className="recent-session-row" href={session.detailHref} onClick={(event) => followSessionLink(event, onSelect, session.id)}>
       <span className="recent-session-main">
         {/* Without a goal, the repository leads the row instead of a "No goal set" placeholder. */}
-        <span className={`recent-session-goal${session.goal ? '' : ' is-repo'}`}>{session.goal || session.repositoryName}</span>
+        <span className={`recent-session-goal${session.goal ? '' : ' is-repo'}`}>{session.goal || <RepositoryName name={session.repositoryFullName || session.repositoryName} />}</span>
         <span className="recent-session-meta">
-          {session.goal && <><span className="recent-session-repo">{session.repositoryName}</span><span aria-hidden="true">·</span></>}
+          {session.goal && <><RepositoryName className="recent-session-repo" name={session.repositoryFullName || session.repositoryName} /><span aria-hidden="true">·</span></>}
           <time dateTime={session.startedAt}>{formatDate(session.startedAt, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</time>
           {session.isPlaceholder && <span className="session-source-badge">Example</span>}
         </span>

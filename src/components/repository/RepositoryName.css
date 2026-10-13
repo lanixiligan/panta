@@ -1,0 +1,4 @@
+/* Repository name: icon + repository name, sized by the surrounding text. */
+.repository-name { display: inline-flex; max-width: 100%; min-width: 0; align-items: center; gap: .45em; font-family: 'DM Mono', monospace; }
+.repository-name-icon { flex: 0 0 auto; width: 1em; height: 1em; color: var(--workspace-secondary); }
+.repository-name-text { min-width: 0; align-self: baseline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

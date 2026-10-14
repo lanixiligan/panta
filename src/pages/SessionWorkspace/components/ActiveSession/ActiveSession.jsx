@@ -2,23 +2,16 @@ import React, { useState } from 'react';
 import EditableGoal from '../../../../components/sessions/EditableGoal.jsx';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
-import { formatElapsed } from '../../../../sessions/sessionHelpers.js';
+import { formatElapsed, formatRelativeTime } from '../../../../sessions/sessionHelpers.js';
 import RepositoryName from '../../../../components/repository/RepositoryName.jsx';
 import RepositoryLanguage from '../../../../components/repository/RepositoryLanguage.jsx';
 
 // "12s ago", "3m ago": compact enough to sit under the timer.
-function shortAgo(value, now) {
-  const seconds = Math.max(0, Math.round((now - new Date(value).getTime()) / 1000));
-  if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  return `${Math.floor(seconds / 3600)}h ago`;
-}
-
 // Sits under the GitHub activity heading, so it doesn't repeat "GitHub" except where it reads oddly without it.
 function syncLabel(status, isEnding, checkedAt, now) {
   if (isEnding) return 'Syncing final activity…';
   if (status === 'error') return 'Couldn’t reach GitHub · retrying';
-  if (checkedAt) return `Checked ${shortAgo(checkedAt, now)}`;
+  if (checkedAt) return `Checked ${formatRelativeTime(checkedAt, now)}`;
   return 'Checking GitHub…';
 }
 

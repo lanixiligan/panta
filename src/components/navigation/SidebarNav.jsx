@@ -3,6 +3,7 @@ import AuthControl from '../auth/AuthControl.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { followRouteLink, routePaths } from '../../routing.js';
 import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
+import { formatElapsed } from '../../sessions/sessionHelpers.js';
 
 const items = [
   { label: 'Overview', view: 'Overview', path: routePaths.Overview, icon: '▣' },
@@ -84,14 +85,6 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
   );
 }
 
-function formatElapsed(startedAt, now) {
-  const totalSeconds = Math.max(0, Math.floor((now - new Date(startedAt).getTime()) / 1000));
-  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-  const seconds = String(totalSeconds % 60).padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
-}
-
 // The core of Panta, so it gets its own accent button at the foot of the sidebar instead of a row in the list.
 // While a session runs, the button becomes the live session card.
 function SessionWorkspaceLink({ session, now, pathname, onNavigate }) {
@@ -108,7 +101,7 @@ function SessionWorkspaceLink({ session, now, pathname, onNavigate }) {
     <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={`Open active session for ${repository}`}>
       <span className="live-session-heading"><i aria-hidden="true" /> LIVE</span>
       <strong>{session.repository ? <RepositoryName name={repository} /> : repository}</strong>
-      <span className="live-session-time">{formatElapsed(session.startedAt, now)}</span>
+      <span className="live-session-time">{formatElapsed(now - new Date(session.startedAt).getTime())}</span>
     </a>
   );
 }

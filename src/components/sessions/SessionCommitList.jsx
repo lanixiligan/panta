@@ -1,17 +1,12 @@
 import React from 'react';
+import { formatRelativeTime } from '../../sessions/sessionHelpers.js';
 
 function formatTimestamp(value, mode, now) {
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return 'Time unavailable';
 
-  // Compact, like the active session's "Checked GitHub 12s ago".
-  if (mode === 'relative') {
-    const seconds = Math.max(0, Math.round((now - date.getTime()) / 1000));
-    if (seconds < 60) return `${seconds}s ago`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86_400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86_400)}d ago`;
-  }
+  // Compact, like the active session's "Checked 12s ago".
+  if (mode === 'relative') return formatRelativeTime(date, now);
 
   const options = mode === 'datetime'
     ? { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }

@@ -77,6 +77,20 @@ export function getWeeklySummary(sessions = [], referenceDate = new Date()) {
   };
 }
 
+// "3 sessions", "1 commit", "1,204 lines".
+export function formatCount(value, singular, plural = `${singular}s`) {
+  return `${Number(value).toLocaleString()} ${value === 1 ? singular : plural}`;
+}
+
+// "12s ago", "3m ago", "2h ago", "4d ago": compact enough for a timestamp column.
+export function formatRelativeTime(value, now = Date.now()) {
+  const seconds = Math.max(0, Math.round((now - new Date(value).getTime()) / 1000));
+  if (seconds < 60) return `${seconds}s ago`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86_400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86_400)}d ago`;
+}
+
 // "01:05:09": elapsed time as hours, minutes, and seconds.
 export function formatElapsed(milliseconds) {
   const seconds = Math.max(0, Math.floor(milliseconds / 1000));

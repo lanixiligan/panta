@@ -114,6 +114,3 @@ export function formatLastWorked(timestamp, now = Date.now()) {
   return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(timestamp));
 }
 
-export function formatCount(value, singular, plural = `${singular}s`) {
-  return `${value.toLocaleString()} ${value === 1 ? singular : plural}`;
-}

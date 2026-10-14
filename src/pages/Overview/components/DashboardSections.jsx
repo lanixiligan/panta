@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import { followRouteLink, routePaths } from '../../../routing.js';
 import RepositoryName from '../../../components/repository/RepositoryName.jsx';
+import { formatCount } from '../../../sessions/sessionHelpers.js';
 
 function formatDuration(minutes) {
   const hours = Math.floor(minutes / 60);
@@ -10,10 +11,6 @@ function formatDuration(minutes) {
 
 function formatDate(value, options) {
   return new Intl.DateTimeFormat(undefined, options).format(new Date(value));
-}
-
-function formatCount(value, singular, plural = `${singular}s`) {
-  return `${value.toLocaleString()} ${value === 1 ? singular : plural}`;
 }
 
 function followSessionLink(event, onSelect, sessionId) {
@@ -71,7 +68,8 @@ function RecentSessionRow({ session, onSelect }) {
 }
 
 // Hides rows that would be cut off at the bottom of the list, so a window-fitted list only shows whole rows.
-function useWholeRows(listRef) {
+// `rowsKey` changes when the rows do (not on every render), so new or reordered rows are measured again.
+function useWholeRows(listRef, rowsKey) {
   useLayoutEffect(() => {
     const list = listRef.current;
     if (!list) return undefined;
@@ -89,12 +87,12 @@ function useWholeRows(listRef) {
     const observer = new ResizeObserver(update);
     observer.observe(list);
     return () => observer.disconnect();
-  });
+  }, [listRef, rowsKey]);
 }
 
 export function RecentSessions({ sessions = [], onViewAll, onSelectSession }) {
   const listRef = useRef(null);
-  useWholeRows(listRef);
+  useWholeRows(listRef, sessions.map((session) => session.id).join());
   return (
     <section className="dashboard-section recent-section" aria-labelledby="recent-heading">
       <div className="dashboard-section-heading">

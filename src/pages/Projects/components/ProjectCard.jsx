@@ -1,6 +1,7 @@
 import React from 'react';
 import { followRouteLink, projectDetailPath } from '../../../routing.js';
-import { formatCount, formatLastWorked, formatProjectDuration } from '../projectHistory.js';
+import { formatLastWorked, formatProjectDuration } from '../projectHistory.js';
+import { formatCount } from '../../../sessions/sessionHelpers.js';
 import RepositoryName from '../../../components/repository/RepositoryName.jsx';
 
 export const ACTIVITY_DAYS = 7;
@@ -66,10 +67,7 @@ export default function ProjectCard({ project, days, maxMinutes, showExample, on
         <div className="project-card-measure">
           <span className="project-measure-label">GitHub activity</span>
           {commits.total === null ? (
-            <>
-              <strong className="is-unavailable">Unavailable</strong>
-              <span className="project-measure-note">Not recorded for these sessions</span>
-            </>
+            <strong className="is-unavailable">Unavailable</strong>
           ) : (
             <>
               <strong>{commits.total.toLocaleString()}<span className="project-measure-unit">{commits.total === 1 ? 'commit' : 'commits'}</span></strong>

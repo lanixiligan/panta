@@ -12,6 +12,7 @@
 .session-recap-stats dd { margin: 0; color: var(--workspace-text); font: 500 22px 'DM Mono', monospace; letter-spacing: -.02em; white-space: nowrap; }
 .session-recap-stats .history-additions { color: var(--workspace-additions); }
 .session-recap-stats .history-deletions { color: var(--workspace-deletions); }
+.session-recap-stats .is-unavailable { color: var(--workspace-secondary); font: 400 15px 'DM Sans', sans-serif; letter-spacing: 0; }
 
 /* One row: View session on the left, Start another session on the right, the same height. */
 .session-recap .session-console-actions { flex-wrap: nowrap; justify-content: space-between; }

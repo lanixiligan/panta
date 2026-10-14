@@ -104,7 +104,7 @@ export default function App() {
   const allExampleProjects = useMemo(() => getExampleProjects(), []);
   const exampleProjects = showExamples ? allExampleProjects : NO_EXAMPLES;
   // Example repositories shaped like GitHub's, so the session workspace can list them beside real ones.
-  const exampleRepositories = useMemo(() => dummyRepositories.map((repository) => ({
+  const exampleRepositories = useMemo(() => (showExamples ? dummyRepositories.map((repository) => ({
     id: repository.id,
     name: repository.name,
     full_name: repository.fullName,
@@ -113,7 +113,7 @@ export default function App() {
     private: false,
     updated_at: exampleProjects.find((project) => project.key === `id:${repository.id}`)?.lastWorkedAt ?? null,
     isExample: true,
-  })), [exampleProjects]);
+  })) : NO_EXAMPLES), [showExamples, exampleProjects]);
   // Direct links to an example project keep working while examples are hidden.
   const routeProject = view === 'Project Detail' ? findProject([...projects, ...allExampleProjects], route.owner, route.repo) : null;
   // Includes example sessions, like Recent sessions beside it; the card says when it does.
@@ -363,12 +363,13 @@ export default function App() {
     }
   }
 
+  // Writes back only the activity fields, so a goal edited while GitHub is being checked survives.
   async function retrieveSessionActivity(session, updateState = true) {
+    let fields;
     try {
       const activity = await getSessionActivity(session.repository, session.startedAt, session.endedAt);
       const commits = mergeCommits(session.commits || [], activity.commits || []);
-      const updatedSession = {
-        ...session,
+      fields = {
         ...activity,
         activity: { ...activity.activity, ...summarizeCommits(commits) },
         commits,
@@ -376,18 +377,18 @@ export default function App() {
         activityError: '',
         activityCheckedAt: new Date().toISOString(),
       };
-      if (updateState) updateRealSession(updatedSession);
-      return updatedSession;
     } catch (error) {
-      const failedSession = { ...session, activity: session.activity ?? null, commits: session.commits || [], activityStatus: 'error', activityError: error.message || 'Could not retrieve GitHub commits for this session.' };
-      if (updateState) updateRealSession(failedSession);
-      return failedSession;
+      fields = { activity: session.activity ?? null, commits: session.commits || [], activityStatus: 'error', activityError: error.message || 'Could not retrieve GitHub commits for this session.' };
     }
+    if (updateState) updateRealSession(session.id, fields);
+    return { ...session, ...fields };
   }
 
-  function updateRealSession(session) {
-    setCompletedSession((current) => current?.id === session.id ? session : current);
-    setRealSessions((current) => current.map((item) => item.id === session.id ? session : item));
+  // Merges into the latest copy of the session rather than replacing it with an older one.
+  function updateRealSession(sessionId, fields) {
+    const merge = (session) => (session?.id === sessionId ? { ...session, ...fields } : session);
+    setCompletedSession(merge);
+    setRealSessions((current) => current.map(merge));
   }
 
   function updateSessionGoal(sessionId, goal) {
@@ -414,9 +415,8 @@ export default function App() {
 
   function retrySessionActivity(session) {
     if (!session || session.activityStatus === 'loading') return;
-    const retryingSession = { ...session, activityStatus: 'loading', activityError: '' };
-    updateRealSession(retryingSession);
-    void retrieveSessionActivity(retryingSession);
+    updateRealSession(session.id, { activityStatus: 'loading', activityError: '' });
+    void retrieveSessionActivity(session);
   }
 
   function handleLogout() {
@@ -531,7 +531,7 @@ export default function App() {
             ? <ProjectDetailPage project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
             : <section className="dashboard-section"><h2>Project not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Projects</button></section>
         )}
-        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} />}
+        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onNavigate={navigate} />}
         {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} onDeleteHistory={deleteSessionHistory} />}
         {view === 'Session Detail' && (
           (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId))

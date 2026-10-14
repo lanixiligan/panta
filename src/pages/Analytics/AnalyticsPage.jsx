@@ -3,6 +3,7 @@ import { calculateSessionAnalytics } from '../../analytics/sessionAnalytics.js';
 import { followRouteLink, projectDetailPath, readSearchParam, updateSearchParams } from '../../routing.js';
 import WorkCalendar from '../../components/analytics/WorkCalendar.jsx';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
+import { formatCount } from '../../sessions/sessionHelpers.js';
 
 const timeRanges = [
   { value: 'week', label: 'This week' },
@@ -27,10 +28,6 @@ function formatNumber(value) {
 
 function formatDate(value, options = { month: 'short', day: 'numeric' }) {
   return new Intl.DateTimeFormat(undefined, options).format(new Date(value));
-}
-
-function formatCount(value, singular, plural = `${singular}s`) {
-  return `${formatNumber(value)} ${value === 1 ? singular : plural}`;
 }
 
 function SummaryMetrics({ analytics }) {

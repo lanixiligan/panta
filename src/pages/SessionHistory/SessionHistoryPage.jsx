@@ -3,6 +3,7 @@ import DateRangePicker, { readRange, rangeBounds, toDayString, writeRange } from
 import FilterSelect from '../../components/filters/FilterSelect.jsx';
 import Pager from '../../components/navigation/Pager.jsx';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
+import { formatCount } from '../../sessions/sessionHelpers.js';
 
 const sortOptions = [
   ['newest', 'Newest first'],
@@ -89,10 +90,6 @@ function formatDuration(minutes = 0) {
   const hours = Math.floor(minutes / 60);
   const remainder = minutes % 60;
   return hours ? `${hours}h ${remainder}m` : `${remainder}m`;
-}
-
-function formatCount(value, singular, plural = `${singular}s`) {
-  return `${value} ${value === 1 ? singular : plural}`;
 }
 
 function RepositoryLabel({ session }) {

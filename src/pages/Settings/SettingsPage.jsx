@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { logoutCurrentUser } from '../../api/auth.js';
+import { formatCount } from '../../sessions/sessionHelpers.js';
 
 // A titled card of rows; `tone="danger"` marks the destructive group.
 function SettingsGroup({ id, title, tone, children }) {
@@ -21,10 +22,6 @@ function SettingsRow({ label, detail, children }) {
       <div className="settings-row-control">{children}</div>
     </div>
   );
-}
-
-function formatCount(value, singular, plural = `${singular}s`) {
-  return `${value.toLocaleString()} ${value === 1 ? singular : plural}`;
 }
 
 export default function SettingsPage({ identity, onLogout, hasActiveSession = false, savedSessionCount = 0, onDeleteHistory }) {

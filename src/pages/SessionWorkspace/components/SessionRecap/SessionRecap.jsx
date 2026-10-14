@@ -32,6 +32,9 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
   const duration = formatDuration(session.startedAt, session.endedAt);
   const day = formatDay(session.startedAt);
   const range = [formatTime(session.startedAt), formatTime(session.endedAt)];
+  // Files and lines come from commit details. With commits but no details, they were never recorded; zero commits is a recorded 0.
+  const detailsRecorded = commits.length === 0 || commits.some((commit) => Array.isArray(commit.files));
+  const unavailable = <span className="is-unavailable">Unavailable</span>;
 
   return (
     <article className="session-workspace-already-active session-recap" aria-label="Completed coding session">
@@ -48,10 +51,10 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
         {activityReady && (
           <dl className="session-recap-stats">
             <div><dt>{commits.length === 1 ? 'Commit' : 'Commits'}</dt><dd>{commits.length}</dd></div>
-            <div><dt>{activity.filesChanged === 1 ? 'File changed' : 'Files changed'}</dt><dd>{activity.filesChanged ?? 0}</dd></div>
-            <div aria-label={`${activity.additions ?? 0} lines added and ${activity.deletions ?? 0} lines deleted`}>
+            <div><dt>{activity.filesChanged === 1 ? 'File changed' : 'Files changed'}</dt><dd>{detailsRecorded ? activity.filesChanged ?? 0 : unavailable}</dd></div>
+            <div aria-label={detailsRecorded ? `${activity.additions ?? 0} lines added and ${activity.deletions ?? 0} lines deleted` : undefined}>
               <dt>Lines</dt>
-              <dd><span className="history-additions">+{activity.additions ?? 0}</span> <span className="history-deletions">−{activity.deletions ?? 0}</span></dd>
+              <dd>{detailsRecorded ? <><span className="history-additions">+{activity.additions ?? 0}</span> <span className="history-deletions">−{activity.deletions ?? 0}</span></> : unavailable}</dd>
             </div>
           </dl>
         )}

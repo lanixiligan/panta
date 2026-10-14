@@ -61,7 +61,7 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
         <p>Every repository you’ve worked on through Panta, with the time you declared and what GitHub saw.</p>
       </section>
 
-      {projects.length || exampleProjects.length ? (
+      {projects.length ? (
         <section className="project-list-section" aria-label="Projects">
           <div className="project-toolbar">
             <input className="project-search" type="search" name="q" aria-label="Search projects" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects…" />
@@ -75,9 +75,7 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
             </div>
           </div>
 
-          {!projects.length ? (
-            <p className="project-list-empty">No projects yet. Complete a session and its repository will appear here.</p>
-          ) : !sortedProjects.length ? (
+          {!sortedProjects.length ? (
             <p className="project-list-empty">No matching projects</p>
           ) : (
             <div className="project-grid">

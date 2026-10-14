@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
 import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
+import { formatCount } from '../../sessions/sessionHelpers.js';
 
 // "When you work": a month calendar shaded by session time, used on Analytics and Overview.
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -17,10 +18,6 @@ function formatDuration(milliseconds) {
 
 function formatDate(value, options = { month: 'short', day: 'numeric' }) {
   return new Intl.DateTimeFormat(undefined, options).format(new Date(value));
-}
-
-function formatCount(value, singular, plural = `${singular}s`) {
-  return `${Number(value).toLocaleString()} ${value === 1 ? singular : plural}`;
 }
 
 // The Session History link for one local day (?from=YYYY-MM-DD&to=YYYY-MM-DD).

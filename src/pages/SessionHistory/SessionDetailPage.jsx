@@ -3,7 +3,7 @@ import { getSessionDurationMinutes } from '../../sessions/sessionHelpers.js';
 import { orderCommits } from '../../components/sessions/SessionCommitList.jsx';
 import EditableGoal from '../../components/sessions/EditableGoal.jsx';
 import { followRouteLink, routePaths } from '../../routing.js';
-import RepositoryName from '../../components/repository/RepositoryName.jsx';
+import RepositoryName, { repositoryFullName } from '../../components/repository/RepositoryName.jsx';
 import ScrollArea from '../../components/layout/ScrollArea.jsx';
 
 const FILE_TYPE_LIMIT = 5;
@@ -42,16 +42,8 @@ function formatDuration(minutes) {
   return [hours ? `${hours}h` : '', remainder ? `${remainder}m` : ''].filter(Boolean).join(' ') || 'Under 1m';
 }
 
-function formatCount(value, singular, plural = `${singular}s`) {
-  return `${value} ${value === 1 ? singular : plural}`;
-}
-
-function getRepositoryName(repository) {
-  return repository.fullName || repository.full_name || `${repository.owner?.login || repository.owner}/${repository.name}`;
-}
-
 function getRepositoryUrl(repository) {
-  return repository.html_url || repository.htmlUrl || `https://github.com/${getRepositoryName(repository)}`;
+  return repository.html_url || repository.htmlUrl || `https://github.com/${repositoryFullName(repository)}`;
 }
 
 function getBranchSummary(commits) {
@@ -106,7 +98,7 @@ function getCompareUrl(session, commits, branches) {
 }
 
 function RepositoryLink({ repository }) {
-  const fullName = getRepositoryName(repository);
+  const fullName = repositoryFullName(repository);
   return (
     <a className="session-detail-repo" href={getRepositoryUrl(repository)} target="_blank" rel="noreferrer">
       <RepositoryName name={fullName} /><span aria-hidden="true"> ↗</span>

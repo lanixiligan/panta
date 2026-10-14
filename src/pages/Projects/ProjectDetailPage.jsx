@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { formatCount, formatLastWorked, formatProjectDuration, recentDailyMinutes } from './projectHistory.js';
+import { formatLastWorked, formatProjectDuration, recentDailyMinutes } from './projectHistory.js';
+import { formatCount } from '../../sessions/sessionHelpers.js';
 import { followRouteLink, routePaths } from '../../routing.js';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
 

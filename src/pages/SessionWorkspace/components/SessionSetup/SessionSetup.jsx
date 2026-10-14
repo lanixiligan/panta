@@ -1,6 +1,7 @@
 import React from 'react';
 import { followRouteLink, projectDetailPath, routePaths, sessionDetailPath } from '../../../../routing.js';
-import { formatCount, formatProjectDuration } from '../../../Projects/projectHistory.js';
+import { formatProjectDuration } from '../../../Projects/projectHistory.js';
+import { formatCount } from '../../../../sessions/sessionHelpers.js';
 import FilterSelect from '../../../../components/filters/FilterSelect.jsx';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import RepositoryName from '../../../../components/repository/RepositoryName.jsx';

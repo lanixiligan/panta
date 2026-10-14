@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import { followRouteLink, routePaths } from '../../../routing.js';
+import RepositoryName from '../../../components/repository/RepositoryName.jsx';
+import { formatCount } from '../../../sessions/sessionHelpers.js';
 
 function formatDuration(minutes) {
   const hours = Math.floor(minutes / 60);
@@ -11,10 +13,6 @@ function formatDate(value, options) {
   return new Intl.DateTimeFormat(undefined, options).format(new Date(value));
 }
 
-function formatCount(value, singular, plural = `${singular}s`) {
-  return `${value.toLocaleString()} ${value === 1 ? singular : plural}`;
-}
-
 function followSessionLink(event, onSelect, sessionId) {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
@@ -24,40 +22,24 @@ function followSessionLink(event, onSelect, sessionId) {
 export function WeeklySummary({ summary }) {
   const metrics = [
     { label: 'Sessions', value: summary.sessionCount },
-    { label: 'Session time', value: formatDuration(summary.sessionMinutes) },
+    { label: 'Session time', value: summary.sessionCount ? formatDuration(summary.sessionMinutes) : '0m' },
     { label: 'Commits', value: summary.commitCount ?? '—', title: summary.commitCount === null ? 'No GitHub activity recorded this week' : undefined },
     { label: 'Projects', value: summary.repositoryCount },
   ];
-  const maxMinutes = Math.max(1, ...summary.days.map(({ sessionMinutes }) => sessionMinutes));
 
   return (
-    <div className="dashboard-side">
-      <section className="dashboard-section weekly-section" aria-labelledby="weekly-heading">
-        <div className="dashboard-section-heading">
-          <h2 id="weekly-heading">This week</h2>
-          <span className="dashboard-section-meta">{formatDate(summary.start, { month: 'short', day: 'numeric' })} – {formatDate(summary.end, { month: 'short', day: 'numeric' })}</span>
-        </div>
-        <div className="weekly-metrics">
-          {metrics.map((metric) => <div className="weekly-metric" key={metric.label} title={metric.title}><strong>{metric.value}</strong><span>{metric.label}</span></div>)}
-        </div>
-      </section>
-      <section className="dashboard-section weekly-section weekly-days" aria-labelledby="weekly-days-heading">
-        <div className="dashboard-section-heading">
-          <h2 id="weekly-days-heading">Session time by day</h2>
-          {summary.includesExamples && <span className="dashboard-section-meta">includes examples</span>}
-        </div>
-        <div className="session-activity-chart" role="img" aria-label={`Session time by day this week: ${summary.days.filter((day) => !day.isFuture).map((day) => `${day.label} ${formatDuration(day.sessionMinutes)}`).join(', ')}`}>
-          {summary.days.map((day) => (
-            <div className={`activity-day ${day.isToday ? 'today' : ''} ${day.isFuture ? 'future' : ''}`} key={day.date} title={day.isFuture ? undefined : `${day.label}: ${formatDuration(day.sessionMinutes)}`}>
-              <span className="activity-bar-track">
-                {day.sessionMinutes > 0 && <i style={{ height: `${Math.max(6, (day.sessionMinutes / maxMinutes) * 100)}%` }} />}
-              </span>
-              <span>{day.label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
+    <section className="dashboard-section weekly-strip" aria-labelledby="weekly-heading">
+      <div className="weekly-strip-heading">
+        <h2 id="weekly-heading">This week</h2>
+        <span className="dashboard-section-meta">
+          {formatDate(summary.start, { month: 'short', day: 'numeric' })} – {formatDate(summary.end, { month: 'short', day: 'numeric' })}
+          {summary.includesExamples && ' · includes examples'}
+        </span>
+      </div>
+      <dl className="weekly-metrics">
+        {metrics.map((metric) => <div className="weekly-metric" key={metric.label} title={metric.title}><dt>{metric.label}</dt><dd>{metric.value}</dd></div>)}
+      </dl>
+    </section>
   );
 }
 
@@ -71,12 +53,12 @@ function RecentSessionRow({ session, onSelect }) {
   return (
     <a className="recent-session-row" href={session.detailHref} onClick={(event) => followSessionLink(event, onSelect, session.id)}>
       <span className="recent-session-main">
-        <span className={`recent-session-goal ${session.goal ? '' : 'empty'}`}>{session.goal || 'No goal set'}</span>
+        {/* Without a goal, the repository leads the row instead of a "No goal set" placeholder. */}
+        <span className={`recent-session-goal${session.goal ? '' : ' is-repo'}`}>{session.goal || <RepositoryName name={session.repositoryFullName || session.repositoryName} />}</span>
         <span className="recent-session-meta">
-          <span className="recent-session-repo">{session.repositoryName}</span>
-          <span aria-hidden="true">·</span>
+          {session.goal && <><RepositoryName className="recent-session-repo" name={session.repositoryFullName || session.repositoryName} /><span aria-hidden="true">·</span></>}
           <time dateTime={session.startedAt}>{formatDate(session.startedAt, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</time>
-          {session.isPlaceholder && <span className="session-source-badge placeholder">EXAMPLE</span>}
+          {session.isPlaceholder && <span className="session-source-badge">Example</span>}
         </span>
       </span>
       <span className="recent-session-commits">{status}</span>
@@ -85,7 +67,32 @@ function RecentSessionRow({ session, onSelect }) {
   );
 }
 
+// Hides rows that would be cut off at the bottom of the list, so a window-fitted list only shows whole rows.
+// `rowsKey` changes when the rows do (not on every render), so new or reordered rows are measured again.
+function useWholeRows(listRef, rowsKey) {
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return undefined;
+    const update = () => {
+      const bottom = list.getBoundingClientRect().bottom;
+      [...list.children].forEach((row) => {
+        const fits = row.getBoundingClientRect().bottom <= bottom + 1;
+        row.style.visibility = fits ? '' : 'hidden';
+        if (fits) row.removeAttribute('aria-hidden');
+        else row.setAttribute('aria-hidden', 'true');
+        row.tabIndex = fits ? 0 : -1;
+      });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [listRef, rowsKey]);
+}
+
 export function RecentSessions({ sessions = [], onViewAll, onSelectSession }) {
+  const listRef = useRef(null);
+  useWholeRows(listRef, sessions.map((session) => session.id).join());
   return (
     <section className="dashboard-section recent-section" aria-labelledby="recent-heading">
       <div className="dashboard-section-heading">
@@ -93,7 +100,7 @@ export function RecentSessions({ sessions = [], onViewAll, onSelectSession }) {
         {sessions.length > 0 && <a className="text-link" href={routePaths['Session History']} onClick={(event) => followRouteLink(event, () => onViewAll())}>View all <span aria-hidden="true">→</span></a>}
       </div>
       {sessions.length ? (
-        <div className="recent-session-list">{sessions.map((session) => <RecentSessionRow key={session.id} session={session} onSelect={onSelectSession} />)}</div>
+        <div className="recent-session-list" ref={listRef}>{sessions.map((session) => <RecentSessionRow key={session.id} session={session} onSelect={onSelectSession} />)}</div>
       ) : (
         <div className="session-empty-state">
           <span className="empty-state-mark" aria-hidden="true">⌁</span>

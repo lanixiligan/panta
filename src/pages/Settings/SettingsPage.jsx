@@ -1,122 +1,113 @@
 import React, { useState } from 'react';
-import packageJson from '../../../package.json';
 import { logoutCurrentUser } from '../../api/auth.js';
+import { formatCount } from '../../sessions/sessionHelpers.js';
 
-function SettingsSection({ label, children }) {
+// A titled card of rows; `tone="danger"` marks the destructive group.
+function SettingsGroup({ id, title, tone, children }) {
   return (
-    <section className="settings-section" aria-labelledby={`settings-${label.toLowerCase()}-heading`}>
-      <div className="settings-section-heading">
-        <h2 id={`settings-${label.toLowerCase()}-heading`}>{label}</h2>
-      </div>
-      {children}
+    <section className={`settings-group${tone ? ` is-${tone}` : ''}`} aria-labelledby={`settings-${id}-heading`}>
+      <h2 id={`settings-${id}-heading`}>{title}</h2>
+      <div className="settings-card">{children}</div>
     </section>
   );
 }
 
-export default function SettingsPage({ identity, onLogout }) {
-  const [disconnecting, setDisconnecting] = useState(false);
-  const [disconnectError, setDisconnectError] = useState('');
-  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
+function SettingsRow({ label, detail, children }) {
+  return (
+    <div className="settings-row">
+      <div className="settings-row-copy">
+        <strong>{label}</strong>
+        {detail && <span>{detail}</span>}
+      </div>
+      <div className="settings-row-control">{children}</div>
+    </div>
+  );
+}
+
+export default function SettingsPage({ identity, onLogout, hasActiveSession = false, savedSessionCount = 0, onDeleteHistory }) {
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState('');
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const username = identity?.username || '';
   const displayName = identity?.displayName?.trim() || username;
   const profileUrl = identity?.profileUrl || `https://github.com/${encodeURIComponent(username)}`;
 
-  async function disconnectGitHub() {
-    setDisconnecting(true);
-    setDisconnectError('');
+  async function signOut() {
+    setSigningOut(true);
+    setSignOutError('');
     try {
       await logoutCurrentUser();
       onLogout();
     } catch {
-      setDisconnectError('Could not disconnect GitHub right now. Please try again.');
-      setDisconnecting(false);
+      setSignOutError('Couldn’t sign out right now. Try again.');
+      setSigningOut(false);
     }
   }
 
+  function deleteHistory() {
+    onDeleteHistory();
+    setConfirmingDelete(false);
+  }
+
   return (
-    <section className="settings-page">
-      <div className="page-intro">
-        <span className="section-kicker">SETTINGS</span>
+    <div className="settings-page">
+      <section className="page-intro">
         <h1>Settings</h1>
-        <p>Manage your Panta account and GitHub connection.</p>
-      </div>
+      </section>
 
-      <div className="settings-content">
-        <SettingsSection label="Account">
-          <div className="settings-account-row">
-            {identity?.avatarUrl
-              ? <img className="settings-avatar" src={identity.avatarUrl} alt="" width="55" height="55" />
-              : <span className="settings-avatar settings-avatar-fallback" aria-hidden="true">{username.charAt(0).toUpperCase()}</span>}
-            <div className="settings-account-copy">
-              <strong>{displayName}</strong>
-              <span>@{username}</span>
-              <span className="settings-connected"><i aria-hidden="true" />Connected with GitHub</span>
-            </div>
+      <SettingsGroup id="account" title="Account">
+        <div className="settings-account">
+          {identity?.avatarUrl
+            ? <img className="settings-avatar" src={identity.avatarUrl} alt="" width="48" height="48" />
+            : <span className="settings-avatar settings-avatar-fallback" aria-hidden="true">{username.charAt(0).toUpperCase()}</span>}
+          <div className="settings-account-copy">
+            <strong>{displayName}</strong>
+            <span translate="no">@{username}</span>
           </div>
-        </SettingsSection>
+          <a className="settings-button" href={profileUrl} target="_blank" rel="noreferrer">GitHub profile <span aria-hidden="true">↗</span></a>
+        </div>
+        {/* Signing out keeps saved sessions; it only asks first when it would end a running session. */}
+        <SettingsRow label="Sign out" detail="Your saved sessions stay in this browser.">
+          {confirmingSignOut ? (
+            <div className="settings-confirm" role="group" aria-label="Confirm signing out">
+              <span>Ends your running session.</span>
+              <button className="settings-button" type="button" onClick={() => setConfirmingSignOut(false)} disabled={signingOut}>Cancel</button>
+              <button className="settings-button is-danger is-solid" type="button" onClick={signOut} disabled={signingOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button>
+            </div>
+          ) : (
+            <button className="settings-button" type="button" onClick={() => (hasActiveSession ? setConfirmingSignOut(true) : signOut())} disabled={signingOut}>
+              {signingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          )}
+        </SettingsRow>
+        {signOutError && <p className="settings-error" role="alert">{signOutError}</p>}
+      </SettingsGroup>
 
-        <SettingsSection label="GitHub">
-          <div className="settings-row">
-            <div className="settings-row-copy">
-              <strong>GitHub account</strong>
-              <span>@{username}</span>
-            </div>
-            <span className="settings-value settings-connected"><i aria-hidden="true" />Connected</span>
-          </div>
+      <SettingsGroup id="github" title="GitHub">
+        <SettingsRow label="Connection">
+          <span className="settings-status"><i aria-hidden="true" />Connected</span>
+        </SettingsRow>
+        <SettingsRow label="Repository access" detail="Choose which repositories Panta can read.">
+          <a className="settings-button" href="/api/auth/github/install" target="_blank" rel="noreferrer">Manage on GitHub <span aria-hidden="true">↗</span></a>
+        </SettingsRow>
+      </SettingsGroup>
 
-          <div className="settings-row settings-repository-row">
-            <div className="settings-row-copy">
-              <strong>Repository access</strong>
-              <span>Control which repositories Panta can access through GitHub.</span>
+      <SettingsGroup id="data" title="Session history" tone="danger">
+        <SettingsRow
+          label="Delete session history"
+          detail={savedSessionCount ? `Removes ${formatCount(savedSessionCount, 'session')} saved in this browser. This can’t be undone.` : 'No sessions saved in this browser.'}
+        >
+          {confirmingDelete ? (
+            <div className="settings-confirm" role="group" aria-label="Confirm deleting session history">
+              <button className="settings-button" type="button" onClick={() => setConfirmingDelete(false)}>Keep sessions</button>
+              <button className="settings-button is-danger is-solid" type="button" onClick={deleteHistory}>Delete</button>
             </div>
-            <a className="settings-action-link" href="/api/auth/github/install" target="_blank" rel="noreferrer">
-              Manage repository access <span aria-hidden="true">→</span>
-            </a>
-          </div>
-
-          <div className="settings-row settings-disconnect-row">
-            <div className="settings-row-copy">
-              <strong>Disconnect GitHub</strong>
-              <span>Disconnect your GitHub account from Panta.</span>
-            </div>
-            {confirmingDisconnect ? (
-              <div className="settings-disconnect-confirm" role="group" aria-label="Confirm disconnecting GitHub">
-                <span>This signs you out of Panta.</span>
-                <button className="settings-disconnect-button is-danger" type="button" onClick={disconnectGitHub} disabled={disconnecting}>
-                  {disconnecting ? 'Disconnecting…' : 'Disconnect GitHub'}
-                </button>
-                <button className="settings-cancel-button" type="button" onClick={() => setConfirmingDisconnect(false)} disabled={disconnecting}>Cancel</button>
-              </div>
-            ) : (
-              <button className="settings-disconnect-button" type="button" onClick={() => setConfirmingDisconnect(true)}>Disconnect</button>
-            )}
-            {disconnectError && <p className="settings-error" role="alert">{disconnectError}</p>}
-          </div>
-        </SettingsSection>
-
-        <SettingsSection label="Appearance">
-          <div className="settings-row">
-            <div className="settings-row-copy">
-              <strong>Theme</strong>
-            </div>
-            <span className="settings-value">Dark</span>
-          </div>
-        </SettingsSection>
-
-        <SettingsSection label="About">
-          <div className="settings-about">
-            <div className="settings-about-brand">
-              <span className="settings-about-mark" aria-hidden="true">P</span>
-              <div><strong>Panta</strong><span>Your work, over time.</span></div>
-            </div>
-            <div className="settings-about-meta">
-              <span>Version {packageJson.version}</span>
-              <a href={profileUrl} target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
-              <span>MIT License</span>
-            </div>
-          </div>
-        </SettingsSection>
-      </div>
-    </section>
+          ) : (
+            <button className="settings-button is-danger" type="button" onClick={() => setConfirmingDelete(true)} disabled={!savedSessionCount}>Delete history</button>
+          )}
+        </SettingsRow>
+      </SettingsGroup>
+    </div>
   );
 }

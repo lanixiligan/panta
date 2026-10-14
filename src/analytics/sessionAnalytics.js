@@ -1,9 +1,3 @@
-const RANGE_DAYS = {
-  '7D': 7,
-  '30D': 30,
-  '90D': 90,
-};
-
 const HOUR_MS = 3_600_000;
 // Ranges longer than this are charted per week so the bars stay readable.
 const MAX_DAILY_BUCKETS = 45;
@@ -26,6 +20,21 @@ function startOfLocalWeek(value) {
   const day = startOfLocalDay(value);
   day.setDate(day.getDate() - ((day.getDay() + 6) % 7));
   return day;
+}
+
+// Calendar periods: this week (Monday first, matching Overview), this month, or everything ('All time').
+function periodBounds(range, now) {
+  if (range === 'week') {
+    const start = startOfLocalWeek(now);
+    const last = new Date(start);
+    last.setDate(last.getDate() + 6);
+    return { start, last };
+  }
+  if (range === 'month') {
+    const today = new Date(now);
+    return { start: new Date(today.getFullYear(), today.getMonth(), 1), last: new Date(today.getFullYear(), today.getMonth() + 1, 0) };
+  }
+  return null;
 }
 
 function dayKey(value) {
@@ -78,10 +87,10 @@ function summarize(records) {
   };
 }
 
-function buildTimeline(records, chartStart, chartEnd) {
+function buildTimeline(records, chartStart, chartEnd, today) {
   const days = new Map();
   for (let date = new Date(chartStart); date <= chartEnd; date.setDate(date.getDate() + 1)) {
-    days.set(dayKey(date), { start: new Date(date), durationMs: 0, sessionCount: 0, commits: 0, hasCommits: false });
+    days.set(dayKey(date), { start: new Date(date), durationMs: 0, sessionCount: 0, commits: 0, hasCommits: false, isFuture: date > today });
   }
 
   // A session counts entirely toward the day it started, matching the calendar and Projects.
@@ -119,16 +128,15 @@ function buildTimeline(records, chartStart, chartEnd) {
   return { unit: 'week', buckets: [...weeks.values()] };
 }
 
-export function calculateSessionAnalytics(sessions = [], range = '30D', referenceDate = new Date()) {
+export function calculateSessionAnalytics(sessions = [], range = 'month', referenceDate = new Date()) {
   const now = referenceDate instanceof Date ? referenceDate.getTime() : Date.parse(referenceDate);
   const safeNow = Number.isFinite(now) ? now : Date.now();
   const allCompleted = completedSessionRecords(sessions, safeNow);
-  const rangeDays = RANGE_DAYS[range];
-  const rangeStart = startOfLocalDay(safeNow);
-  if (rangeDays) rangeStart.setDate(rangeStart.getDate() - rangeDays + 1);
+  const period = periodBounds(range, safeNow);
+  const today = startOfLocalDay(safeNow);
 
   const records = allCompleted
-    .filter(({ startedAt }) => !rangeDays || startedAt >= rangeStart.getTime())
+    .filter(({ startedAt }) => !period || startedAt >= period.start.getTime())
     .sort((left, right) => right.endedAt - left.endedAt);
 
   const current = summarize(records);
@@ -149,8 +157,8 @@ export function calculateSessionAnalytics(sessions = [], range = '30D', referenc
     lengthBuckets[SESSION_LENGTH_BUCKETS.findIndex(({ maxMs }) => record.durationMs < maxMs)].count += 1;
   });
 
-  const chartStart = rangeDays
-    ? rangeStart
+  const chartStart = period
+    ? period.start
     : records.length
       ? startOfLocalDay(Math.min(...records.map(({ startedAt }) => startedAt)))
       : startOfLocalDay(safeNow);
@@ -158,11 +166,10 @@ export function calculateSessionAnalytics(sessions = [], range = '30D', referenc
 
   return {
     range,
-    rangeDays: rangeDays || null,
-    // Calendar days the period covers, today included; for All time, since the first session.
-    periodDays: Math.round((startOfLocalDay(safeNow) - chartStart) / 86_400_000) + 1,
+    // Days of the period so far, today included; for All time, since the first session.
+    periodDays: Math.round((today - chartStart) / 86_400_000) + 1,
     rangeStart: chartStart,
-    rangeEnd: new Date(safeNow),
+    rangeEnd: period ? period.last : new Date(safeNow),
     totalCompletedSessions: allCompleted.length,
     sessions: records.map(({ session, startedAt, endedAt, durationMs }) => ({ session, startedAt, endedAt, durationMs })),
     ...current,
@@ -170,7 +177,8 @@ export function calculateSessionAnalytics(sessions = [], range = '30D', referenc
     projects: [...projects.values()]
       .map((project) => ({ ...project, share: current.totalDurationMs ? project.durationMs / current.totalDurationMs : 0 }))
       .sort((left, right) => right.durationMs - left.durationMs),
-    timeline: buildTimeline(records, chartStart, startOfLocalDay(safeNow)),
+    // Week and month chart the whole period, with days still ahead marked as future.
+    timeline: buildTimeline(records, chartStart, period ? period.last : today, today),
     lengthBuckets,
     longestSession: longest ? { session: longest.session, durationMs: longest.durationMs } : null,
     activity: {

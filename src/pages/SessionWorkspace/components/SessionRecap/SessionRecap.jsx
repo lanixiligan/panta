@@ -1,15 +1,19 @@
 import React from 'react';
+import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
 import { followRouteLink, sessionDetailPath } from '../../../../routing.js';
+import RepositoryName from '../../../../components/repository/RepositoryName.jsx';
 
-function repositoryFullName(repository) {
-  return repository.fullName || repository.full_name || `${repository.owner?.login || repository.owner}/${repository.name}`;
+function formatTime(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+  return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
 }
 
-function formatDateTime(value) {
+function formatDay(value) {
   const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return 'Time unavailable';
-  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+  if (!Number.isFinite(date.getTime())) return null;
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
 }
 
 function formatDuration(startedAt, endedAt) {
@@ -19,71 +23,68 @@ function formatDuration(startedAt, endedAt) {
   return [hours ? `${hours}h` : '', minutes ? `${minutes}m` : ''].filter(Boolean).join(' ') || '<1m';
 }
 
+// Same frame as the active session: the finished session on the left (declared), GitHub activity on the right (observed).
 export default function SessionRecap({ session, onViewSession, onStartAnother, onRetryActivity }) {
   const activity = session.activity || {};
   const activityReady = session.activityStatus === 'complete';
   const commits = session.commits || [];
-  const commitCount = activity.commits ?? session.commits?.length ?? 0;
-  const filesChanged = activity.filesChanged ?? 0;
-  const additions = activity.additions ?? 0;
-  const deletions = activity.deletions ?? 0;
+  const repository = session.repository;
+  const duration = formatDuration(session.startedAt, session.endedAt);
+  const day = formatDay(session.startedAt);
+  const range = [formatTime(session.startedAt), formatTime(session.endedAt)];
+  // Files and lines come from commit details. With commits but no details, they were never recorded; zero commits is a recorded 0.
+  const detailsRecorded = commits.length === 0 || commits.some((commit) => Array.isArray(commit.files));
+  const unavailable = <span className="is-unavailable">Unavailable</span>;
 
   return (
-    <article className="session-complete-card">
-      <header className="session-recap-hero">
-        <div className="session-recap-result">
-          <span className="session-recap-status"><i aria-hidden="true">✓</i> Session complete</span>
-          <strong className="session-recap-duration">{formatDuration(session.startedAt, session.endedAt)}</strong>
-          <span className="session-recap-range">{formatDateTime(session.startedAt)} <span aria-hidden="true">–</span> {formatDateTime(session.endedAt)}</span>
+    <article className="session-workspace-already-active session-recap" aria-label="Completed coding session">
+      <div className="session-console-panel">
+        <span className="session-console-status is-complete"><i aria-hidden="true">✓</i> SESSION COMPLETE</span>
+        <div className="session-console-timer" aria-label={`Session time ${duration}`}>
+          <span className="session-console-time">{duration}</span>
         </div>
-        <div className="session-recap-context">
-          <p className="session-recap-repo">{repositoryFullName(session.repository)}</p>
-          <h2>{session.repository.name}</h2>
-          {session.goal && <p className="session-recap-goal">{session.goal}</p>}
-          <span className="session-complete-id">Session <code>{session.id}</code></span>
+        <div className="session-console-context">
+          <p className="session-console-repo"><RepositoryName repository={repository} /></p>
+          {session.goal && <h2>{session.goal}</h2>}
+          {day && <p className="session-console-meta">{day}{range[0] && range[1] && <> · {range[0]} <span aria-hidden="true">–</span> {range[1]}</>}</p>}
         </div>
         {activityReady && (
           <dl className="session-recap-stats">
-            <div><dt>{commitCount === 1 ? 'Commit' : 'Commits'}</dt><dd>{commitCount}</dd></div>
-            <div><dt>{filesChanged === 1 ? 'File changed' : 'Files changed'}</dt><dd>{filesChanged}</dd></div>
-            <div aria-label={`${additions} lines added and ${deletions} lines deleted`}>
+            <div><dt>{commits.length === 1 ? 'Commit' : 'Commits'}</dt><dd>{commits.length}</dd></div>
+            <div><dt>{activity.filesChanged === 1 ? 'File changed' : 'Files changed'}</dt><dd>{detailsRecorded ? activity.filesChanged ?? 0 : unavailable}</dd></div>
+            <div aria-label={detailsRecorded ? `${activity.additions ?? 0} lines added and ${activity.deletions ?? 0} lines deleted` : undefined}>
               <dt>Lines</dt>
-              <dd><span className="session-complete-additions">+{additions}</span> <span className="session-complete-diff-separator" aria-hidden="true">/</span> <span className="session-complete-deletions">−{deletions}</span></dd>
+              <dd>{detailsRecorded ? <><span className="history-additions">+{activity.additions ?? 0}</span> <span className="history-deletions">−{activity.deletions ?? 0}</span></> : unavailable}</dd>
             </div>
           </dl>
         )}
-      </header>
+        <div className="session-console-actions">
+          <a className="continue-session-button" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, () => onViewSession(session.id))}>View session <span aria-hidden="true">→</span></a>
+          <button className="session-workspace-button session-recap-next" type="button" onClick={onStartAnother}>Start another session</button>
+        </div>
+      </div>
 
-      <section className="session-complete-activity" aria-labelledby="session-complete-activity-heading">
-        <div className="session-recap-section-heading">
-          <span className="section-kicker">GITHUB ACTIVITY</span>
-          <h3 id="session-complete-activity-heading">Commits during this session</h3>
+      <section className="session-console-activity" aria-labelledby="session-recap-activity-heading">
+        <div className="session-console-activity-heading">
+          <h3 id="session-recap-activity-heading">GitHub activity</h3>
         </div>
         {session.activityStatus === 'loading' && (
-          <p className="session-complete-activity-state" role="status"><span className="dashboard-spinner" />Retrieving GitHub activity…</p>
+          <p className="session-recap-state" role="status"><span className="dashboard-spinner" />Retrieving GitHub activity…</p>
         )}
         {session.activityStatus === 'error' && (
-          <div className="dashboard-error session-complete-activity-state" role="alert">
+          <div className="dashboard-error session-recap-state" role="alert">
             <span>{session.activityError || 'GitHub activity could not be retrieved.'}</span>
             <button type="button" onClick={() => onRetryActivity(session)}>Try again</button>
           </div>
         )}
-        {activityReady && (commits.length > 0 ? (
-          <div className="session-complete-commits">
-            <SessionCommitList commits={commits} mode="recap" timestampMode="time" order="oldest" />
-          </div>
+        {activityReady && (commits.length ? (
+          <ScrollArea watch={commits.length}>
+            <SessionCommitList commits={commits} mode="active" timestampMode="time" order="newest" linkRows repositoryUrl={repository.html_url} />
+          </ScrollArea>
         ) : (
-          <p className="session-complete-no-commits">No GitHub commits were recorded during this session. Session time still counts.</p>
+          <p className="session-recap-state">No commits</p>
         ))}
       </section>
-
-      <footer className="session-complete-footer">
-        <p className="session-complete-note">Session duration is the time you chose to work. GitHub activity is what GitHub recorded during that timeframe; it is not an exact measure of coding time.</p>
-        <div className="session-complete-actions">
-          <a className="subtle-action" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, () => onViewSession(session.id))}>View session <span aria-hidden="true">→</span></a>
-          <button className="session-workspace-button" type="button" onClick={onStartAnother}>Start another session <span aria-hidden="true">→</span></button>
-        </div>
-      </footer>
     </article>
   );
 }

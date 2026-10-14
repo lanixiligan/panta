@@ -1,14 +1,46 @@
+/* Panta's palette. Every colour in the app comes from here; components never use raw hex values,
+   except translucent glows and shadows built from these colours. */
 :root {
-  --line: #e4e8ed;
+  /* Surfaces, darkest to lightest */
   --workspace-bg: #07110C;
   --workspace-sidebar: #0B1510;
   --workspace-surface: #101F16;
   --workspace-raised: #15291D;
-  --workspace-border: #21402D;
+
+  /* Lines */
   --workspace-divider: #183022;
-  --workspace-text: #E8FFF1;
-  --workspace-secondary: #91B8A0;
-  --workspace-muted: #5F796A;
+  --workspace-border: #21402D;
+  --workspace-border-strong: #2F5D40;
+  --workspace-border-hover: #3D7A52;
+
+  /* Text, most to least prominent. Faint is decorative only (separators, empty days), never for words. */
+  --workspace-text: #DDEBE2;
+  --workspace-secondary: #9FBDAA;
+  --workspace-muted: #7D9888;
+  --workspace-faint: #4D6155;
+
+  /* Green accents. The neon accent is for small marks only (live dot, ticks, active markers);
+     links, hover text, and large highlighted areas use the softer green. */
   --workspace-accent: #39FF88;
+  --workspace-accent-soft: #5FD394;
+  --workspace-focus: #39FF8899;
+
+  /* Primary buttons */
+  --workspace-action: #2A9D5C;
+  --workspace-action-hover: #31AD67;
+  --workspace-action-border: #33B26A;
+  --workspace-action-text: #04230F;
+
+  /* Data: calendar and chart shades (low to high), and line changes */
+  --workspace-level-1: #1D4A30;
+  --workspace-level-2: #23703F;
+  --workspace-level-3: #2E9455;
+  --workspace-level-4: #45C47A;
+  --workspace-additions: #82C895;
+  --workspace-deletions: #C58D81;
+
+  /* Errors and destructive actions */
+  --workspace-danger: #E0A397;
+  --workspace-danger-bg: #1C1412;
+  --workspace-danger-border: #563C38;
 }
-:root { --accent: #39FF88; }

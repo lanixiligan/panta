@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import AuthControl from '../auth/AuthControl.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { followRouteLink, routePaths } from '../../routing.js';
+import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
+import { formatElapsed } from '../../sessions/sessionHelpers.js';
 
 const items = [
   { label: 'Overview', view: 'Overview', path: routePaths.Overview, icon: '▣' },
-  { label: 'Start a session', view: 'Session Workspace', path: routePaths['Session Workspace'], icon: '+' },
   { label: 'Session History', view: 'Session History', path: routePaths['Session History'], icon: '◷' },
   { label: 'Projects', view: 'Projects', path: routePaths.Projects, icon: '□' },
   { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, icon: '▥' },
@@ -63,7 +64,7 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
   return (
     <section className="sidebar-socials" aria-label="Socials">
       <button className="sidebar-socials-heading" type="button" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>
-        <span>SOCIALS</span><span className="sidebar-socials-chevron" aria-hidden="true">{expanded ? '−' : '+'}</span>
+        <span>Socials</span><span className="sidebar-socials-chevron" aria-hidden="true">{expanded ? '−' : '+'}</span>
       </button>
       {expanded && (
         <div className="sidebar-socials-content">
@@ -74,8 +75,8 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
             <p className="sidebar-socials-note">No GitHub mutuals yet.<br />Follow someone who follows you to build your mutuals.</p>
           ) : (
             <>
-              <MutualGroup label="ONLINE" users={onlineMutuals} expanded={onlineExpanded} onToggle={() => setOnlineExpanded((value) => !value)} emptyText="No mutuals online." />
-              <MutualGroup label="OFFLINE" users={offlineMutuals} expanded={offlineExpanded} onToggle={() => setOfflineExpanded((value) => !value)} emptyText="No offline mutuals." />
+              <MutualGroup label="Online" users={onlineMutuals} expanded={onlineExpanded} onToggle={() => setOnlineExpanded((value) => !value)} emptyText="No mutuals online." />
+              <MutualGroup label="Offline" users={offlineMutuals} expanded={offlineExpanded} onToggle={() => setOfflineExpanded((value) => !value)} emptyText="No offline mutuals." />
             </>
           )}
         </div>
@@ -84,22 +85,23 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
   );
 }
 
-function formatElapsed(startedAt, now) {
-  const totalSeconds = Math.max(0, Math.floor((now - new Date(startedAt).getTime()) / 1000));
-  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-  const seconds = String(totalSeconds % 60).padStart(2, '0');
-  return `${hours}:${minutes}:${seconds}`;
-}
-
-function ActiveSessionIndicator({ session, now, onNavigate }) {
-  if (!session) return null;
-  const repository = session.repository?.name || session.repository?.full_name || 'Coding session';
+// The core of Panta, so it gets its own accent button at the foot of the sidebar instead of a row in the list.
+// While a session runs, the button becomes the live session card.
+function SessionWorkspaceLink({ session, now, pathname, onNavigate }) {
+  const current = pathname === routePaths['Session Workspace'];
+  if (!session) {
+    return (
+      <a className="sidebar-workspace-link" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
+        Session Workspace
+      </a>
+    );
+  }
+  const repository = repositoryFullName(session.repository) || 'Coding session';
   return (
-    <a className="sidebar-live-session" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={`Open active session for ${repository}`}>
+    <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={`Open active session for ${repository}`}>
       <span className="live-session-heading"><i aria-hidden="true" /> LIVE</span>
-      <strong>{repository}</strong>
-      <span className="live-session-time">{formatElapsed(session.startedAt, now)}</span>
+      <strong>{session.repository ? <RepositoryName name={repository} /> : repository}</strong>
+      <span className="live-session-time">{formatElapsed(now - new Date(session.startedAt).getTime())}</span>
     </a>
   );
 }
@@ -153,7 +155,7 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onLogout }) {
           <a href={profileUrl} target="_blank" rel="noreferrer">GitHub Profile <span aria-hidden="true">↗</span></a>
           <a className={pathname === routePaths.Settings ? 'account-menu-active' : undefined} href={routePaths.Settings} aria-current={pathname === routePaths.Settings ? 'page' : undefined} onClick={(event) => { setOpen(false); followRouteLink(event, onNavigate); }}>Settings</a>
           <div className="account-menu-divider" />
-          <button className="account-logout" type="button" onClick={logout} disabled={busy}>{busy ? 'Signing out…' : 'Log out'}</button>
+          <button className="account-logout" type="button" onClick={logout} disabled={busy}>{busy ? 'Signing out…' : 'Sign out'}</button>
           {error && <p role="alert">{error}</p>}
         </div>
       )}
@@ -166,7 +168,7 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onLogout }) {
   );
 }
 
-export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onLogout, mutuals, mutualsLoading, mutualsError }) {
+export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onLogout, mutuals, mutualsLoading, mutualsError, showExamples, onToggleExamples }) {
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
@@ -174,7 +176,15 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
       </a>
       <NavLinks pathname={pathname} onNavigate={onNavigate} />
       <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
-      <ActiveSessionIndicator session={activeSession} now={now} onNavigate={onNavigate} />
+      <div className="sidebar-workspace">
+        <SessionWorkspaceLink session={activeSession} now={now} pathname={pathname} onNavigate={onNavigate} />
+      </div>
+      {onToggleExamples && (
+        <label className="sidebar-examples-toggle">
+          <input type="checkbox" checked={showExamples} onChange={(event) => onToggleExamples(event.target.checked)} />
+          Show example data
+        </label>
+      )}
       <div className="sidebar-bottom">
         {identityStatus === 'authenticated' && identity ? (
           <UserProfileMenu identity={identity} view={view} pathname={pathname} onNavigate={onNavigate} onLogout={onLogout} />

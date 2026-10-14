@@ -1,6 +1,6 @@
 .not-found-page {
   position: relative;
-  min-height: calc(100vh - 2rem);
+  min-height: calc(calc(100vh / var(--ui-zoom)) - 2rem);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,7 +17,7 @@
   position: absolute;
   inset: 50% auto auto 50%;
   transform: translate(-50%, -54%);
-  font-size: clamp(13rem, 28vw, 24rem);
+  font-size: clamp(13rem, calc(28vw / var(--ui-zoom)), 24rem);
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.08em;
@@ -35,26 +35,26 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent, #39ff88);
+  color: var(--workspace-accent-soft);
 }
 .not-found-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent, #39ff88);
+  background: var(--workspace-accent);
   box-shadow: 0 0 12px rgba(57, 255, 136, 0.35);
 }
 .not-found-content h1 {
   margin: 0;
-  color: var(--primary-text, #e8fff1);
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  color: var(--workspace-text);
+  font-size: clamp(2.25rem, calc(5vw / var(--ui-zoom)), 3.5rem);
   font-weight: 600;
   letter-spacing: -0.04em;
 }
 .not-found-content p {
   max-width: 420px;
   margin: 1rem auto 1.75rem;
-  color: var(--secondary-text, #91b8a0);
+  color: var(--workspace-secondary);
   font-size: 0.95rem;
   line-height: 1.7;
 }
@@ -64,10 +64,10 @@
   gap: 0.8rem;
   min-height: 42px;
   padding: 0 1rem 0 1.1rem;
-  border: 1px solid #21402d;
+  border: 1px solid var(--workspace-border);
   border-radius: 8px;
-  background: #101f16;
-  color: #e8fff1;
+  background: var(--workspace-surface);
+  color: var(--workspace-accent-soft);
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
@@ -77,13 +77,13 @@
     transform 160ms ease;
 }
 .not-found-action span:last-child {
-  color: #39ff88;
+  color: var(--workspace-accent-soft);
   font-size: 1rem;
   transition: transform 160ms ease;
 }
 .not-found-action:hover {
-  border-color: #326044;
-  background: #15291d;
+  border-color: var(--workspace-border-strong);
+  background: var(--workspace-raised);
   transform: translateY(-1px);
 }
 .not-found-action:hover span:last-child {
@@ -94,4 +94,4 @@
 }
 
 .not-found-action { text-decoration: none; }
-.not-found-action:focus-visible { outline: 2px solid #39ff8899; outline-offset: 3px; }
+.not-found-action:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; }

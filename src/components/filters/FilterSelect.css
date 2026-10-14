@@ -1,0 +1,28 @@
+.filter-control { position: relative; min-width: 0; font: 13px 'DM Sans', sans-serif; letter-spacing: normal; text-transform: none; }
+.filter-trigger { display: flex; width: 100%; height: 38px; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--workspace-border); border-radius: 6px; background: var(--workspace-sidebar); color: var(--workspace-text); font: 13px 'DM Sans', sans-serif; text-align: left; cursor: pointer; }
+.filter-trigger > span { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-trigger > svg { flex: 0 0 auto; color: var(--workspace-secondary); }
+.filter-trigger.is-set { border-color: var(--workspace-border-strong); }
+.filter-trigger.is-set > svg:first-child { color: var(--workspace-accent-soft); }
+.filter-trigger:hover { border-color: var(--workspace-border-strong); }
+.filter-trigger:focus-visible, .filter-trigger[aria-expanded="true"] { border-color: var(--workspace-action-border); outline: none; box-shadow: 0 0 0 3px #39ff8840; }
+.filter-trigger[aria-expanded="true"] .filter-chevron { transform: rotate(180deg); }
+
+/* Popovers open under their control, at least as wide as it. */
+.filter-popover { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; min-width: 100%; box-sizing: border-box; overflow: hidden; border: 1px solid var(--workspace-border); border-radius: 10px; background: var(--workspace-surface); box-shadow: 0 18px 40px #00000066; }
+
+.filter-options { max-height: 300px; margin: 0; padding: 6px; overflow-y: auto; outline: none; list-style: none; overscroll-behavior: contain; scrollbar-color: var(--workspace-border-hover) transparent; scrollbar-width: auto; }
+.filter-options li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 6px; color: var(--workspace-secondary); font-size: 13px; cursor: pointer; }
+.filter-options li > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-options li.is-active { background: var(--workspace-raised); color: var(--workspace-text); }
+.filter-options li.is-selected { color: var(--workspace-accent-soft); }
+.filter-options li.is-selected.is-active { background: var(--workspace-raised); }
+.filter-options li > svg { flex: 0 0 auto; }
+.filter-options:focus-visible li.is-active { box-shadow: inset 0 0 0 1px #39ff8866; }
+
+@media (max-width: 680px) {
+  .filter-trigger { height: 42px; }
+  .filter-popover { position: fixed; top: auto; right: 12px; bottom: 12px; left: 12px; min-width: 0; }
+  .filter-options { max-height: calc(60vh / var(--ui-zoom)); }
+  .filter-options li { padding: 11px 12px; }
+}

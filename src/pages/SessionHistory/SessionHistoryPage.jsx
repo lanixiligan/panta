@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import ActiveSessionCard from '../../components/sessions/ActiveSessionCard.jsx';
-import { followRouteLink, routePaths } from '../../routing.js';
+import DateRangePicker, { readRange, rangeBounds, toDayString, writeRange } from './components/DateRangePicker.jsx';
+import FilterSelect from '../../components/filters/FilterSelect.jsx';
+import Pager from '../../components/navigation/Pager.jsx';
+import RepositoryName from '../../components/repository/RepositoryName.jsx';
+import { formatCount } from '../../sessions/sessionHelpers.js';
 
 const sortOptions = [
   ['newest', 'Newest first'],
@@ -11,26 +14,28 @@ const sortOptions = [
 const PAGE_SIZE = 30;
 const CHRONOLOGICAL_SORTS = new Set(['newest', 'oldest']);
 
-// Filters, sort, and how many sessions are shown live in the URL, so Back from a session and shared links restore the same view.
+// Filters, sort, and the current page live in the URL, so Back from a session and shared links restore the same view.
 function readHistoryParams() {
   const params = new URLSearchParams(window.location.search);
   const sort = params.get('sort');
-  const show = Number.parseInt(params.get('show'), 10);
+  const page = Number.parseInt(params.get('page'), 10);
   return {
     query: params.get('q') || '',
     repository: params.get('repo') || 'all',
     sort: sortOptions.some(([value]) => value === sort) ? sort : 'newest',
-    visibleCount: Number.isFinite(show) && show > PAGE_SIZE ? show : PAGE_SIZE,
+    range: readRange(params),
+    page: Number.isFinite(page) && page > 1 ? page : 1,
     collapsed: new Set((params.get('collapsed') || '').split(',').filter((key) => /^\d{4}-\d{2}$/.test(key))),
   };
 }
 
-function writeHistoryParams({ query, repository, sort, visibleCount, collapsed }) {
+function writeHistoryParams({ query, repository, sort, range, page, collapsed }) {
   const params = new URLSearchParams();
   if (query.trim()) params.set('q', query.trim());
   if (repository !== 'all') params.set('repo', repository);
   if (sort !== 'newest') params.set('sort', sort);
-  if (visibleCount > PAGE_SIZE) params.set('show', String(visibleCount));
+  writeRange(params, range);
+  if (page > 1) params.set('page', String(page));
   if (collapsed.size) params.set('collapsed', [...collapsed].sort().join(','));
   const search = params.toString();
   const url = `${window.location.pathname}${search ? `?${search}` : ''}`;
@@ -64,18 +69,14 @@ function groupByMonth(sessions) {
   }, []);
 }
 
-// Spends the loaded-session budget on expanded groups in order; collapsed groups show only their heading and cost nothing.
-function allocateRows(groups, budget, collapsed) {
-  let left = budget;
-  const shown = [];
-  for (const group of groups) {
+// Groups one page of sessions by month. Month headings keep the whole month's totals, even when it spans pages.
+function pageGroups(sessions, pageSessions, collapsed) {
+  const totals = new Map(groupByMonth(sessions).map((group) => [group.key, group]));
+  return groupByMonth(pageSessions).map((group) => {
     const isCollapsed = collapsed.has(group.key);
-    if (!isCollapsed && left <= 0) break;
-    const rows = isCollapsed ? [] : group.sessions.slice(0, left);
-    left -= rows.length;
-    shown.push({ ...group, isCollapsed, rows });
-  }
-  return shown;
+    const { count, minutes } = totals.get(group.key) || group;
+    return { ...group, count, minutes, isCollapsed, rows: isCollapsed ? [] : group.sessions };
+  });
 }
 
 function formatDateTime(value, options) {
@@ -91,19 +92,9 @@ function formatDuration(minutes = 0) {
   return hours ? `${hours}h ${remainder}m` : `${remainder}m`;
 }
 
-function formatCount(value, singular, plural = `${singular}s`) {
-  return `${value} ${value === 1 ? singular : plural}`;
-}
-
 function RepositoryLabel({ session }) {
   const fullName = session.repositoryFullName || session.repositoryName || 'Unknown repository';
-  const slash = fullName.indexOf('/');
-  if (slash < 0) return <span className="history-row-repo">{fullName}</span>;
-  return (
-    <span className="history-row-repo">
-      <span className="history-row-repo-owner">{fullName.slice(0, slash + 1)}</span>{fullName.slice(slash + 1)}
-    </span>
-  );
+  return <RepositoryName className="history-row-repo" name={fullName} />;
 }
 
 function SessionActivityStats({ session }) {
@@ -130,7 +121,7 @@ function SessionActivityStats({ session }) {
 function SessionHistoryEntry({ session, onSelectSession }) {
   const startTime = formatDateTime(session.startedAt, { hour: 'numeric', minute: '2-digit' });
   const endTime = formatDateTime(session.finishedAt, { hour: 'numeric', minute: '2-digit' });
-  const date = formatDateTime(session.startedAt, { month: 'short', day: 'numeric', year: 'numeric' });
+  const date = formatDateTime(session.startedAt, { month: 'numeric', day: 'numeric', year: '2-digit' });
   const showStatus = session.status !== 'completed';
 
   return (
@@ -144,16 +135,21 @@ function SessionHistoryEntry({ session, onSelectSession }) {
       }}
     >
       <div className="history-row-main">
-        <h3 className={`history-row-goal ${session.goal ? '' : 'empty'}`}>{session.goal || 'No goal set'}</h3>
+        <time className="history-row-date" dateTime={session.startedAt}>{date}</time>
         <div className="history-row-meta">
           <RepositoryLabel session={session} />
           <span aria-hidden="true">·</span>
-          <time dateTime={session.startedAt}>{date}{startTime ? `, ${startTime}` : ''}{endTime ? ` – ${endTime}` : ''}</time>
-          <span aria-hidden="true">·</span>
           <span className="history-row-duration">{formatDuration(session.durationMinutes)}</span>
+          {startTime && (
+            <>
+              <span className="history-row-divider" aria-hidden="true" />
+              <span className="history-row-time">{startTime}{endTime ? ` – ${endTime}` : ''}</span>
+            </>
+          )}
           {showStatus && <span className="history-row-badge">{session.status || 'unknown'}</span>}
-          {session.isPlaceholder && <span className="history-row-badge">Example</span>}
+          {session.isPlaceholder && <span className="history-row-badge example">Example</span>}
         </div>
+        {session.goal && <p className="history-row-goal">{session.goal}</p>}
       </div>
 
       <div className="history-row-stats" aria-label="GitHub activity summary">
@@ -198,18 +194,15 @@ function EmptyHistory({ hasFilters }) {
   );
 }
 
-export default function SessionHistoryPage({ sessions = [], onSelectSession, onBack, activeSession, now, isEndingSession, sessionEndingAt, onFinish }) {
+export default function SessionHistoryPage({ sessions = [], onSelectSession }) {
   const initial = useMemo(readHistoryParams, []);
   const [query, setQuery] = useState(initial.query);
   const [repository, setRepository] = useState(initial.repository);
   const [sort, setSort] = useState(initial.sort);
-  const [visibleCount, setVisibleCount] = useState(initial.visibleCount);
+  const [range, setRange] = useState(initial.range);
+  const [page, setPage] = useState(initial.page);
   const [collapsed, setCollapsed] = useState(initial.collapsed);
   const pageRef = useRef(null);
-
-  useEffect(() => {
-    writeHistoryParams({ query, repository, sort, visibleCount, collapsed });
-  }, [query, repository, sort, visibleCount, collapsed]);
 
   function toggleMonth(key) {
     setCollapsed((current) => {
@@ -241,9 +234,18 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession, onB
   // Changing what is listed starts again from the first page of results.
   const changeFilter = (setter) => (event) => {
     setter(event.target.value);
-    setVisibleCount(PAGE_SIZE);
+    setPage(1);
   };
 
+  function goToPage(next) {
+    setPage(next);
+    const scroller = pageRef.current?.closest('.workspace-main');
+    if (scroller) scroller.scrollTop = 0;
+    window.scrollTo(0, 0);
+  }
+
+  const bounds = useMemo(() => rangeBounds(range), [range]);
+  const activeDays = useMemo(() => new Set(sessions.map((session) => toDayString(new Date(session.startedAt)))), [sessions]);
   const repositories = useMemo(() => [...new Set(sessions.map((session) => session.repositoryFullName || session.repositoryName).filter(Boolean))].sort(), [sessions]);
   const filteredSessions = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -251,7 +253,9 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession, onB
       const matchesQuery = !normalizedQuery || [session.repositoryName, session.repositoryFullName, session.goal]
         .some((value) => value?.toLocaleLowerCase().includes(normalizedQuery));
       const matchesRepository = repository === 'all' || (session.repositoryFullName || session.repositoryName) === repository;
-      return matchesQuery && matchesRepository;
+      const startedAt = new Date(session.startedAt);
+      const matchesDate = !bounds || (startedAt >= bounds.start && startedAt < bounds.end);
+      return matchesQuery && matchesRepository && matchesDate;
     });
 
     return result.sort((left, right) => {
@@ -260,35 +264,32 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession, onB
       if (sort === 'shortest') return left.durationMinutes - right.durationMinutes;
       return new Date(right.startedAt) - new Date(left.startedAt);
     });
-  }, [sessions, query, repository, sort]);
+  }, [sessions, query, repository, sort, bounds]);
 
-  const hasFilters = Boolean(query.trim()) || repository !== 'all';
+  const hasFilters = Boolean(query.trim()) || repository !== 'all' || Boolean(bounds);
   const isChronological = CHRONOLOGICAL_SORTS.has(sort);
-  const groups = allocateRows(
-    isChronological
-      ? groupByMonth(filteredSessions)
-      : [{ key: sort, title: sort === 'longest' ? 'Longest sessions first' : 'Shortest sessions first', sessions: filteredSessions, count: filteredSessions.length }],
-    visibleCount,
-    isChronological ? collapsed : new Set(),
-  );
-  const shownCount = groups.reduce((total, group) => total + group.rows.length, 0);
-  const collapsedCount = groups.reduce((total, group) => total + (group.isCollapsed ? group.count : 0), 0);
-  const remaining = filteredSessions.length - shownCount - collapsedCount;
+  const pageCount = Math.max(1, Math.ceil(filteredSessions.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageSessions = filteredSessions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    writeHistoryParams({ query, repository, sort, range, page: currentPage, collapsed });
+  }, [query, repository, sort, range, currentPage, collapsed]);
+
+  const groups = isChronological
+    ? pageGroups(filteredSessions, pageSessions, collapsed)
+    : [{ key: sort, title: sort === 'longest' ? 'Longest sessions first' : 'Shortest sessions first', count: filteredSessions.length, isCollapsed: false, rows: pageSessions }];
 
   return (
     <div className="sessions-page session-history-page" ref={pageRef}>
       <section className="page-intro">
-        <a className="session-history-back" href={routePaths.Overview} onClick={(event) => followRouteLink(event, () => onBack())}>← Overview</a>
         <div className="session-history-title-row">
           <div>
-            <span className="section-kicker">SESSION HISTORY</span>
             <h1>Session History</h1>
             <p>Review the work you’ve done across your repositories.</p>
           </div>
         </div>
       </section>
-
-      {activeSession && <ActiveSessionCard session={activeSession} now={now} onFinish={onFinish} isEnding={isEndingSession} endingAt={sessionEndingAt} />}
 
       <section className="session-history-workspace" aria-label="Session history">
         <div className="session-history-toolbar">
@@ -304,19 +305,30 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession, onB
               placeholder="Repository or goal…"
             />
           </label>
-          <label>
-            <span>Repository</span>
-            <select value={repository} onChange={changeFilter(setRepository)}>
-              <option value="all">All repositories</option>
-              {repositories.map((name) => <option value={name} key={name}>{name}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>Sort</span>
-            <select value={sort} onChange={changeFilter(setSort)}>
-              {sortOptions.map(([value, label]) => <option value={value} key={value}>{label}</option>)}
-            </select>
-          </label>
+          <div className="session-history-filter">
+            <span id="history-repository-label">Repository</span>
+            <FilterSelect
+              labelId="history-repository-label"
+              icon={<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h8.5v9H4.5a1.5 1.5 0 0 0 0 3h8V11.5M3 13V4a1.5 1.5 0 0 1 1-1.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+              value={repository}
+              options={[['all', 'All repositories'], ...repositories.map((name) => [name, name.split('/').pop()])]}
+              onChange={(next) => { setRepository(next); setPage(1); }}
+            />
+          </div>
+          <div className="session-history-filter">
+            <span id="history-period-label">Dates</span>
+            <DateRangePicker labelId="history-period-label" value={range} onChange={(next) => { setRange(next); setPage(1); }} activeDays={activeDays} />
+          </div>
+          <div className="session-history-filter">
+            <span id="history-sort-label">Sort</span>
+            <FilterSelect
+              labelId="history-sort-label"
+              icon={<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M5 3v10M2.5 10.5 5 13l2.5-2.5M11 13V3M8.5 5.5 11 3l2.5 2.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+              value={sort}
+              options={sortOptions}
+              onChange={(next) => { setSort(next); setPage(1); }}
+            />
+          </div>
         </div>
 
         {filteredSessions.length > 0 && (
@@ -324,14 +336,7 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession, onB
             {groups.map((group) => (
               <SessionHistoryGroup key={group.key} groupKey={group.key} {...group} collapsible={isChronological} onToggle={() => toggleMonth(group.key)} onSelectSession={selectSession} />
             ))}
-            <div className="history-more">
-              <span>Showing {shownCount.toLocaleString()} of {formatCount(filteredSessions.length, 'session')}{collapsedCount > 0 && <> · {collapsedCount.toLocaleString()} in collapsed months</>}</span>
-              {remaining > 0 && (
-                <button className="subtle-action" type="button" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>
-                  Show {Math.min(PAGE_SIZE, remaining)} more
-                </button>
-              )}
-            </div>
+            <Pager page={currentPage} pageCount={pageCount} onChange={goToPage} label="Session history pages" />
             {filteredSessions.some((session) => session.isPlaceholder) && (
               <p className="session-history-boundary">Example sessions are illustrative; their GitHub activity was not retrieved from GitHub.</p>
             )}

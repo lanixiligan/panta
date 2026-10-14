@@ -5,10 +5,16 @@
 
 /* Shared components */
 @import './components/navigation/SidebarNav.css';
+@import './components/navigation/Pager.css';
 @import './components/layout/Footer.css';
+@import './components/layout/ScrollArea.css';
 @import './components/auth/AuthControl.css';
 @import './components/sessions/SessionCommitList.css';
-@import './components/sessions/ActiveSessionCard.css';
+@import './components/sessions/EditableGoal.css';
+@import './components/filters/FilterSelect.css';
+@import './components/analytics/WorkCalendar.css';
+@import './components/repository/RepositoryName.css';
+@import './components/repository/RepositoryLanguage.css';
 
 /* Overview */
 @import './pages/Overview/OverviewPage.css';
@@ -22,11 +28,15 @@
 
 /* Session History */
 @import './pages/SessionHistory/SessionHistoryPage.css';
+@import './pages/SessionHistory/components/DateRangePicker.css';
 @import './pages/SessionHistory/SessionDetailPage.css';
 
 /* Other pages */
 @import './pages/Projects/ProjectsPage.css';
+@import './pages/Projects/components/ProjectCard.css';
 @import './pages/Analytics/AnalyticsPage.css';
 @import './pages/Settings/SettingsPage.css';
 @import './pages/Authentication/AuthenticationPage.css';
+/* @import './pages/Authentication/components/SessionGlimpse.css'; — not on the sign-in page yet */
+@import './pages/Preview/PreviewPage.css';
 @import './pages/NotFoundPage.css';

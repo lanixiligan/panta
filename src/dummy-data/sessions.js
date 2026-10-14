@@ -4,8 +4,9 @@ import { generateExampleSessions } from './generatedSessions.js';
 
 const [pokefolio, portfolio, originalPrototype, playground] = dummyRepositories.map(({ id, owner, name, fullName }) => ({ id, owner, name, fullName }));
 const repository = { pokefolio, portfolio, originalPrototype, playground };
+const pixelEditor = (({ id, owner, name, fullName }) => ({ id, owner, name, fullName }))(dummyRepositories.find((repo) => repo.id === 'repo-pixel-editor'));
 
-// Five handcrafted example records, plus generated ones (generatedSessions.js) that fill the history surfaces during development.
+// Six handcrafted example records, plus generated ones (generatedSessions.js) that fill the history surfaces during development.
 // Their activity and commits are illustrative, never retrieved from GitHub.
 const handcraftedSessions = [
   exampleSession({
@@ -130,6 +131,44 @@ const handcraftedSessions = [
       ['20:53', 'Remove legacy type dropdown', [['src/components/collection/TypeDropdown.jsx', 'D', 0, 39], ['src/pages/Collection/CollectionPage.jsx', 'M', 0, 3]]],
       ['20:56', 'Merge collection filters into main', [['src/pages/Collection/CollectionPage.jsx', 'M', 0, 0]], ['feature/collection-filters', 'main']],
       ['20:59', 'Bump version to 0.6.0', [['package.json', 'M', 1, 1], ['CHANGELOG.md', 'M', 9, 0]], ['main']],
+    ],
+  }),
+  // A long session with 30 commits across 30 files, for checking how the detail page handles volume.
+  exampleSession({
+    id: 'session-006', repository: pixelEditor, goal: 'Add layers to the pixel editor',
+    date: '2026-10-07', startedAt: '2026-10-07T13:02:00+08:00', endedAt: '2026-10-07T17:24:00+08:00',
+    branches: ['feature/layers'],
+    commits: [
+      ['13:08', 'Add Layer model', [['src/editor/layers/Layer.js', 'A', 46, 0]]],
+      ['13:15', 'Add LayerStack with add, remove, and reorder', [['src/editor/layers/LayerStack.js', 'A', 88, 0], ['src/editor/layers/Layer.js', 'M', 6, 2]]],
+      ['13:22', 'Add normal, multiply, and screen blend modes', [['src/editor/layers/blendModes.js', 'A', 54, 0]]],
+      ['13:31', 'Composite visible layers into one image', [['src/editor/canvas/compositor.js', 'A', 71, 0], ['src/editor/layers/blendModes.js', 'M', 4, 1]]],
+      ['13:39', 'Draw through the compositor instead of a single buffer', [['src/editor/canvas/renderer.js', 'M', 38, 45], ['src/editor/canvas/compositor.js', 'M', 9, 3]]],
+      ['13:46', 'Store layers in the editor state', [['src/state/editorStore.js', 'M', 42, 11], ['src/state/selectors.js', 'M', 18, 2]]],
+      ['13:54', 'Paint with the brush on the active layer', [['src/editor/tools/brush.js', 'M', 14, 9]]],
+      ['14:01', 'Erase on the active layer only', [['src/editor/tools/eraser.js', 'M', 11, 8]]],
+      ['14:07', 'Flood fill within the active layer', [['src/editor/tools/fill.js', 'M', 19, 12]]],
+      ['14:13', 'Pick colors from the composited image', [['src/editor/tools/picker.js', 'M', 9, 4]]],
+      ['14:22', 'Add layer panel', [['src/components/LayerPanel/LayerPanel.jsx', 'A', 64, 0], ['src/components/LayerPanel/LayerPanel.css', 'A', 52, 0], ['src/index.css', 'M', 1, 0], ['src/App.jsx', 'M', 7, 1]]],
+      ['14:30', 'Add layer rows with visibility and lock toggles', [['src/components/LayerPanel/LayerRow.jsx', 'A', 57, 0], ['src/components/LayerPanel/LayerPanel.jsx', 'M', 6, 14]]],
+      ['14:37', 'Render live layer thumbnails', [['src/components/LayerPanel/LayerThumbnail.jsx', 'A', 39, 0], ['src/components/LayerPanel/LayerRow.jsx', 'M', 4, 1]]],
+      ['14:44', 'Drag layer rows to reorder', [['src/components/LayerPanel/LayerRow.jsx', 'M', 33, 4], ['src/components/LayerPanel/LayerPanel.css', 'M', 17, 2]]],
+      ['14:52', 'Rename layers inline', [['src/components/LayerPanel/LayerRow.jsx', 'M', 24, 6]]],
+      ['15:01', 'Make layer changes undoable', [['src/editor/history/layerCommands.js', 'A', 76, 0], ['src/editor/history/commands.js', 'M', 12, 3]]],
+      ['15:09', 'Group brush strokes into one undo step per layer', [['src/editor/history/commands.js', 'M', 15, 9], ['src/editor/tools/brush.js', 'M', 6, 3]]],
+      ['15:17', 'Add layer opacity slider', [['src/components/LayerPanel/LayerRow.jsx', 'M', 21, 2], ['src/editor/canvas/compositor.js', 'M', 8, 2]]],
+      ['15:25', 'Add blend mode picker to layer rows', [['src/components/LayerPanel/LayerRow.jsx', 'M', 18, 3], ['src/components/LayerPanel/LayerPanel.css', 'M', 11, 0]]],
+      ['15:34', 'Show previous frame as an onion skin', [['src/editor/onion/onionSkin.js', 'A', 49, 0], ['src/editor/canvas/renderer.js', 'M', 12, 2]]],
+      ['15:42', 'Add onion skin toggle to the timeline', [['src/components/Timeline/Timeline.jsx', 'M', 16, 3], ['src/components/Timeline/Timeline.css', 'M', 9, 1]]],
+      ['15:50', 'Keep layers per frame in the timeline', [['src/components/Timeline/Timeline.jsx', 'M', 27, 18], ['src/state/editorStore.js', 'M', 19, 7]]],
+      ['15:58', 'Add shortcuts for new layer and layer up or down', [['src/hooks/useShortcuts.js', 'M', 22, 1]]],
+      ['16:07', 'Save layers in the project file', [['src/io/projectFormat.js', 'M', 34, 12]]],
+      ['16:15', 'Migrate single-layer projects to the new format', [['src/io/migrations/v2.js', 'A', 41, 0], ['src/io/projectFormat.js', 'M', 5, 1]]],
+      ['16:24', 'Flatten layers when exporting PNG', [['src/io/exportPng.js', 'M', 13, 6]]],
+      ['16:32', 'Flatten layers per frame when exporting GIF', [['src/io/exportGif.js', 'M', 17, 8]]],
+      ['16:43', 'Test layer stack ordering and removal', [['tests/layers.test.js', 'A', 68, 0]]],
+      ['16:55', 'Test blend modes and opacity in the compositor', [['tests/compositor.test.js', 'A', 74, 0], ['src/editor/layers/blendModes.js', 'M', 3, 3]]],
+      ['17:12', 'Document layers and onion skinning', [['README.md', 'M', 28, 4]]],
     ],
   }),
 ];

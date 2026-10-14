@@ -5,6 +5,7 @@ export const routePaths = {
   Projects: '/projects',
   Analytics: '/analytics',
   Settings: '/settings',
+  Preview: '/preview',
 };
 
 export function sessionDetailPath(sessionId) {
@@ -35,7 +36,7 @@ export function updateSearchParams(updates) {
 export function followRouteLink(event, navigate) {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
-  navigate(event.currentTarget.pathname);
+  navigate(`${event.currentTarget.pathname}${event.currentTarget.search}`);
 }
 
 export function resolveRoute(pathname) {
@@ -66,5 +67,6 @@ export function resolveRoute(pathname) {
   }
   if (normalizedPath === '/analytics') return { view: 'Analytics' };
   if (normalizedPath === '/settings') return { view: 'Settings' };
+  if (normalizedPath === '/preview') return { view: 'Preview' };
   return { view: 'Not Found' };
 }

@@ -528,7 +528,7 @@ export default function App() {
         )}
         {view === 'Project Detail' && (
           routeProject
-            ? <ProjectDetailPage project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
+            ? <ProjectDetailPage key={routeProject.key} project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
             : <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Repositories</button></section>
         )}
         {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onNavigate={navigate} />}

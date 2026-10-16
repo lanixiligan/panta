@@ -137,7 +137,7 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
             </div>
           )}
           {!loading && !error && repositories.length === 0 && (
-            <div className="repository-browser-state">
+            <div className="repository-browser-state repository-browser-empty">
               <strong>No repositories available</strong>
               <p>No repositories were returned for this GitHub account. Check repository access in Settings.</p>
             </div>
@@ -145,13 +145,19 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
           {!loading && !error && repositories.length > 0 && filteredRepositories.length === 0 && (
             // Private repositories only appear once the user grants Panta access to them on GitHub.
             type === 'private' && !repositories.some((repository) => repository.private && !repository.isExample) ? (
-              <div className="repository-browser-state">
+              <div className="repository-browser-state repository-browser-empty">
+                <span className="repository-browser-empty-icon" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="7" width="10" height="7" rx="1.5" />
+                    <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+                  </svg>
+                </span>
                 <strong>No private repositories shared with Panta</strong>
                 <p>Give Panta access to private repositories under Repository access.</p>
                 <a className="repository-browser-state-link" href={routePaths.Settings} onClick={(event) => followRouteLink(event, onNavigate)}>Go to Settings <span aria-hidden="true">→</span></a>
               </div>
             ) : (
-              <div className="repository-browser-state">
+              <div className="repository-browser-state repository-browser-empty">
                 <strong>No repositories found</strong>
                 <p>Try a different search or filter.</p>
               </div>

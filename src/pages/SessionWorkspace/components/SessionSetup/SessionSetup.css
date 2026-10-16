@@ -34,9 +34,14 @@
 .repository-browser-state strong { font-weight: 500; }
 .repository-browser-state p { margin: 6px 0 0; color: var(--workspace-secondary); font-size: 13px; line-height: 1.55; }
 .repository-browser-state .dashboard-spinner { margin-right: 8px; }
-.repository-browser-state-link { display: inline-flex; gap: 6px; margin-top: 14px; color: var(--workspace-accent-soft); font-size: 13px; text-decoration: none; }
-.repository-browser-state-link:hover { color: var(--workspace-text); }
-.repository-browser-state-link:focus-visible { border-radius: 3px; outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
+.repository-browser-empty { display: flex; flex: 1 1 auto; flex-direction: column; align-items: center; justify-content: center; min-height: 260px; padding: 40px 24px; text-align: center; }
+.repository-browser-empty p { max-width: 340px; }
+.repository-browser-empty-icon { display: grid; width: 44px; height: 44px; place-items: center; margin-bottom: 16px; border: 1px solid var(--workspace-border); border-radius: 12px; background: var(--workspace-raised); color: var(--workspace-accent-soft); }
+.repository-browser-state-link { display: inline-flex; align-items: center; gap: 8px; height: 36px; margin-top: 18px; padding: 0 16px; border: 1px solid var(--workspace-border-strong); border-radius: 8px; background: var(--workspace-raised); color: var(--workspace-accent-soft); font-size: 13px; font-weight: 500; text-decoration: none; transition: border-color .14s ease, color .14s ease, background .14s ease; }
+.repository-browser-state-link span { transition: transform .14s ease; }
+.repository-browser-state-link:hover { border-color: var(--workspace-border-hover); background: #39ff880d; color: var(--workspace-text); }
+.repository-browser-state-link:hover span { transform: translateX(2px); }
+.repository-browser-state-link:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
 .repository-browser-error { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 18px 24px; padding: 12px 14px; border: 1px solid var(--workspace-danger-border); border-radius: 8px; background: var(--workspace-danger-bg); color: var(--workspace-danger); font-size: 13px; }
 .repository-browser-error strong { font-weight: 500; }
 .repository-browser-error p { margin: 5px 0 0; color: var(--workspace-danger); line-height: 1.5; }

@@ -8,7 +8,13 @@ import { formatElapsed } from '../../sessions/sessionHelpers.js';
 const items = [
   { label: 'Overview', view: 'Overview', path: routePaths.Overview, icon: '▣' },
   { label: 'Session History', view: 'Session History', path: routePaths['Session History'], icon: '◷' },
-  { label: 'Projects', view: 'Projects', path: routePaths.Projects, icon: '□' },
+  {
+    label: 'Repositories',
+    view: 'Projects',
+    path: routePaths.Projects,
+    // The same repository icon RepositoryName draws next to every repository name.
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4.5h11a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z" /><path d="M5 17a3 3 0 0 1 3-3h11" /></svg>,
+  },
   { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, icon: '▥' },
 ];
 

@@ -24,7 +24,7 @@ export function WeeklySummary({ summary }) {
     { label: 'Sessions', value: summary.sessionCount },
     { label: 'Session time', value: summary.sessionCount ? formatDuration(summary.sessionMinutes) : '0m' },
     { label: 'Commits', value: summary.commitCount ?? '—', title: summary.commitCount === null ? 'No GitHub activity recorded this week' : undefined },
-    { label: 'Projects', value: summary.repositoryCount },
+    { label: 'Repositories', value: summary.repositoryCount },
   ];
 
   return (

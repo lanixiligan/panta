@@ -20,6 +20,7 @@
 .sidebar-nav-item:hover { color: var(--workspace-text); background: var(--workspace-surface); }
 .sidebar-nav-item.active::before { position: absolute; top: 8px; bottom: 8px; border-radius: 0 2px 2px 0; content: ''; left: -17px; width: 2px; background: var(--workspace-accent); }
 .sidebar-nav-icon { width: 17px; text-align: center; color: var(--workspace-muted); font-size: 15px; }
+.sidebar-nav-icon svg { display: block; width: 15px; height: 15px; margin: 0 auto; }
 .sidebar-live-session { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; width: 100%; padding: 12px; border: 1px solid var(--workspace-border-strong); border-radius: 8px; background: var(--workspace-surface); color: var(--workspace-text); text-align: left; cursor: pointer; }
 .sidebar-live-session { color: inherit; text-decoration: none; }
 .live-session-heading { display: flex; align-items: center; gap: 6px; color: var(--workspace-accent-soft); font: 11px 'DM Mono', monospace; letter-spacing: .08em; }

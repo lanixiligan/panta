@@ -181,7 +181,7 @@ export default function ProjectDetailPage({ project, onBack, onSelectSession }) 
 
   return (
     <article className="session-detail-page project-detail-page">
-      <a className="back-button" href={routePaths.Projects} onClick={(event) => followRouteLink(event, () => onBack())}>← Projects</a>
+      <a className="back-button" href={routePaths.Projects} onClick={(event) => followRouteLink(event, () => onBack())}>← Repositories</a>
       <header className="project-detail-heading">
         <div className="project-detail-kicker">
           {project.isExample
@@ -190,7 +190,7 @@ export default function ProjectDetailPage({ project, onBack, onSelectSession }) 
           {!project.isExample && project.visibility && <span className={`project-badge is-${project.visibility}`}>{project.visibility}</span>}
         </div>
         <h1><RepositoryName name={project.fullName} /></h1>
-        {project.htmlUrl && !project.isExample && <a className="project-detail-repo" href={project.htmlUrl} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>}
+        {project.htmlUrl && !project.isExample && <a className="project-detail-repo" href={project.htmlUrl} target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a>}
         {project.description && <p className="project-detail-description">{project.description}</p>}
         <p className="project-detail-dates">
           Last worked <strong>{formatLastWorked(project.lastWorkedAt)}</strong>

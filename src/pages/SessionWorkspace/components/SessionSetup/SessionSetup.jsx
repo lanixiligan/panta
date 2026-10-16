@@ -59,7 +59,7 @@ function RepositoryHistory({ project, onNavigate }) {
     <section className="repository-history" aria-labelledby="repository-history-heading">
       <div className="repository-history-recent-heading">
         <h3 id="repository-history-heading" className="repository-history-heading">Recent sessions</h3>
-        {project && <a className="repository-history-link" href={projectDetailPath(project.fullName)} onClick={(event) => followRouteLink(event, onNavigate)}>View project <span aria-hidden="true">→</span></a>}
+        {project && <a className="repository-history-link" href={projectDetailPath(project.fullName)} onClick={(event) => followRouteLink(event, onNavigate)}>View repository <span aria-hidden="true">→</span></a>}
       </div>
       <ul className="repository-history-list">
         {sessions.map((session) => (

@@ -117,7 +117,7 @@ function ProjectBreakdown({ projects, onNavigate }) {
     <section className="analytics-section" aria-labelledby="analytics-projects-heading">
       <div className="analytics-section-heading">
         <h2 id="analytics-projects-heading">Where your time went</h2>
-        <span>{formatCount(projects.length, 'project')}</span>
+        <span>{formatCount(projects.length, 'repository', 'repositories')}</span>
       </div>
       {projects.length ? (
         <ol className="analytics-project-list">
@@ -144,7 +144,7 @@ function ProjectBreakdown({ projects, onNavigate }) {
           {others.length > 0 && (
             <li>
               <div className="analytics-project-row is-others">
-                <span className="analytics-project-name"><strong>{formatCount(others.length, 'other project')}</strong></span>
+                <span className="analytics-project-name"><strong>{formatCount(others.length, 'other repository', 'other repositories')}</strong></span>
                 <span className="analytics-project-share">{Math.round(othersShare * 100)}%</span>
                 <span className="analytics-project-duration">{formatDuration(othersDurationMs)}</span>
                 <span className="analytics-project-track" aria-hidden="true"><i style={{ width: `${othersShare * 100}%` }} /></span>

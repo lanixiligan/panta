@@ -88,7 +88,7 @@ export default function ProjectCard({ project, days, maxMinutes, showExample, on
 
       <div className="project-card-footer">
         <span>Last worked <time dateTime={new Date(project.lastWorkedAt).toISOString()}>{formatLastWorked(project.lastWorkedAt)}</time></span>
-        <span className="project-card-go">View project <span aria-hidden="true">→</span></span>
+        <span className="project-card-go">View repository <span aria-hidden="true">→</span></span>
       </div>
     </a>
   );

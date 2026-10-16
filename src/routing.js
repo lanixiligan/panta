@@ -2,7 +2,7 @@ export const routePaths = {
   Overview: '/',
   'Session Workspace': '/session-workspace',
   'Session History': '/session-history',
-  Projects: '/projects',
+  Projects: '/repositories',
   Analytics: '/analytics',
   Settings: '/settings',
   Preview: '/preview',
@@ -14,7 +14,7 @@ export function sessionDetailPath(sessionId) {
 
 export function projectDetailPath(fullName) {
   const [owner = '', repo = ''] = fullName.split('/');
-  return `/projects/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
+  return `/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
 }
 
 // Page state that belongs in the URL (filters, ranges, toggles). A value of null or the page's default removes the key.
@@ -54,9 +54,11 @@ export function resolveRoute(pathname) {
       }
     }
   }
-  if (normalizedPath === '/projects') return { view: 'Projects' };
-  if (normalizedPath.startsWith('/projects/')) {
-    const segments = normalizedPath.slice('/projects/'.length).split('/');
+  // `/projects` is the old name for `/repositories`; old links still open.
+  const repositoriesPath = normalizedPath.replace(/^\/projects(?=\/|$)/, '/repositories');
+  if (repositoriesPath === '/repositories') return { view: 'Projects' };
+  if (repositoriesPath.startsWith('/repositories/')) {
+    const segments = repositoriesPath.slice('/repositories/'.length).split('/');
     if (segments.length === 2 && segments.every(Boolean)) {
       try {
         return { view: 'Project Detail', owner: decodeURIComponent(segments[0]), repo: decodeURIComponent(segments[1]) };

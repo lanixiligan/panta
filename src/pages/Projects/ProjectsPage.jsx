@@ -57,16 +57,16 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
   return (
     <div className="projects-page" ref={pageRef}>
       <section className="page-intro">
-        <h1>Projects</h1>
+        <h1>Repositories</h1>
         <p>Every repository you’ve worked on through Panta, with the time you declared and what GitHub saw.</p>
       </section>
 
       {projects.length ? (
-        <section className="project-list-section" aria-label="Projects">
+        <section className="project-list-section" aria-label="Repositories">
           <div className="project-toolbar">
-            <input className="project-search" type="search" name="q" aria-label="Search projects" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search projects…" />
+            <input className="project-search" type="search" name="q" aria-label="Search repositories" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search repositories…" />
             <div className="project-toolbar-group">
-              <div className="project-segmented" role="group" aria-label="Sort projects">
+              <div className="project-segmented" role="group" aria-label="Sort repositories">
                 {sortOptions.map(([value, label]) => (
                   <button key={value} type="button" className={sort === value ? 'is-active' : undefined} aria-pressed={sort === value} onClick={() => setSort(value)}>{label}</button>
                 ))}
@@ -76,7 +76,7 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
           </div>
 
           {!sortedProjects.length ? (
-            <p className="project-list-empty">No matching projects</p>
+            <p className="project-list-empty">No matching repositories</p>
           ) : (
             <div className="project-grid">
               {pageProjects.map((project) => (
@@ -84,12 +84,12 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
               ))}
             </div>
           )}
-          <Pager page={currentPage} pageCount={pageCount} onChange={goToPage} label="Project pages" />
+          <Pager page={currentPage} pageCount={pageCount} onChange={goToPage} label="Repository pages" />
         </section>
       ) : (
         <div className="session-empty-state">
           <span className="empty-state-mark" aria-hidden="true">⌂</span>
-          <div><h3>No projects yet</h3><p>Complete your first session and the repository will appear here.</p></div>
+          <div><h3>No repositories yet</h3><p>Complete your first session and the repository will appear here.</p></div>
           <a className="subtle-action" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, () => onStartSession())}>Start a session <span aria-hidden="true">→</span></a>
         </div>
       )}

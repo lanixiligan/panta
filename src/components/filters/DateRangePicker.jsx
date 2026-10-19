@@ -38,7 +38,7 @@ const sameDay = (left, right) => Boolean(left && right) && left.getTime() === ri
 
 // A range is a preset ({ period }) or a custom span ({ period: 'custom', from, to } as YYYY-MM-DD).
 // URL form: ?period=week, or ?from=2026-10-07&to=2026-10-09 (?date= is accepted as a one-day span).
-export function readRange(params) {
+export function readRange(params, fallback = 'all') {
   const from = parseDay(params.get('from') || params.get('date'));
   if (from) {
     const to = parseDay(params.get('to')) || from;
@@ -46,14 +46,15 @@ export function readRange(params) {
     return { period: 'custom', from: toDayString(start), to: toDayString(end) };
   }
   const period = params.get('period');
-  return { period: RANGE_PRESETS.some(([value]) => value === period) ? period : 'all' };
+  return { period: period === 'all' || RANGE_PRESETS.some(([value]) => value === period) ? period : fallback };
 }
 
-export function writeRange(params, range) {
+// `fallback` is the period a page opens with; it is left out of the URL, so 'all' is written when the fallback is something else.
+export function writeRange(params, range, fallback = 'all') {
   if (range.period === 'custom') {
     params.set('from', range.from);
     params.set('to', range.to);
-  } else if (range.period !== 'all') {
+  } else if (range.period !== fallback) {
     params.set('period', range.period);
   }
 }

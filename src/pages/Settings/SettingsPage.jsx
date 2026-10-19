@@ -100,10 +100,7 @@ export default function SettingsPage({ identity, onLogout, hasActiveSession = fa
             <strong>{displayName}</strong>
             <span translate="no">@{username}</span>
           </div>
-          <a className="settings-button" href={profileUrl} target="_blank" rel="noreferrer">GitHub profile <span aria-hidden="true">↗</span></a>
-        </div>
-        {/* Signing out pauses a running session, so it asks first only then. */}
-        <SettingsRow label="Sign out" detail={null}>
+          {/* Signing out pauses a running session, so it asks first only then. */}
           {confirmingSignOut ? (
             <div className="settings-confirm" role="group" aria-label="Confirm signing out">
               <span>Pauses your running session.</span>
@@ -111,11 +108,14 @@ export default function SettingsPage({ identity, onLogout, hasActiveSession = fa
               <button className="settings-button is-danger is-solid" type="button" onClick={signOut} disabled={signingOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button>
             </div>
           ) : (
-            <button className="settings-button" type="button" onClick={() => (hasActiveSession ? setConfirmingSignOut(true) : signOut())} disabled={signingOut}>
-              {signingOut ? 'Signing out…' : 'Sign out'}
-            </button>
+            <div className="settings-account-actions">
+              <a className="settings-button" href={profileUrl} target="_blank" rel="noreferrer">GitHub profile <span aria-hidden="true">↗</span></a>
+              <button className="settings-button" type="button" onClick={() => (hasActiveSession ? setConfirmingSignOut(true) : signOut())} disabled={signingOut}>
+                {signingOut ? 'Signing out…' : 'Sign out'}
+              </button>
+            </div>
           )}
-        </SettingsRow>
+        </div>
         {signOutError && <p className="settings-error" role="alert">{signOutError}</p>}
       </SettingsGroup>
 

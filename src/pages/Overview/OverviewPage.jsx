@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatElapsed } from '../../sessions/sessionHelpers.js';
+import { formatElapsed, getActiveElapsedMs } from '../../sessions/sessionHelpers.js';
 import { followRouteLink, routePaths } from '../../routing.js';
 import { RecentSessions, WeeklySummary } from './components/DashboardSections.jsx';
 import WorkCalendar from '../../components/analytics/WorkCalendar.jsx';
@@ -47,7 +47,7 @@ export default function OverviewPage({ identity, identityStatus, identityError, 
           <span className="overview-live-dot" aria-hidden="true" />
           <RepositoryName className="overview-next-repo" repository={activeSession.repository} />
           <span className="overview-next-goal">{activeSession.goal || 'No goal set'}</span>
-          <span className="overview-live-time">{formatElapsed(now - new Date(activeSession.startedAt).getTime())}</span>
+          <span className="overview-live-time">{formatElapsed(getActiveElapsedMs(activeSession, now))}</span>
           <span className="overview-next-action">Open session <span aria-hidden="true">→</span></span>
         </a>
       ) : lastSession?.repository?.id != null && (

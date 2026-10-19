@@ -2,6 +2,7 @@ import React from 'react';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
 import { followRouteLink, sessionDetailPath } from '../../../../routing.js';
+import { getSessionDurationMinutes } from '../../../../sessions/sessionHelpers.js';
 import RepositoryName from '../../../../components/repository/RepositoryName.jsx';
 
 function formatTime(value) {
@@ -16,8 +17,7 @@ function formatDay(value) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
 }
 
-function formatDuration(startedAt, endedAt) {
-  const durationMinutes = Math.max(0, Math.floor((Date.parse(endedAt) - Date.parse(startedAt)) / 60_000));
+function formatDuration(durationMinutes) {
   const hours = Math.floor(durationMinutes / 60);
   const minutes = durationMinutes % 60;
   return [hours ? `${hours}h` : '', minutes ? `${minutes}m` : ''].filter(Boolean).join(' ') || '<1m';
@@ -29,7 +29,7 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
   const activityReady = session.activityStatus === 'complete';
   const commits = session.commits || [];
   const repository = session.repository;
-  const duration = formatDuration(session.startedAt, session.endedAt);
+  const duration = formatDuration(getSessionDurationMinutes(session));
   const day = formatDay(session.startedAt);
   const range = [formatTime(session.startedAt), formatTime(session.endedAt)];
   // Files and lines come from commit details. With commits but no details, they were never recorded; zero commits is a recorded 0.

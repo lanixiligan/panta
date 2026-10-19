@@ -2,11 +2,26 @@ import { sessionDetailPath } from '../routing.js';
 
 // Helpers for session records. They work the same on real sessions and on the example sessions in src/dummy-data/.
 
+// Session time in milliseconds, with paused time excluded, or null when it can't be determined.
+// The server's stored duration wins. Sessions without one (older ones and the examples) are measured
+// from their timestamps, minus any recorded paused time.
+export function getSessionDurationMs(session) {
+  if (Number.isFinite(session.duration) && session.duration >= 0) return session.duration;
+  const startedAt = Date.parse(session.startedAt);
+  const endedAt = Date.parse(session.endedAt);
+  if (!Number.isFinite(startedAt) || !Number.isFinite(endedAt)) return null;
+  const duration = endedAt - startedAt - (session.pausedMs || 0);
+  return duration >= 0 ? duration : null;
+}
+
+// Session time so far for a running session, with paused time excluded.
+export function getActiveElapsedMs(session, now) {
+  return Math.max(0, now - Date.parse(session.startedAt) - (session.pausedMs || 0));
+}
+
 export function getSessionDurationMinutes(session) {
-  const startedAt = new Date(session.startedAt).getTime();
-  const endedAt = new Date(session.endedAt).getTime();
-  if (!Number.isFinite(startedAt) || !Number.isFinite(endedAt) || endedAt < startedAt) return 0;
-  return Math.floor((endedAt - startedAt) / 60_000);
+  const durationMs = getSessionDurationMs(session);
+  return durationMs === null ? 0 : Math.floor(durationMs / 60_000);
 }
 
 export function getSessionListItems(sessions = []) {

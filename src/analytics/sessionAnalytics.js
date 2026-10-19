@@ -1,3 +1,5 @@
+import { getSessionDurationMs } from '../sessions/sessionHelpers.js';
+
 const HOUR_MS = 3_600_000;
 // Ranges longer than this are charted per week so the bars stay readable.
 const MAX_DAILY_BUCKETS = 45;
@@ -42,14 +44,15 @@ function completedSessionRecords(sessions, now) {
 
     const startedAt = Date.parse(session.startedAt);
     const endedAt = Date.parse(session.endedAt);
-    if (!Number.isFinite(startedAt) || !Number.isFinite(endedAt) || startedAt > endedAt || endedAt > now) return [];
+    const durationMs = getSessionDurationMs(session);
+    if (!Number.isFinite(startedAt) || !Number.isFinite(endedAt) || startedAt > endedAt || endedAt > now || durationMs === null) return [];
     seen.add(session.id);
 
     return [{
       session,
       startedAt,
       endedAt,
-      durationMs: endedAt - startedAt,
+      durationMs,
       repository: session.repository || {},
       commits: typeof session.activity?.commits === 'number' && session.activity.commits >= 0 ? session.activity.commits : null,
     }];

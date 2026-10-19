@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
 import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
-import { formatCount } from '../../sessions/sessionHelpers.js';
+import { formatCount, getSessionDurationMs } from '../../sessions/sessionHelpers.js';
 
 // "When you work": a month calendar shaded by session time, used on Analytics and Overview.
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -38,10 +38,11 @@ function dailySessionTotals(sessions) {
   sessions.forEach((session) => {
     const startedAt = Date.parse(session.startedAt);
     const endedAt = Date.parse(session.endedAt);
-    if (session.status !== 'completed' || !Number.isFinite(startedAt) || !Number.isFinite(endedAt) || endedAt < startedAt) return;
+    const durationMs = getSessionDurationMs(session);
+    if (session.status !== 'completed' || !Number.isFinite(startedAt) || !Number.isFinite(endedAt) || endedAt < startedAt || durationMs === null) return;
     const key = localDayKey(startedAt);
     const day = days.get(key) || { durationMs: 0, sessionCount: 0, repositories: new Set() };
-    day.durationMs += endedAt - startedAt;
+    day.durationMs += durationMs;
     day.sessionCount += 1;
     const name = repositoryFullName(session.repository);
     if (name) day.repositories.add(name);

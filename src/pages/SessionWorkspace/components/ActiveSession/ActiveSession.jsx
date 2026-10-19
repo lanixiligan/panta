@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import EditableGoal from '../../../../components/sessions/EditableGoal.jsx';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
-import { formatElapsed, formatRelativeTime } from '../../../../sessions/sessionHelpers.js';
+import { formatElapsed, formatRelativeTime, getActiveElapsedMs } from '../../../../sessions/sessionHelpers.js';
 import RepositoryName from '../../../../components/repository/RepositoryName.jsx';
 import RepositoryLanguage from '../../../../components/repository/RepositoryLanguage.jsx';
 
@@ -31,7 +31,7 @@ function CancelSession({ onCancel, disabled }) {
 
 export default function ActiveSession({ session, now, onFinish, onCancel, onUpdateGoal, isEnding, endingAt }) {
   const elapsedEnd = isEnding && endingAt ? new Date(endingAt).getTime() : now;
-  const elapsed = formatElapsed(elapsedEnd - new Date(session.startedAt).getTime());
+  const elapsed = formatElapsed(getActiveElapsedMs(session, elapsedEnd));
   const commits = session.commits || [];
   const activityStatus = session.activitySyncStatus || 'loading';
   const repository = session.repository;

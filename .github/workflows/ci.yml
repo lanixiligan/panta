@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # The client secret is server-only; fail if it, or a VITE_ copy of it, ended up in the browser bundle.
+      - name: Check the bundle for secrets
+        run: |
+          if grep -rEl 'GITHUB_APP_CLIENT_SECRET|VITE_[A-Z_]*(SECRET|TOKEN)' dist; then
+            echo "A secret name appears in dist/" >&2
+            exit 1
+          fi
+
+  audit:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm audit --omit=dev --audit-level=high

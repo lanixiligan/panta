@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import AuthControl from '../../components/auth/AuthControl.jsx';
 
 // Commits land at uneven moments, so the dots on the brand line are spaced unevenly too.
 const FLOW_DOTS = [6, 22, 30, 52, 66, 78, 94];
 
+// A hosted API that has been idle takes up to a minute to wake, so a slow check gets its own message.
+const SLOW_CHECK_MS = 4000;
+
 export default function AuthenticationPage({ checking, identityError, onRetryIdentity }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!checking) { setSlow(false); return undefined; }
+    const timer = window.setTimeout(() => setSlow(true), SLOW_CHECK_MS);
+    return () => window.clearTimeout(timer);
+  }, [checking]);
+
   return (
     <main className="auth-screen">
       <div className="auth-background-canvas" aria-hidden="true" />
@@ -28,7 +38,7 @@ export default function AuthenticationPage({ checking, identityError, onRetryIde
         )}
         <div className="auth-actions">
           {checking
-            ? <p className="auth-screen-checking" role="status">Checking your GitHub session…</p>
+            ? <p className="auth-screen-checking" role="status">{slow ? 'Waking the server… this can take up to a minute' : 'Checking your GitHub session…'}</p>
             : <AuthControl loginLabel="Continue with GitHub" />}
         </div>
       </section>

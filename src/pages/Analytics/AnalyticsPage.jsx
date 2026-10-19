@@ -92,9 +92,7 @@ function SessionTimeChart({ timeline }) {
                   <span className="analytics-tooltip-title">{label}</span>
                   <span className="analytics-tooltip-value">{bucket.sessionCount ? formatDuration(bucket.durationMs) : 'No sessions'}</span>
                   {bucket.sessionCount > 0 && (
-                    <span className="analytics-tooltip-meta">
-                      {formatCount(bucket.sessionCount, 'session')}{bucket.hasCommits ? ` · ${formatCount(bucket.commits, 'commit')}` : ''}
-                    </span>
+                    <span className="analytics-tooltip-meta">{formatCount(bucket.sessionCount, 'session')}</span>
                   )}
                 </span>}
               </div>
@@ -128,7 +126,6 @@ function ProjectBreakdown({ projects, onNavigate }) {
                   <strong><RepositoryName name={project.fullName} /></strong>
                   <small>{formatCount(project.sessionCount, 'session')}{project.commits !== null ? ` · ${formatCount(project.commits, 'commit')}` : ''}</small>
                 </span>
-                <span className="analytics-project-share">{Math.round(project.share * 100)}%</span>
                 <span className="analytics-project-duration">{formatDuration(project.durationMs)}</span>
                 <span className="analytics-project-track" aria-hidden="true"><i style={{ width: `${project.share * 100}%` }} /></span>
               </>
@@ -145,7 +142,6 @@ function ProjectBreakdown({ projects, onNavigate }) {
             <li>
               <div className="analytics-project-row is-others">
                 <span className="analytics-project-name"><strong>{formatCount(others.length, 'other repository', 'other repositories')}</strong></span>
-                <span className="analytics-project-share">{Math.round(othersShare * 100)}%</span>
                 <span className="analytics-project-duration">{formatDuration(othersDurationMs)}</span>
                 <span className="analytics-project-track" aria-hidden="true"><i style={{ width: `${othersShare * 100}%` }} /></span>
               </div>

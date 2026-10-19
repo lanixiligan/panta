@@ -53,13 +53,12 @@
 
 /* Projects */
 .analytics-project-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
-.analytics-project-row { display: grid; grid-template-columns: minmax(0, 1fr) 44px 64px; grid-template-areas: "name share duration" "track track track"; align-items: center; gap: 6px 12px; margin: 0 -8px; padding: 8px; border-radius: 6px; color: inherit; text-decoration: none; }
+.analytics-project-row { display: grid; grid-template-columns: minmax(0, 1fr) 64px; grid-template-areas: "name duration" "track track"; align-items: center; gap: 6px 12px; margin: 0 -8px; padding: 8px; border-radius: 6px; color: inherit; text-decoration: none; }
 a.analytics-project-row:hover { background: var(--workspace-raised); }
 a.analytics-project-row:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
 .analytics-project-name { display: flex; min-width: 0; align-items: baseline; gap: 10px; grid-area: name; }
 .analytics-project-name strong { overflow: hidden; color: var(--workspace-text); font: 500 13px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
 .analytics-project-name small { color: var(--workspace-muted); font-size: 11px; white-space: nowrap; }
-.analytics-project-share { grid-area: share; color: var(--workspace-secondary); font: 11px 'DM Mono', monospace; text-align: right; }
 .analytics-project-duration { grid-area: duration; color: var(--workspace-text); font: 12px 'DM Mono', monospace; text-align: right; }
 .analytics-project-track { grid-area: track; height: 5px; overflow: hidden; border-radius: 3px; background: var(--workspace-divider); }
 .analytics-project-track i { display: block; height: 100%; border-radius: 3px; background: var(--workspace-level-3); }

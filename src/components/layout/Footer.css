@@ -1,4 +1,4 @@
-.app-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 17px 0 20px; border-top: 1px solid var(--workspace-divider); color: var(--workspace-muted); font-size: 12px; }
+.app-footer { display: flex; align-items: center; justify-content: flex-end; gap: 15px; padding: 17px 0 20px; border-top: 1px solid var(--workspace-divider); color: var(--workspace-muted); font-size: 12px; }
 .app-footer-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .app-footer-meta > [aria-hidden] { color: var(--workspace-faint); }
 .app-footer a { color: var(--workspace-secondary); text-decoration: none; }
@@ -10,9 +10,6 @@
 }
 @media (max-width: 680px) {
   .workspace-main .app-footer { width: calc(100% - 40px); }
-}
-@media (max-width: 520px) {
-  .app-footer > span:last-child { display: none; }
 }
 @media (max-width: 420px) {
   .workspace-main .app-footer { width: calc(100% - 30px); }

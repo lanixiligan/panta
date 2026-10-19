@@ -13,7 +13,6 @@ export default function Footer() {
         <span aria-hidden="true">·</span>
         <span>MIT License</span>
       </span>
-      <span>Your work, over time.</span>
     </footer>
   );
 }

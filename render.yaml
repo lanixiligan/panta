@@ -18,3 +18,6 @@ services:
       # The Vercel URL, not Render's: https://<your-site>.vercel.app/api/auth/github/callback
       - key: GITHUB_CALLBACK_URL
         sync: false
+      # Neon's main branch, pooled connection string with sslmode=verify-full.
+      - key: DATABASE_URL
+        sync: false

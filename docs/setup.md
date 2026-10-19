@@ -32,13 +32,28 @@ GITHUB_APP_CLIENT_ID=your_client_id
 GITHUB_APP_CLIENT_SECRET=your_client_secret
 GITHUB_CALLBACK_URL=http://localhost:5173/api/auth/github/callback
 GITHUB_APP_SLUG=panta-by-lanix-iligan
+DATABASE_URL=postgresql://user:password@host-pooler.region.aws.neon.tech/neondb?sslmode=verify-full
 ```
 
-`GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_CALLBACK_URL` are required for sign-in. `GITHUB_APP_SLUG` defaults to `panta-by-lanix-iligan` and also accepts the full GitHub App URL.
+`GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_CALLBACK_URL` are required for sign-in. `DATABASE_URL` is required for stored sessions (see [Database](#database)). `GITHUB_APP_SLUG` defaults to `panta-by-lanix-iligan` and also accepts the full GitHub App URL.
 
 These values are read by the server only. Keep them in the root `.env` file (ignored by Git) and never in frontend `VITE_` variables.
 
 Use the existing **Panta by Lanix Iligan** GitHub App. In **GitHub → Settings → Developer settings → GitHub Apps → Panta by Lanix Iligan → Edit**, copy the **Client ID** (not the App ID) into `GITHUB_APP_CLIENT_ID`. Under **Client secrets**, generate a client secret and put it in `GITHUB_APP_CLIENT_SECRET`. The secret is shown only once, so store it securely. Panta obtains user access through OAuth; no personal access token is needed.
+
+### Database
+
+Sessions are stored in Postgres on [Neon](https://neon.tech)'s free tier.
+
+1. Create a Neon project, then add a branch named `dev` (**Branches → New branch**, parent `main`). Local development uses `dev`, so it never touches deployed data.
+2. In **Connect**, choose the `dev` branch, turn on **Connection pooling**, and copy the connection string.
+3. Put it in the root `.env` as `DATABASE_URL`, changing `sslmode=require` to `sslmode=verify-full`. Both verify the certificate today, but `pg` warns that `require` will get weaker in its next major version.
+
+The server creates its tables on startup (`server/db.js`), and doing so again changes nothing. To check the connection:
+
+```bash
+node --env-file=.env -e "import('./server/db.js').then(async m => { const db = m.createDatabase(process.env); await db.ready; console.log((await db.query('select count(*) from sessions')).rows); await db.close(); })"
+```
 
 ### Run the Development Server
 
@@ -65,7 +80,7 @@ npm run preview
 
 The frontend is a static build on Vercel, and the API runs as a Node service on Render. Vercel proxies `/api/*` to Render, so the browser only ever talks to the Vercel domain and the `panta_session` cookie and OAuth callback stay same-origin.
 
-1. **API on Render.** Create a Blueprint from `render.yaml` (or a Node web service with build `npm ci --omit=dev` and start `npm start`). Set `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_SLUG`, and `GITHUB_CALLBACK_URL`. `/healthz` is the health check.
+1. **API on Render.** Create a Blueprint from `render.yaml` (or a Node web service with build `npm ci --omit=dev` and start `npm start`). Set `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_SLUG`, and `GITHUB_CALLBACK_URL`, and set `DATABASE_URL` to the Neon `main` branch's pooled connection string (with `sslmode=verify-full`). `/healthz` is the health check.
 2. **Frontend on Vercel.** Import the repository; Vercel detects Vite. In `vercel.json`, replace `panta-api.onrender.com` with your Render service URL.
 3. **Callback URL.** Set `GITHUB_CALLBACK_URL` to `https://<your-site>.vercel.app/api/auth/github/callback` (the Vercel domain, not Render's) and add the same URL to the GitHub App.
 

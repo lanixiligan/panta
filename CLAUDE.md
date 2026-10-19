@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Panta is a GitHub-centered coding-session tracker: the user declares a session on one repository, and GitHub commits within that time window are the evidence of what happened. `README.md` is the detailed reference for features, routes, endpoints, GitHub App setup, and current limitations. Keep it accurate when behavior changes.
+Panta is a GitHub-centered coding-session tracker: the user declares a session on one repository, and GitHub commits within that time window are the evidence of what happened. `README.md` is the reference for routes, endpoints, and current limitations, `docs/features.md` holds the full description of each page, and `docs/setup.md` covers local setup, deployment, and the GitHub App configuration. Keep them accurate when behavior changes.
 
 ## Commands
 

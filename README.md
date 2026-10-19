@@ -1,12 +1,35 @@
-# Panta
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="public/logos/panta-logo-kit/panta-wordmark-light.svg">
+    <img alt="Panta" src="public/logos/panta-logo-kit/panta-wordmark.svg" width="280">
+  </picture>
+</h1>
 
-> Your work, over time.
+<p align="center"><em>Your work, over time.</em></p>
 
-*From the Greek philosophical idea **panta rhei** — "everything flows."*
+<p align="center">
+  <a href="https://pantarhei-lanixiligan.vercel.app"><strong>Live site</strong></a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#getting-started">Getting started</a> ·
+  <a href="docs/setup.md#deployment">Deployment</a>
+</p>
 
-Panta is a GitHub-centered developer activity tracker built around focused coding sessions.
+<p align="center">
+  <a href="https://github.com/lanixiligan/panta/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/lanixiligan/panta/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white">
+  <img alt="Vite 7" src="https://img.shields.io/badge/Vite-7-646cff?logo=vite&logoColor=white">
+  <img alt="Node 22" src="https://img.shields.io/badge/Node-22-339933?logo=nodedotjs&logoColor=white">
+</p>
 
-Instead of measuring productivity through keystrokes, IDE activity, or artificial productivity scores, Panta lets developers define when they are working and uses GitHub as the observable record of what happened during that period.
+Panta is a GitHub-centered tracker for focused coding sessions. You declare when you are working on a repository, and GitHub's commits from that window are the record of what happened.
+
+It doesn't track keystrokes or IDE activity, and it doesn't score your productivity. **You set the session, and GitHub shows what happened.**
+
+> The live site signs in with a GitHub App. It runs on free hosting, so the first load after a quiet period can take up to a minute while the server wakes.
+
+*The name comes from the ancient Greek phrase **panta rhei**, "everything flows."*
 
 ## How It Works
 
@@ -38,39 +61,14 @@ Sessions run inside the Session Workspace (`/session-workspace`, opened from the
 
 ## Features
 
-### Overview
+Each page is described in full in [docs/features.md](docs/features.md).
 
-A one-screen dashboard that never scrolls on windows 1024×600 and larger. Under the greeting, one line shows the next step: the running session (with its timer), or **Continue where you left off**, which opens the Session Workspace with the repository of your latest real session already selected (`?repo=<id>`). Below it, **This week** shows the current Monday-to-Sunday totals in one row (sessions, session time, commits, repositories), followed by the five most recent sessions and **When you work**, the current month's calendar from Analytics, where a day with sessions opens Session History for that day. Like the rest of the dashboard they include example sessions while example data is shown, and say so. Smaller windows stack the cards and scroll.
-
-### Session History
-
-A searchable list of completed sessions with repository, date, and sort filters. The date picker is a calendar for choosing any span of days, with days that have sessions marked, plus Today, Week, and Month quick picks and Clear; the Analytics calendar links here with a single day selected. Sessions are grouped into collapsible months, each heading showing that whole month's session count and declared session time, and are split into pages of 30. The search, filters, sort, page, and collapsed months are kept in the URL, so going back from a session returns to the same list and scroll position, and a filtered view can be shared as a link. Each session has a detail page: the goal (editable), the repository, date, and time window, then one line of figures that keeps the declared session time apart from what GitHub recorded (commits, lines, files, and branches when they're not just `main`). Commits are shown newest first on a vertical timeline, each linking to GitHub, beside the files changed with their line changes and a breakdown by file type. On windows 1024×600 and larger the page fits the window and the commit and file lists scroll on their own; selecting a file filters the commits to the ones that touched it, and the selection is kept in the URL. **Check GitHub again** re-fetches the window and merges the result with the stored commits, which picks up commits pushed after the session ended without losing commits from branches deleted since. Recorded sessions can be deleted from their detail page.
-
-### Repositories
-
-The GitHub repositories that have become part of your Panta work history. They are derived from your completed sessions — a repository appears here only after you complete a session in it — and are grouped by GitHub repository ID. (In the code these are still called projects: `pages/Projects/`, `getProjects`.)
-
-Each repository card keeps the total session time and session count separate from the GitHub activity recorded for it (commits and line changes, shown as unavailable when none was recorded), followed by a 7-day activity strip and when you last worked in it. Repositories can be searched by name or description, sorted by last worked, total time, or number of sessions, and are split into pages of 9; the search, sort, and page are kept in the URL. A repository's page shows its declared session time (total, average, and longest session) and its GitHub activity (commits, files changed, and line changes) as separate rows of one summary strip, a chart of session time per day over the last 30 days, and the sessions recorded for it, each linking to its Session History entry. Choosing a day in the chart narrows the sessions to that day (kept in the URL as `?day=YYYY-MM-DD`); choosing it again, or clearing the day chip, shows them all again. Example repositories built from the example sessions in `src/dummy-data/` are shown alongside your own, labeled as examples.
-
-### Analytics
-
-Aggregated views of completed sessions, each organized around a question. The date picker is the same calendar as Session History: any span of days, or Today, Week (Monday first, matching Overview), and Month quick picks, with Clear for all time. It opens on this month.
-
-- **Summary** — session time, sessions, and active days (days with at least one session, out of the days in the period). Commits live in **What GitHub recorded**.
-- **What GitHub recorded** — one line with the commits and lines added and deleted during sessions, how many sessions had commits, and how many have no recorded activity.
-- **Session time** — per day across the whole range (days still ahead are shown empty), or per week when it spans more than 45 days, with a tooltip for the session count in each bar. Like the calendar and Repositories, a session counts entirely toward the day it started.
-- **Where your time went** — the five repositories with the most session time and their session time with a bar, then one line totalling the rest; real repositories link to their Repositories page.
-- **When you work** — a month calendar with each date shaded by its session time (credited to the day a session started). Hovering or focusing a date shows its session time, session count, and repositories, and a date with sessions links to Session History filtered to that day; arrows move between months, back to your first session. It ignores the time range.
-
-Values that were never recorded are shown as unavailable rather than zero. Analytics includes the example sessions from `src/dummy-data/` while example data is shown, and the page notes when they are part of the totals. The range (`?period=` or `?from=&to=`) and the month shown in the calendar are kept in the URL.
-
-### Socials
-
-A collapsible sidebar section listing your GitHub mutuals (people you follow who also follow you), grouped as online or offline based on recent Panta presence.
-
-### Settings
-
-Settings is a narrow column of three cards. **Account** shows your avatar, name, and username with a link to your GitHub profile, and **Sign out**, which ends the login but keeps your saved sessions in the browser (it asks first only when a session is running). **GitHub** shows the connection status and links to the GitHub App installation page to manage repository access. **Session history** has **Delete session history**, which, after a confirmation, removes the real sessions saved in this browser; example data is unaffected. Signing out never revokes Panta’s GitHub App authorization; that is done in GitHub’s settings.
+- **Overview** — a one-screen dashboard with your next step, this week's totals, your latest sessions, and a calendar of when you work.
+- **Session History** — a searchable list of completed sessions, filtered by repository and any span of days, with a detail page for each session.
+- **Repositories** — the repositories you have worked on, with session time and GitHub activity kept apart.
+- **Analytics** — where your time went and when you work, over any range of days.
+- **Socials** — which of your GitHub mutuals are online in Panta.
+- **Settings** — your account, GitHub connection, and saved session history.
 
 ## Routes
 
@@ -95,7 +93,7 @@ Routing is implemented in `src/routing.js` and `src/App.jsx` with the History AP
 | Area | Technologies |
 | --- | --- |
 | Frontend | React 19, Vite 7, JavaScript, plain CSS |
-| Server | Node.js middleware mounted into the Vite dev and preview servers |
+| Server | Node.js: Vite middleware in development, a standalone server (`npm start`) in production |
 | GitHub Integration | GitHub REST API, GitHub App user authorization (OAuth) |
 | Authentication | HTTP-only session cookie, server-side GitHub access tokens |
 
@@ -133,7 +131,7 @@ A login session lasts up to 8 hours or until the GitHub token expires, whichever
 
 ### Data and Persistence
 
-Panta does not use a database.
+Panta does not use a database yet. Now that it is deployed, database development is the next step, starting with the data below that is lost on a restart or tied to one browser.
 
 | Data | Where it lives | Lifetime |
 | --- | --- | --- |
@@ -228,106 +226,15 @@ Styles are plain CSS. Each component, page, and Session Workspace phase has its 
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 20.19+ or 22.12+ (required by Vite 7)
-- npm
-- A GitHub account
-- Credentials for the Panta GitHub App (see [GitHub App Configuration](#github-app-configuration))
-
-### Installation
-
 ```bash
 git clone https://github.com/lanixiligan/panta.git
 cd panta
 npm install
+cp .env.example .env   # add the GitHub App credentials
+npm run dev            # http://localhost:5173
 ```
 
-### Environment Variables
-
-Copy the example file and fill in the GitHub App credentials:
-
-```bash
-cp .env.example .env
-```
-
-```ini
-GITHUB_APP_CLIENT_ID=your_client_id
-GITHUB_APP_CLIENT_SECRET=your_client_secret
-GITHUB_CALLBACK_URL=http://localhost:5173/api/auth/github/callback
-GITHUB_APP_SLUG=panta-by-lanix-iligan
-```
-
-`GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_CALLBACK_URL` are required for sign-in. `GITHUB_APP_SLUG` defaults to `panta-by-lanix-iligan` and also accepts the full GitHub App URL.
-
-These values are read by the server only. Keep them in the root `.env` file (ignored by Git) and never in frontend `VITE_` variables.
-
-Use the existing **Panta by Lanix Iligan** GitHub App. In **GitHub → Settings → Developer settings → GitHub Apps → Panta by Lanix Iligan → Edit**, copy the **Client ID** (not the App ID) into `GITHUB_APP_CLIENT_ID`. Under **Client secrets**, generate a client secret and put it in `GITHUB_APP_CLIENT_SECRET`. The secret is shown only once, so store it securely. Panta obtains user access through OAuth; no personal access token is needed.
-
-### Run the Development Server
-
-```bash
-npm run dev
-```
-
-The application will be available at:
-
-```text
-http://localhost:5173
-```
-
-### Build and Preview
-
-```bash
-npm run build
-npm run preview
-```
-
-`npm run preview` serves the production build with the same API middleware. Preview runs in production mode, where the server only accepts an HTTPS `GITHUB_CALLBACK_URL` and marks cookies `Secure`, so sign-in with the local `http://` callback works under `npm run dev` only.
-
-## Deployment
-
-The frontend is a static build on Vercel, and the API runs as a Node service on Render. Vercel proxies `/api/*` to Render, so the browser only ever talks to the Vercel domain and the `panta_session` cookie and OAuth callback stay same-origin.
-
-1. **API on Render.** Create a Blueprint from `render.yaml` (or a Node web service with build `npm ci --omit=dev` and start `npm start`). Set `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_SLUG`, and `GITHUB_CALLBACK_URL`. `/healthz` is the health check.
-2. **Frontend on Vercel.** Import the repository; Vercel detects Vite. In `vercel.json`, replace `panta-api.onrender.com` with your Render service URL.
-3. **Callback URL.** Set `GITHUB_CALLBACK_URL` to `https://<your-site>.vercel.app/api/auth/github/callback` (the Vercel domain, not Render's) and add the same URL to the GitHub App.
-
-Logins and presence live in the API process's memory, so a restart signs everyone out and only one instance can run. Render's free tier sleeps after about 15 minutes idle and takes about a minute to wake, which also signs everyone out.
-
-## GitHub App Configuration
-
-Panta signs users in through the **Panta by Lanix Iligan** GitHub App (**GitHub → Settings → Developer settings → GitHub Apps**).
-
-Register this callback URL as a user authorization callback URL in the app, and keep `GITHUB_CALLBACK_URL` identical to it:
-
-```text
-http://localhost:5173/api/auth/github/callback
-```
-
-GitHub requires the callback URL used by the app to match its registered callback ([user authorization callback URL](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/about-the-user-authorization-callback-url)). See GitHub's guide to [generating a user access token for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app) for the Client ID and client secret fields.
-
-### Repository Access
-
-Repository access is controlled by the GitHub App installation. **Settings → Manage repository access** opens the app's installation page on GitHub (through `/api/auth/github/install`, using `GITHUB_APP_SLUG`), where you choose which repositories Panta can access.
-
-For session setup, the server requests the repositories the signed-in user can access through the app. This can include public and private repositories owned by the user, collaborator repositories, and organization repositories when the app is installed for them. The list is paginated, and only repository metadata needed by the interface is returned to the browser. A repository appears only when both the signed-in user and the app installation can access it.
-
-Enable these **read-only permissions** in the GitHub App settings:
-
-- **Metadata: Read-only** — list accessible repositories and read repository metadata.
-- **Contents: Read-only** — list commits and read commit details for session activity.
-- **Followers: Read-only** (user permission) — list the people the user follows and their followers for the Socials section.
-
-Do not grant write permissions for the current workflow. GitHub may require the installation or authorization to be reviewed again after permissions change.
-
-### Socials and Presence
-
-The Socials section loads `GET /user/following` and `GET /user/followers` on the server, follows pagination for both, and intersects the lists by GitHub user ID. A mutual is shown as online when a recent Panta heartbeat exists, and offline otherwise; offline does not indicate whether the person has a Panta account. The relationship list is cached for five minutes, while presence refreshes separately. Signed-in clients send heartbeats every 30 seconds, and an account counts as online for 90 seconds after its latest heartbeat. Presence is in-memory and process-local, so a server restart clears it.
-
-To check Socials locally, sign in to the same Panta server from two isolated browser profiles with separate GitHub accounts that follow each other. Each account should show the other as online. After one account logs out, or 90 seconds after its tab is closed, it should appear offline.
-
-See GitHub's documentation for [listing repositories for the authenticated user](https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user), [listing commits](https://docs.github.com/en/rest/commits/commits#list-commits), [listing people the authenticated user follows](https://docs.github.com/en/rest/users/followers#list-the-people-the-authenticated-user-follows), and [choosing GitHub App permissions](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app).
+The environment variables, GitHub App configuration, and deployment steps are in [docs/setup.md](docs/setup.md).
 
 ## Design Principles
 
@@ -354,7 +261,7 @@ Panta is under active development. In the current implementation:
 - Completed sessions are stored in the browser's `localStorage`, so history is per browser and is not synced across devices.
 - An active session exists only in the open page and is lost if the page is reloaded.
 - Login sessions and presence are kept in server memory, so restarting the server signs everyone out.
-- The server runs as Vite middleware; there is no standalone production server.
+- The API's free hosting sleeps after about 15 minutes with no open tabs, which signs everyone out. While a signed-in tab is open, its 30-second presence heartbeat keeps the server awake.
 - Live polling retrieves commit messages and times only; file and line totals are retrieved when the session ends.
 - Commit queries cost one GitHub request per branch whose latest commit falls in the session window, plus a one-time lookup of each new branch head. Repositories with many active branches use more of the GitHub rate limit.
 - Sessions completed before branch detection was added have no branch information until you use **Check GitHub again** on their detail page.

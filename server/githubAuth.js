@@ -103,7 +103,7 @@ function createRequestContext(request, response, requestUrl, state) {
   };
 }
 
-function createGitHubAuthMiddleware(env = process.env) {
+export function createGitHubAuthMiddleware(env = process.env) {
   const sessions = new Map();
   // Process-local for the MVP. Multiple server instances need shared presence storage.
   const presenceBySession = new Map();

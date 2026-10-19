@@ -72,7 +72,7 @@ async function cancel({ db, userId, sessionId }) {
 }
 
 async function storeActivity({ db, userId, sessionId, readJsonBody }) {
-  const row = await saveActivity(db, userId, sessionId, await readJsonBody());
+  const row = await saveActivity(db, userId, sessionId, await readJsonBody(IMPORT_LIMIT_BYTES));
   return row ? [200, { session: toClientSession(row) }] : [404, { error: NOT_FOUND }];
 }
 
@@ -120,6 +120,14 @@ export async function handleSessionRoute(context) {
   if (!handler) {
     const allow = Object.keys(route.methods).join(', ');
     writeJson(response, 405, { error: `Use ${allow} for this session route.` }, { Allow: allow });
+    return true;
+  }
+
+  // Defense in depth for routes without a body (finish, cancel, delete, heartbeat): SameSite=Lax is not the only guard.
+  // Origin is not compared to Host, because the hosted frontend proxies /api to a different host.
+  const fetchSite = request.headers['sec-fetch-site'];
+  if (request.method !== 'GET' && (fetchSite === 'cross-site' || fetchSite === 'same-site')) {
+    writeJson(response, 403, { error: 'Cross-site requests aren’t allowed.' });
     return true;
   }
 

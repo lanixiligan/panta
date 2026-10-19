@@ -33,7 +33,14 @@ CREATE TABLE IF NOT EXISTS accounts (
 
 // A local Postgres has no TLS; anything else (Neon) must present a valid certificate.
 function sslFor(connectionString) {
-  const { hostname, searchParams } = new URL(connectionString);
+  let hostname;
+  let searchParams;
+  try {
+    ({ hostname, searchParams } = new URL(connectionString));
+  } catch {
+    // Never include the value: it holds the password.
+    throw new Error('DATABASE_URL isn’t a valid connection string. See docs/setup.md.');
+  }
   if (['localhost', '127.0.0.1', '::1'].includes(hostname)) return false;
   // An sslmode in the URL is applied by pg itself and takes precedence.
   return searchParams.has('sslmode') ? undefined : { rejectUnauthorized: true };
@@ -43,7 +50,12 @@ export function createDatabase(env = process.env) {
   const connectionString = env.DATABASE_URL;
   if (!connectionString) throw new Error('DATABASE_URL is not set. See docs/setup.md.');
 
-  const pool = new pg.Pool({ connectionString, ssl: sslFor(connectionString), max: 5 });
+  const pool = new pg.Pool({ connectionString, ssl: sslFor(connectionString),
+    max: 5,
+    // A stalled Neon connection should fail into the 503 path instead of hanging requests.
+    connectionTimeoutMillis: 10_000,
+    query_timeout: 15_000,
+  });
   // An idle client can drop (Neon suspends idle compute); without a listener that error crashes the process.
   pool.on('error', (error) => console.error('Database connection error:', error.message));
 

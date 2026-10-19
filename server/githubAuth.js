@@ -160,9 +160,15 @@ export function createGitHubAuthMiddleware(env = process.env) {
   const mutualsRequests = new Map();
   const production = env.NODE_ENV === 'production';
   // Without DATABASE_URL, sign-in still works and only the session routes report that storage is missing.
-  const db = env.DATABASE_URL ? createDatabase(env) : null;
+  let db = null;
+  if (env.DATABASE_URL) {
+    try {
+      db = createDatabase(env);
+    } catch (error) {
+      console.error(`${error.message} Sessions can’t be stored.`);
+    }
+  } else console.warn('DATABASE_URL is not set, so sessions can’t be stored. See docs/setup.md.');
   if (db) db.ready.catch((error) => console.error('Database setup failed; retrying on the next request:', error.message));
-  else console.warn('DATABASE_URL is not set, so sessions can’t be stored. See docs/setup.md.');
 
   return async function githubAuthMiddleware(request, response, next) {
     const requestUrl = new URL(request.url || '/', 'http://localhost');
@@ -197,14 +203,11 @@ export function createGitHubAuthMiddleware(env = process.env) {
 }
 
 export function githubAuthApi(env = process.env) {
-  const middleware = createGitHubAuthMiddleware(env);
+  // Built per server, not at config load, so `vite build` never opens a database connection.
+  const mount = (server) => server.middlewares.use(createGitHubAuthMiddleware(env));
   return {
     name: 'panta-github-auth-api',
-    configureServer(server) {
-      server.middlewares.use(middleware);
-    },
-    configurePreviewServer(server) {
-      server.middlewares.use(middleware);
-    },
+    configureServer: mount,
+    configurePreviewServer: mount,
   };
 }

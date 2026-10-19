@@ -124,3 +124,16 @@ test('toClientSession maps a row', () => {
   assert.equal(session.duration, 3540000);
   assert.equal(session.activityCheckedAt, null);
 });
+
+test('sanitizeRepository accepts only a numeric or digit-string id', () => {
+  assert.equal(sanitizeRepository({ ...repository, id: '42' }).id, '42');
+  for (const id of [{ nested: true }, [1], 'abc', '', null, undefined, Infinity, true]) {
+    assert.equal(sanitizeRepository({ ...repository, id }), null);
+  }
+});
+
+test('sanitizeRepository keeps html_url only for https://github.com/', () => {
+  assert.equal(sanitizeRepository(repository).html_url, 'https://github.com/lanixiligan/panta');
+  assert.equal(sanitizeRepository({ ...repository, html_url: 'https://evil.example/x' }).html_url, null);
+  assert.equal(sanitizeRepository({ ...repository, html_url: { a: 1 } }).html_url, null);
+});

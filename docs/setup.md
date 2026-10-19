@@ -35,7 +35,7 @@ GITHUB_APP_SLUG=panta-by-lanix-iligan
 DATABASE_URL=postgresql://user:password@host-pooler.region.aws.neon.tech/neondb?sslmode=verify-full
 ```
 
-`GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_CALLBACK_URL` are required for sign-in. `DATABASE_URL` is required for stored sessions (see [Database](#database)). `GITHUB_APP_SLUG` defaults to `panta-by-lanix-iligan` and also accepts the full GitHub App URL.
+`GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_CALLBACK_URL` are required for sign-in. `DATABASE_URL` is required for stored sessions (see [Database](#database)). A malformed `DATABASE_URL` is treated like a missing one: sign-in works, session routes return 503, and the log never prints the value. `npm run build` doesn’t connect to the database. `GITHUB_APP_SLUG` defaults to `panta-by-lanix-iligan` and also accepts the full GitHub App URL.
 
 These values are read by the server only. Keep them in the root `.env` file (ignored by Git) and never in frontend `VITE_` variables.
 

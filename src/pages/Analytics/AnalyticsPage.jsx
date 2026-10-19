@@ -180,7 +180,7 @@ function AnalyticsEmptyState({ period, hasAnySessions, onShowAllTime }) {
   );
 }
 
-export default function AnalyticsPage({ sessions = [], onNavigate }) {
+export default function AnalyticsPage({ sessions = [], notice = null, onNavigate }) {
   // The range lives in the URL (?period= or ?from=&to=) so links and reloads keep the view.
   const [range, setRangeState] = useState(() => readRange(new URLSearchParams(window.location.search), DEFAULT_PERIOD));
   const setRange = (next) => {
@@ -212,7 +212,9 @@ export default function AnalyticsPage({ sessions = [], onNavigate }) {
         </div>
       </section>
 
-      {!hasSessions ? <AnalyticsEmptyState period={range.period} hasAnySessions={analytics.totalCompletedSessions > 0} onShowAllTime={() => setRange({ period: 'all' })} /> : (
+      {notice}
+
+      {!hasSessions ? (notice ? null : <AnalyticsEmptyState period={range.period} hasAnySessions={analytics.totalCompletedSessions > 0} onShowAllTime={() => setRange({ period: 'all' })} />) : (
         <>
           <SummaryMetrics analytics={analytics} />
           <GitHubActivity analytics={analytics} />

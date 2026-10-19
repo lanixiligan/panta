@@ -42,14 +42,18 @@ function person(value) {
 }
 
 export function sanitizeRepository(value) {
-  if (!isObject(value) || value.id === undefined || value.id === null || typeof value.name !== 'string') return null;
+  if (!isObject(value) || typeof value.name !== 'string') return null;
+  const validId = (typeof value.id === 'number' && Number.isFinite(value.id))
+    || (typeof value.id === 'string' && /^\d+$/.test(value.id));
+  if (!validId) return null;
+  const htmlUrl = typeof value.html_url === 'string' && value.html_url.startsWith('https://github.com/') ? value.html_url : null;
   return {
     id: value.id,
     name: value.name,
     full_name: stringOrNull(value.full_name),
     owner: { login: stringOrNull(isObject(value.owner) ? value.owner.login : value.owner) },
     private: Boolean(value.private),
-    html_url: stringOrNull(value.html_url),
+    html_url: htmlUrl,
   };
 }
 

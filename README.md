@@ -158,7 +158,7 @@ Sessions are stored in Postgres, keyed by the numeric GitHub user ID, so your hi
 | Presence | Server memory | 90-second online window; cleared on restart |
 | Repositories and commits | GitHub, fetched on demand | — |
 
-Before session storage, completed sessions were kept in each browser's `localStorage` (`panta.sessions.<username>`). The first time a browser loads Panta signed in, it imports that history and removes the local copy. Each account imports once.
+Before session storage, completed sessions were kept in each browser's `localStorage` (`panta.sessions.<username>`). The first time a browser loads Panta signed in, it imports that history and removes the local copy. Each account imports once; a browser that finds the account already imported moves its copy to `panta.sessions.backup.<username>` instead of deleting it.
 
 ### What Panta Stores
 
@@ -172,7 +172,7 @@ Panta stores commit messages, times, and file and line stats. Never code. This a
 - **Each file in a commit:** path, status, and lines added, deleted, and changed. No patches or file contents.
 - **Activity summary:** commits, files changed, lines added, and lines deleted. A value that was never recorded is stored as empty, never as zero.
 
-The server keeps only these fields when it writes, so anything else a browser sends is dropped. The GitHub access token is never stored in the database.
+The server keeps only these fields when it writes, so anything else a browser sends is dropped. A repository needs a numeric `id` and a name, and its `html_url` is kept only if it starts with `https://github.com/`. The GitHub access token is never stored in the database.
 
 ### Example (Dummy) Data
 

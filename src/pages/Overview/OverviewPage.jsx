@@ -16,7 +16,7 @@ function formatDay(value) {
   return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(value));
 }
 
-export default function OverviewPage({ identity, identityStatus, identityError, onRetryIdentity, activeSession, lastSession, now, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, onSelectSession, calendarSessions = [], onNavigate }) {
+export default function OverviewPage({ identity, identityStatus, identityError, onRetryIdentity, activeSession, lastSession, now, onNavigateToStart, onViewSessions, recentSessions, weeklySummary, onSelectSession, calendarSessions = [], notice = null, onNavigate }) {
   if (identityStatus === 'loading') {
     return <section className="dashboard-loading" aria-label="Loading your dashboard"><div /><div /><div /></section>;
   }
@@ -60,7 +60,8 @@ export default function OverviewPage({ identity, identityStatus, identityError, 
         </a>
       )}
 
-      <WeeklySummary summary={weeklySummary} />
+      {/* While sessions load or failed to load, one line replaces totals that would read as 0. */}
+      {notice || <WeeklySummary summary={weeklySummary} />}
 
       <div className="dashboard-grid">
         <RecentSessions sessions={recentSessions} onViewAll={onViewSessions} onSelectSession={onSelectSession} />

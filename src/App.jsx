@@ -42,8 +42,17 @@ function readStoredSessions(username) {
   }
 }
 
-function removeStoredSessions(username) {
+// Where the old history is kept when the account had already imported from another browser (nothing is re-sent or lost).
+function backupSessionsKey(username) {
+  return `panta.sessions.backup.${encodeURIComponent(username)}`;
+}
+
+function removeStoredSessions(username, { backup = false } = {}) {
   try {
+    if (backup) {
+      const value = window.localStorage.getItem(legacySessionsKey(username));
+      if (value !== null) window.localStorage.setItem(backupSessionsKey(username), value);
+    }
     window.localStorage.removeItem(legacySessionsKey(username));
   } catch {
     // Storage that can't be used was never read, so nothing was imported from it.
@@ -286,8 +295,12 @@ export default function App() {
       await sessionsApi.importSessions(legacySessions);
     } catch (error) {
       if (error.status === 401) void loadWorkspace();
-      // A 409 means this account already imported its history, so the copy here is stale. Other failures keep it for the next load.
+      // A 409 means this account already imported from another browser. Move this copy to a backup key so it is neither re-sent nor lost.
+      // Other failures keep it for the next load.
       if (error.status !== 409) return;
+      removeStoredSessions(username, { backup: true });
+      await refreshSessions();
+      return;
     }
     removeStoredSessions(username);
     await refreshSessions();
@@ -778,7 +791,9 @@ export default function App() {
   async function deleteAccount() {
     const { revoked } = await sessionsApi.deleteAccount();
     try {
-      Object.keys(localStorage).filter((key) => key.startsWith('panta.sessions.')).forEach((key) => localStorage.removeItem(key));
+      // Only this account's keys: another account's not-yet-imported history in this browser stays.
+      localStorage.removeItem(legacySessionsKey(identity.username));
+      localStorage.removeItem(backupSessionsKey(identity.username));
     } catch { /* storage unavailable */ }
     // Disarms the leave-site prompt a running session would show; the commit must land before navigating.
     flushSync(() => resetSessionState());
@@ -871,6 +886,7 @@ export default function App() {
             calendarSessions={analyticsSessions}
             onNavigate={navigate}
             weeklySummary={weeklySummary}
+            notice={sessionsNotice}
             onSelectSession={openSession}
           />
         )}
@@ -919,7 +935,7 @@ export default function App() {
             ? <ProjectDetailPage key={routeProject.key} project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
             : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Repositories</button></section>
         )}
-        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onNavigate={navigate} />}
+        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} notice={sessionsNotice} onNavigate={navigate} />}
         {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
         {view === 'Session Detail' && (
           detailSession

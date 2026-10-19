@@ -20,7 +20,7 @@ const phaseCopy = {
 const REPOSITORY_TYPES = ['all', 'public', 'private'];
 const REPOSITORY_SORTS = ['updated', 'name'];
 
-export default function SessionWorkspacePage({ repositories: githubRepositories = [], exampleRepositories = [], exampleProjects = [], loading, error, onRetry, onStart, activeSession, completedSession, now, onFinish, onCancel, onUpdateGoal, isEndingSession, sessionEndingAt, onViewCompletedSession, onStartAnother, onRetryActivity, projects = [], onNavigate }) {
+export default function SessionWorkspacePage({ repositories: githubRepositories = [], exampleRepositories = [], exampleProjects = [], loading, error, onRetry, onStart, starting = false, startError = '', sessionsError = '', onRetrySessions, activeSession, completedSession, now, onFinish, onCancel, onUpdateGoal, isEndingSession, sessionEndingAt, sessionActionError = '', onViewCompletedSession, onStartAnother, onRetryActivity, projects = [], onNavigate }) {
   // Search, type, language, and sort live in the URL (?q=, ?type=, ?language=, ?sort=), so a reload or Back keeps the list as it was.
   const [query, setQueryState] = useState(() => readSearchParam('q') || '');
   const [type, setTypeState] = useState(() => (REPOSITORY_TYPES.includes(readSearchParam('type')) ? readSearchParam('type') : 'all'));
@@ -58,7 +58,7 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
 
   function handleSubmit(event) {
     event.preventDefault();
-    if (!selectedRepository || selectedRepository.isExample || !goal.trim() || activeSession || loading || error) return;
+    if (!selectedRepository || selectedRepository.isExample || !goal.trim() || activeSession || starting || loading || error) return;
     onStart({ repository: selectedRepository, goal: goal.trim() });
     // The filters only matter while choosing a repository, so the next setup starts from the full list.
     setQueryState(''); setTypeState('all'); setLanguageState('all'); setSortState('updated');
@@ -96,13 +96,17 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
           onRetryActivity={onRetryActivity}
         />
       ) : activeSession ? (
-        <ActiveSession session={activeSession} now={now} onFinish={onFinish} onCancel={onCancel} onUpdateGoal={onUpdateGoal} isEnding={isEndingSession} endingAt={sessionEndingAt} />
+        <ActiveSession session={activeSession} now={now} onFinish={onFinish} onCancel={onCancel} onUpdateGoal={onUpdateGoal} isEnding={isEndingSession} endingAt={sessionEndingAt} error={sessionActionError} />
       ) : (
         <SessionSetup
           repositories={repositories}
           loading={loading}
           error={error}
           onRetry={onRetry}
+          starting={starting}
+          startError={startError}
+          sessionsError={sessionsError}
+          onRetrySessions={onRetrySessions}
           selectedRepository={selectedRepository}
           selectedRepositoryId={selectedRepositoryId}
           setSelectedRepositoryId={setSelectedRepositoryId}

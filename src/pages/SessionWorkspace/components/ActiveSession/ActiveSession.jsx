@@ -29,7 +29,7 @@ function CancelSession({ onCancel, disabled }) {
   );
 }
 
-export default function ActiveSession({ session, now, onFinish, onCancel, onUpdateGoal, isEnding, endingAt }) {
+export default function ActiveSession({ session, now, onFinish, onCancel, onUpdateGoal, isEnding, endingAt, error = '' }) {
   const elapsedEnd = isEnding && endingAt ? new Date(endingAt).getTime() : now;
   const elapsed = formatElapsed(getActiveElapsedMs(session, elapsedEnd));
   const commits = session.commits || [];
@@ -56,6 +56,8 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
             {isEnding ? 'Syncing final activity…' : 'End Session'}
           </button>
         </div>
+        {/* A failed finish or cancel. The session is still running, so the same button tries again. */}
+        {error && <div className="dashboard-error" role="alert">{error}</div>}
       </div>
 
       <section className="session-console-activity" aria-labelledby="session-console-activity-heading" aria-live="polite">

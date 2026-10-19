@@ -46,7 +46,7 @@ Commits are collected from every branch that changed during the session, not onl
 
 Panta keeps two concepts separate:
 
-- **Session time** — the period of work declared by the developer.
+- **Session time** — the period of work declared by the developer, without the time no Panta tab was open.
 - **GitHub activity** — what GitHub can observe during that period.
 
 A session is valid even when no commits were made. Work that has not been pushed to GitHub is not visible to Panta, and commit timestamps are not treated as a measurement of coding time. Commits are matched to the signed-in GitHub account, so commits that GitHub does not associate with that account are not counted.
@@ -58,6 +58,8 @@ Sessions run inside the Session Workspace (`/session-workspace`, opened from the
 1. **Session Setup** — browse, search, filter, and sort the repositories Panta can access (the search, filters, and sort are kept in the URL until a session starts); select one; optionally describe what you are working on; start the session. A side panel shows your Panta history with the selected repository, or your recent work across repositories when none is selected.
 2. **Active Session** — two columns. On the left, the session you declared: the elapsed-time timer at the top, then the repository and goal (editable), with the actions at the bottom (view the repository on GitHub, cancel without recording anything, or end the session). On the right, GitHub activity: when GitHub was last checked (“Checked 12s ago”), then the commits detected so far, newest first, in a list that fills the page and scrolls on its own. Narrow screens stack the two.
 3. **Session Recap** — the same two columns as the active session. On the left, the session you declared: its duration in place of the timer, then the repository, goal, and time range, with **View session** and **Start another session** at the bottom. On the right, GitHub activity from the final sync: the commit count, files and line changes, and the commits made during the session, newest first, in a list that scrolls on its own.
+
+A running session is stored in Panta, so reloading the page, closing the tab, or signing in again, in any browser, brings you back to it. The session clock pauses while no Panta tab is open: a gap of more than 90 seconds without a tab's heartbeat is left out of the session time, and commits made during it still count. Leaving the site while a session runs asks for confirmation first.
 
 ## Features
 
@@ -96,6 +98,7 @@ Routing is implemented in `src/routing.js` and `src/App.jsx` with the History AP
 | Server | Node.js: Vite middleware in development, a standalone server (`npm start`) in production |
 | GitHub Integration | GitHub REST API, GitHub App user authorization (OAuth) |
 | Authentication | HTTP-only session cookie, server-side GitHub access tokens |
+| Database | Postgres on Neon, with the `pg` driver |
 
 ## Architecture
 
@@ -144,15 +147,29 @@ A login session lasts up to 8 hours or until the GitHub token expires, whichever
 
 ### Data and Persistence
 
-Panta does not use a database yet. Now that it is deployed, database development is the next step, starting with the data below that is lost on a restart or tied to one browser.
+Sessions are stored in Postgres, keyed by the numeric GitHub user ID, so your history follows your account to any browser. Everything else the server keeps is in memory.
 
 | Data | Where it lives | Lifetime |
 | --- | --- | --- |
 | Login session and GitHub access token | Server memory, keyed by the `panta_session` cookie | Until logout, expiry, or a server restart |
-| Active coding session | React state in the browser | Lost on page reload |
-| Completed coding sessions | Browser `localStorage` (`panta.sessions.<username>`) | Per browser; kept across reloads and sign-outs |
+| Running coding session | Postgres | Until it is ended or cancelled; kept across reloads, closed tabs, sign-outs, and server restarts |
+| Completed coding sessions | Postgres | Until deleted from Session detail or Settings |
 | Presence | Server memory | 90-second online window; cleared on restart |
 | Repositories and commits | GitHub, fetched on demand | — |
+
+Before session storage, completed sessions were kept in each browser's `localStorage` (`panta.sessions.<username>`). The first time a browser loads Panta signed in, it imports that history and removes the local copy. Each account imports once.
+
+### What Panta Stores
+
+Panta stores commit messages, times, and file and line stats. Never code. This applies to every repository, public or private:
+
+- **Session:** an ID, your numeric GitHub user ID (never your username), the start and end times, paused time, your goal, its status, and whether its GitHub activity was retrieved, with any error and when it was last checked.
+- **Repository:** GitHub's repository ID, name, full name, owner login, whether it is private, and its URL. No description or other details.
+- **Each commit:** SHA, message, time, author and committer names and logins, branches, URL, and lines added, deleted, and changed.
+- **Each file in a commit:** path, status, and lines added, deleted, and changed. No patches or file contents.
+- **Activity summary:** commits, files changed, lines added, and lines deleted. A value that was never recorded is stored as empty, never as zero.
+
+The server keeps only these fields when it writes, so anything else a browser sends is dropped. The GitHub access token is never stored in the database.
 
 ### Example (Dummy) Data
 
@@ -192,7 +209,8 @@ panta/
     ├── api/                  # Browser helpers for Panta's /api endpoints
     │   ├── auth.js
     │   ├── github.js
-    │   └── presence.js
+    │   ├── presence.js
+    │   └── sessions.js
     ├── styles/
     │   ├── tokens.css        # Color tokens
     │   ├── base.css          # Fonts, element defaults, app frame
@@ -275,9 +293,10 @@ Panta therefore avoids surveillance-style tracking and artificial productivity s
 
 Panta is under active development. In the current implementation:
 
-- Completed sessions are stored in the browser's `localStorage`, so history is per browser and is not synced across devices.
-- An active session exists only in the open page and is lost if the page is reloaded.
-- Login sessions and presence are kept in server memory, so restarting the server signs everyone out.
+- Login sessions and presence are kept in server memory, so restarting the server signs everyone out. Stored sessions are kept, and a running one resumes after signing in again.
+- Paused time is inferred from the presence heartbeat: any gap of more than 90 seconds without an open Panta tab counts as paused. Panta can't tell a closed tab from a sleeping laptop, a frozen background tab, a dropped connection, or time on the sign-in page after a login expires, so those count as paused too.
+- Open Panta tabs don't sync with each other. A tab notices a session started, finished, or cancelled elsewhere within 30 seconds, but goal edits and deletions made in another tab appear after a reload.
+- The import of history saved in a browser runs once per account. Sessions saved only in a browser that loads Panta after another browser has imported are not imported, and that browser's copy is removed. After an account is deleted, a browser that still holds an old copy can import it again.
 - The API's free hosting sleeps after about 15 minutes with no open tabs, which signs everyone out. While a signed-in tab is open, its 30-second presence heartbeat keeps the server awake.
 - Live polling retrieves commit messages and times only; file and line totals are retrieved when the session ends.
 - Commit queries cost one GitHub request per branch whose latest commit falls in the session window, plus a one-time lookup of each new branch head. Repositories with many active branches use more of the GitHub rate limit.

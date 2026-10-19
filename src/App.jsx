@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getCurrentUser } from './api/auth.js';
 import { getAccessibleRepositories, getActiveSessionCommits, getSessionActivity } from './api/github.js';
+import * as sessionsApi from './api/sessions.js';
 import OverviewPage from './pages/Overview/OverviewPage.jsx';
 import ProjectsPage from './pages/Projects/ProjectsPage.jsx';
 import ProjectDetailPage from './pages/Projects/ProjectDetailPage.jsx';
@@ -23,16 +24,33 @@ import { dummyRepositories, getDummySessionById, getDummySessions } from './dumm
 import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
 import { getGitHubMutuals, sendPresenceHeartbeat } from './api/presence.js';
 
+// Completed sessions this browser saved before sessions were stored in Panta. They are read only to import them once.
+function legacySessionsKey(username) {
+  return `panta.sessions.${encodeURIComponent(username)}`;
+}
+
 function readStoredSessions(username) {
   if (!username) return [];
   try {
-    const sessions = JSON.parse(window.localStorage.getItem(`panta.sessions.${encodeURIComponent(username)}`) || '[]');
+    const sessions = JSON.parse(window.localStorage.getItem(legacySessionsKey(username)) || '[]');
     return Array.isArray(sessions)
       ? sessions.filter((session) => session && typeof session === 'object' && session.status === 'completed' && session.id && session.repository && typeof session.repository === 'object')
       : [];
   } catch {
     return [];
   }
+}
+
+function removeStoredSessions(username) {
+  try {
+    window.localStorage.removeItem(legacySessionsKey(username));
+  } catch {
+    // Storage that can't be used was never read, so nothing was imported from it.
+  }
+}
+
+function newSessionId() {
+  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 function mergeCommits(...lists) {
@@ -60,6 +78,8 @@ function summarizeCommits(commits) {
 
 const SHOW_EXAMPLES_KEY = 'panta.showExamples';
 const NO_EXAMPLES = [];
+// A goal edit is saved once it has stood this long, so quick successive edits send one request.
+const GOAL_SAVE_DELAY_MS = 600;
 
 // Examples are shown until the viewer turns them off; storage can be unavailable, so it only ever falls back to shown.
 function readShowExamples() {
@@ -89,8 +109,23 @@ export default function App() {
   const [mutuals, setMutuals] = useState([]);
   const [mutualsLoading, setMutualsLoading] = useState(true);
   const [mutualsError, setMutualsError] = useState('');
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const [startError, setStartError] = useState('');
+  const [sessionsError, setSessionsError] = useState('');
+  // A failed finish or cancel, shown with the running session.
+  const [sessionActionError, setSessionActionError] = useState('');
   const loadId = useRef(0);
   const endingSession = useRef(false);
+  const startingSession = useRef(false);
+  const cancellingSession = useRef(false);
+  // The running session as last rendered, for callbacks that outlive a render (the heartbeat, list loads).
+  const activeSessionRef = useRef(null);
+  const sessionListRequest = useRef(0);
+  // Sessions deleted from this tab, so a list that was already loading doesn't bring them back.
+  const deletedSessionIds = useRef(new Set());
+  // Sessions whose GitHub activity is being retrieved, so a list load doesn't start a second retrieval.
+  const activityRequests = useRef(new Set());
+  const goalSaveTimers = useRef(new Map());
   const [showExamples, setShowExamples] = useState(readShowExamples);
   const allDummySessions = useMemo(() => getDummySessions(), []);
   // The sidebar's "Show example data" setting hides every example session, project, and repository at once.
@@ -118,6 +153,13 @@ export default function App() {
   const routeProject = view === 'Project Detail' ? findProject([...projects, ...allExampleProjects], route.owner, route.repo) : null;
   // Includes example sessions, like Recent sessions beside it; the card says when it does.
   const weeklySummary = getWeeklySummary(analyticsSessions, new Date(now));
+  // Panta stores only a few repository fields, so pages get the live repository's details (its language) too.
+  const displayedActiveSession = useMemo(() => {
+    if (!activeSession) return null;
+    const live = repositories.find((repository) => String(repository.id) === String(activeSession.repository?.id));
+    return live ? { ...activeSession, repository: { ...activeSession.repository, ...live } } : activeSession;
+  }, [activeSession, repositories]);
+  const hasActiveSession = Boolean(activeSession);
 
   useEffect(() => {
     function syncPathname() {
@@ -128,14 +170,33 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!identity?.username) return;
-    try {
-      const completedSessions = realSessions.filter((session) => session.status === 'completed');
-      window.localStorage.setItem(`panta.sessions.${encodeURIComponent(identity.username)}`, JSON.stringify(completedSessions));
-    } catch {
-      // Session history remains available in memory if browser storage is unavailable.
+    activeSessionRef.current = activeSession;
+  }, [activeSession]);
+
+  // Errors belong to the session they came from, so a different session, or none, starts without them.
+  useEffect(() => {
+    setStartError('');
+    setSessionActionError('');
+  }, [activeSession?.id]);
+
+  // Leaving the site while a session runs asks first. With no Panta tab open, the session clock pauses.
+  useEffect(() => {
+    if (!hasActiveSession) return undefined;
+    function confirmLeaving(event) {
+      event.preventDefault();
+      event.returnValue = '';
     }
-  }, [identity?.username, realSessions]);
+    window.addEventListener('beforeunload', confirmLeaving);
+    return () => window.removeEventListener('beforeunload', confirmLeaving);
+  }, [hasActiveSession]);
+
+  useEffect(() => {
+    const timers = goalSaveTimers.current;
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
 
   function navigate(path, state = {}) {
     if (path === window.location.pathname) return;
@@ -173,6 +234,7 @@ export default function App() {
       const user = await getCurrentUser();
       if (requestId !== loadId.current) return;
       if (!user) {
+        resetSessionState();
         setIdentity(null);
         setIdentityStatus('unauthenticated');
         setRepositoriesLoading(false);
@@ -181,11 +243,7 @@ export default function App() {
 
       setIdentity(user);
       setIdentityStatus('authenticated');
-      const storedSessions = readStoredSessions(user.username);
-      setRealSessions(storedSessions);
-      storedSessions.filter((session) => session.activityStatus === 'loading').forEach((session) => {
-        void retrieveSessionActivity(session);
-      });
+      void loadSessions(user.username);
       setRepositoriesLoading(true);
       try {
         const result = await getAccessibleRepositories();
@@ -205,6 +263,105 @@ export default function App() {
     }
   }
 
+  // Loads the stored sessions, then moves this browser's old localStorage history into Panta, once per account.
+  async function loadSessions(username) {
+    if (!(await refreshSessions())) return;
+    const legacySessions = readStoredSessions(username);
+    if (!legacySessions.length) return;
+    try {
+      await sessionsApi.importSessions(legacySessions);
+    } catch (error) {
+      if (error.status === 401) void loadWorkspace();
+      // A 409 means this account already imported its history, so the copy here is stale. Other failures keep it for the next load.
+      if (error.status !== 409) return;
+    }
+    removeStoredSessions(username);
+    await refreshSessions();
+  }
+
+  // Loads the signed-in user's sessions from Panta. Resolves to false when they couldn't be loaded.
+  async function refreshSessions() {
+    const requestId = ++sessionListRequest.current;
+    const shownId = activeSessionRef.current?.id ?? null;
+    try {
+      const list = await sessionsApi.listSessions();
+      if (requestId === sessionListRequest.current) {
+        setSessionsError('');
+        applySessionList(list, shownId);
+      }
+      return true;
+    } catch (error) {
+      if (requestId === sessionListRequest.current) {
+        if (error.status === 401) void loadWorkspace();
+        else setSessionsError(error.message);
+      }
+      return false;
+    }
+  }
+
+  // Sessions from the list that this tab doesn't have yet are added. Ones it has keep this tab's copy, which is at least
+  // as new for anything changed here (two tabs don't sync edits), and ones deleted here stay deleted. The running session
+  // is taken from the list only if this tab didn't start, finish, or cancel one while the list loaded.
+  function applySessionList({ active, sessions }, shownId) {
+    const listed = sessions.filter((session) => !deletedSessionIds.current.has(session.id));
+    setRealSessions((current) => {
+      const known = new Set(current.map((session) => session.id));
+      const added = listed.filter((session) => !known.has(session.id));
+      return added.length ? [...current, ...added] : current;
+    });
+    // A finished session still `loading` had its activity fetch interrupted (a closed tab or a failed save), so it runs again.
+    listed
+      .filter((session) => session.activityStatus === 'loading' && !activityRequests.current.has(session.id))
+      .forEach((session) => { void retrieveSessionActivity(session); });
+
+    if (startingSession.current || endingSession.current || (activeSessionRef.current?.id ?? null) !== shownId) return;
+    if (active) adoptActiveSession(active);
+    else if (shownId) setActiveSession((current) => (current?.id === shownId ? null : current));
+  }
+
+  // Shows the session running on the server. The session already shown keeps its live commits and takes the server's paused time.
+  function adoptActiveSession(session) {
+    setActiveSession((current) => (current?.id === session.id
+      ? withPausedMs(current, session.pausedMs)
+      : { ...session, activitySyncStatus: 'loading', activityError: '' }));
+    setNow(Date.now());
+  }
+
+  // Leaves the session object alone when the paused time hasn't changed, so nothing re-renders for it.
+  function withPausedMs(session, pausedMs) {
+    return session.pausedMs === pausedMs ? session : { ...session, pausedMs };
+  }
+
+  // The heartbeat reply names the session running on the server: { id, pausedMs }, null for none, or undefined when the server
+  // couldn't check. It's ignored when this tab started, finished, or cancelled a session after the heartbeat went out, or is
+  // starting or finishing one now.
+  function applyHeartbeat(serverSession, sentFor) {
+    if (serverSession === undefined || startingSession.current || endingSession.current) return;
+    const shownId = activeSessionRef.current?.id ?? null;
+    if (shownId !== sentFor) return;
+    if (serverSession && serverSession.id === shownId) {
+      setActiveSession((current) => (current?.id === shownId ? withPausedMs(current, serverSession.pausedMs) : current));
+      return;
+    }
+    if (!serverSession && !shownId) return;
+    // This tab's session was finished or cancelled elsewhere, or a session started elsewhere: the list has the result.
+    if (!serverSession) setActiveSession((current) => (current?.id === shownId ? null : current));
+    void refreshSessions();
+  }
+
+  // Clears this tab's sessions on sign-out. They stay in Panta, and a running one resumes after the next sign-in.
+  function resetSessionState() {
+    sessionListRequest.current += 1;
+    goalSaveTimers.current.forEach((timer) => window.clearTimeout(timer));
+    goalSaveTimers.current.clear();
+    setActiveSession(null);
+    setCompletedSession(null);
+    setRealSessions([]);
+    setIsEndingSession(false);
+    setSessionEndingAt(null);
+    setSessionsError('');
+  }
+
   useEffect(() => {
     loadWorkspace();
     return () => { loadId.current += 1; };
@@ -212,10 +369,25 @@ export default function App() {
 
   useEffect(() => {
     if (identityStatus !== 'authenticated' || !identity?.id) return undefined;
-    const sendHeartbeat = () => { void sendPresenceHeartbeat().catch(() => {}); };
-    sendHeartbeat();
-    const heartbeatTimer = window.setInterval(sendHeartbeat, 30_000);
-    return () => window.clearInterval(heartbeatTimer);
+    let cancelled = false;
+    async function sendHeartbeat() {
+      // The reply describes the server when the heartbeat went out, so it's compared with what this tab showed then.
+      const sentFor = activeSessionRef.current?.id ?? null;
+      let result;
+      try {
+        result = await sendPresenceHeartbeat();
+      } catch (error) {
+        if (!cancelled && error.status === 401) void loadWorkspace();
+        return;
+      }
+      if (!cancelled) applyHeartbeat(result?.activeSession, sentFor);
+    }
+    void sendHeartbeat();
+    const heartbeatTimer = window.setInterval(() => { void sendHeartbeat(); }, 30_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(heartbeatTimer);
+    };
   }, [identityStatus, identity?.id]);
 
   useEffect(() => {
@@ -259,11 +431,12 @@ export default function App() {
     };
   }, [identityStatus, identity?.id]);
 
+  // Keyed on whether a session runs, not on the session object, so updates to it (commits, paused time) don't restart the tick.
   useEffect(() => {
-    if (!activeSession) return undefined;
+    if (!hasActiveSession) return undefined;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
-  }, [activeSession]);
+  }, [hasActiveSession]);
 
   useEffect(() => {
     if (!activeSession || isEndingSession || identityStatus !== 'authenticated' || !identity?.username) return undefined;
@@ -313,15 +486,30 @@ export default function App() {
     };
   }, [activeSession?.id, identity?.username, identityStatus, isEndingSession]);
 
-  function startSession({ repository, goal }) {
-    if (activeSession) return;
-    const startedAt = new Date().toISOString();
-    endingSession.current = false;
-    setCompletedSession(null);
-    setNow(Date.now());
-    setIsEndingSession(false);
-    setSessionEndingAt(null);
-    setActiveSession({ id: `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, source: 'github', repository, goal, startedAt, status: 'active', commits: [], activitySyncStatus: 'loading', activityCheckedAt: null, activityError: '' });
+  // The server stamps the start time. A 409 means a session is already running (started in another tab or browser),
+  // so that one is shown instead.
+  async function startSession({ repository, goal }) {
+    if (activeSession || startingSession.current) return;
+    startingSession.current = true;
+    setIsStartingSession(true);
+    setStartError('');
+    let alreadyRunning = false;
+    try {
+      const session = await sessionsApi.createSession({ id: newSessionId(), repository, goal });
+      endingSession.current = false;
+      setCompletedSession(null);
+      setIsEndingSession(false);
+      setSessionEndingAt(null);
+      adoptActiveSession(session);
+    } catch (error) {
+      if (error.status === 409) alreadyRunning = true;
+      else if (error.status === 401) void loadWorkspace();
+      else setStartError(error.message);
+    } finally {
+      startingSession.current = false;
+      setIsStartingSession(false);
+    }
+    if (alreadyRunning) await refreshSessions();
   }
 
   function toggleExamples(value) {
@@ -333,38 +521,85 @@ export default function App() {
     }
   }
 
-  function cancelSession() {
-    if (!activeSession || endingSession.current) return;
-    setActiveSession(null);
+  // Discarding deletes the running session from Panta. A 404 means it already ended in another tab or browser.
+  async function cancelSession() {
+    if (!activeSession || endingSession.current || cancellingSession.current) return;
+    const sessionId = activeSession.id;
+    cancellingSession.current = true;
+    setSessionActionError('');
+    let endedElsewhere = false;
+    try {
+      await sessionsApi.deleteSession(sessionId);
+    } catch (error) {
+      if (error.status !== 404) {
+        cancellingSession.current = false;
+        if (error.status === 401) void loadWorkspace();
+        else setSessionActionError(error.message);
+        return;
+      }
+      endedElsewhere = true;
+    }
+    cancellingSession.current = false;
+    cancelGoalSave(sessionId);
+    setActiveSession((current) => (current?.id === sessionId ? null : current));
+    if (endedElsewhere) void refreshSessions();
   }
 
+  // Finishing has two steps. The server ends the session first and records its end time and duration (session time
+  // minus pauses), so a closed tab or a failed fetch can't bring it back. Then GitHub activity is retrieved and saved.
   async function finishSession() {
-    if (!activeSession || endingSession.current) return;
+    if (!activeSession || endingSession.current || cancellingSession.current) return;
+    const session = activeSession;
     endingSession.current = true;
     setIsEndingSession(true);
-    const endedAt = new Date().toISOString();
-    setSessionEndingAt(endedAt);
-    const endingSessionData = {
-      ...activeSession,
-      endedAt,
+    // The timer stops at the click while the session is saved.
+    setSessionEndingAt(new Date().toISOString());
+    setSessionActionError('');
+    let finished;
+    try {
+      finished = await sessionsApi.finishSession(session.id);
+    } catch (error) {
+      endingSession.current = false;
+      setIsEndingSession(false);
+      setSessionEndingAt(null);
+      if (error.status === 401) {
+        void loadWorkspace();
+      } else if (error.status === 404) {
+        // It already ended in another tab or browser; the list has the result.
+        setActiveSession((current) => (current?.id === session.id ? null : current));
+        void refreshSessions();
+      } else {
+        // The session is still running on the server, so End Session can be tried again.
+        setSessionActionError(error.message);
+      }
+      return;
+    }
+
+    const completed = await retrieveSessionActivity({
+      ...session,
       status: 'completed',
-      duration: Date.parse(endedAt) - Date.parse(activeSession.startedAt),
+      endedAt: finished.endedAt,
+      duration: finished.duration,
+      pausedMs: finished.pausedMs,
       activityStatus: 'loading',
       activityError: '',
-    };
-    const session = await retrieveSessionActivity(endingSessionData, false);
-    setCompletedSession(session);
-    setRealSessions((current) => [session, ...current.filter((item) => item.id !== session.id)]);
-    setActiveSession(null);
+    }, false);
+    setCompletedSession(completed);
+    setRealSessions((current) => [completed, ...current.filter((item) => item.id !== completed.id)]);
+    setActiveSession((current) => (current?.id === session.id ? null : current));
     setIsEndingSession(false);
     setSessionEndingAt(null);
+    endingSession.current = false;
     if (window.location.pathname !== routePaths['Session Workspace']) {
       navigate(routePaths['Session Workspace']);
     }
   }
 
-  // Writes back only the activity fields, so a goal edited while GitHub is being checked survives.
+  // Writes back only the activity fields, so a goal edited while GitHub is being checked survives. The result is then saved
+  // to Panta. If that save fails, the stored session keeps its earlier status (`loading` after a finish), so the next load
+  // retrieves the activity again.
   async function retrieveSessionActivity(session, updateState = true) {
+    activityRequests.current.add(session.id);
     let fields;
     try {
       const activity = await getSessionActivity(session.repository, session.startedAt, session.endedAt);
@@ -381,6 +616,18 @@ export default function App() {
       fields = { activity: session.activity ?? null, commits: session.commits || [], activityStatus: 'error', activityError: error.message || 'Could not retrieve GitHub commits for this session.' };
     }
     if (updateState) updateRealSession(session.id, fields);
+    try {
+      await sessionsApi.saveSessionActivity(session.id, {
+        activity: fields.activity,
+        commits: fields.commits,
+        activityStatus: fields.activityStatus,
+        activityError: fields.activityError,
+      });
+    } catch (error) {
+      if (error.status === 401) void loadWorkspace();
+    } finally {
+      activityRequests.current.delete(session.id);
+    }
     return { ...session, ...fields };
   }
 
@@ -391,23 +638,68 @@ export default function App() {
     setRealSessions((current) => current.map(merge));
   }
 
+  // The goal changes on the page at once and is saved to Panta when it has stood for a moment, one request per session.
+  // A save still waiting when the session finishes lands on the finished session, which accepts goal edits too.
+  function scheduleGoalSave(sessionId, goal) {
+    const timers = goalSaveTimers.current;
+    window.clearTimeout(timers.get(sessionId));
+    timers.set(sessionId, window.setTimeout(() => {
+      timers.delete(sessionId);
+      sessionsApi.updateSessionGoal(sessionId, goal).catch((error) => {
+        if (error.status === 401) void loadWorkspace();
+      });
+    }, GOAL_SAVE_DELAY_MS));
+  }
+
+  function cancelGoalSave(sessionId) {
+    window.clearTimeout(goalSaveTimers.current.get(sessionId));
+    goalSaveTimers.current.delete(sessionId);
+  }
+
   function updateSessionGoal(sessionId, goal) {
     const withGoal = (session) => session?.id === sessionId ? { ...session, goal } : session;
     setRealSessions((current) => current.map(withGoal));
     setCompletedSession(withGoal);
+    scheduleGoalSave(sessionId, goal);
   }
 
   function updateActiveGoal(goal) {
-    setActiveSession((current) => current && { ...current, goal });
+    if (!activeSession) return;
+    const sessionId = activeSession.id;
+    setActiveSession((current) => (current?.id === sessionId ? { ...current, goal } : current));
+    scheduleGoalSave(sessionId, goal);
   }
 
-  // Clears every real session saved in this browser; the storage effect then writes the empty list.
-  function deleteSessionHistory() {
+  // Deletes every completed session from Panta, then from the page. Rejects when the deletion fails.
+  async function deleteSessionHistory() {
+    try {
+      await sessionsApi.deleteAllSessions();
+    } catch (error) {
+      if (error.status === 401) void loadWorkspace();
+      throw error;
+    }
+    realSessions.forEach((session) => {
+      deletedSessionIds.current.add(session.id);
+      cancelGoalSave(session.id);
+    });
     setRealSessions([]);
     setCompletedSession(null);
   }
 
-  function deleteSession(sessionId) {
+  // Deletes the session from Panta first. If that fails, the session stays and the rejection reaches Session Detail.
+  async function deleteSession(sessionId) {
+    try {
+      await sessionsApi.deleteSession(sessionId);
+    } catch (error) {
+      if (error.status === 401) {
+        void loadWorkspace();
+        return;
+      }
+      // A 404 means it was already deleted.
+      if (error.status !== 404) throw error;
+    }
+    deletedSessionIds.current.add(sessionId);
+    cancelGoalSave(sessionId);
     setRealSessions((current) => current.filter((session) => session.id !== sessionId));
     setCompletedSession((current) => current?.id === sessionId ? null : current);
     navigate(routePaths['Session History']);
@@ -419,17 +711,14 @@ export default function App() {
     void retrieveSessionActivity(session);
   }
 
+  // Signing out clears this tab only. A running session stays in Panta and resumes after the next sign-in.
   function handleLogout() {
+    resetSessionState();
     setIdentity(null);
     setIdentityStatus('unauthenticated');
     setRepositories([]);
-    setActiveSession(null);
-    setCompletedSession(null);
-    setRealSessions([]);
     setMutuals([]);
     setMutualsError('');
-    setIsEndingSession(false);
-    setSessionEndingAt(null);
     navigate(routePaths.Overview);
   }
 
@@ -466,7 +755,7 @@ export default function App() {
         view={view}
         pathname={pathname}
         onNavigate={navigate}
-        activeSession={activeSession}
+        activeSession={displayedActiveSession}
         now={now}
         onLogout={handleLogout}
         mutuals={mutuals}
@@ -480,7 +769,7 @@ export default function App() {
         {view === 'Overview' && (
           <OverviewPage
             {...identityProps}
-            activeSession={activeSession}
+            activeSession={displayedActiveSession}
             now={now}
             onNavigateToStart={() => navigate(routePaths['Session Workspace'])}
             lastSession={lastRealSession}
@@ -499,11 +788,16 @@ export default function App() {
             error={repositoriesError}
             onRetry={() => identity && loadRepositories()}
             onStart={startSession}
-            activeSession={activeSession}
+            starting={isStartingSession}
+            startError={startError}
+            sessionsError={sessionsError}
+            onRetrySessions={() => identity && loadSessions(identity.username)}
+            activeSession={displayedActiveSession}
             completedSession={completedSession}
             now={now}
             isEndingSession={isEndingSession}
             sessionEndingAt={sessionEndingAt}
+            sessionActionError={sessionActionError}
             onFinish={finishSession}
             onCancel={cancelSession}
             onUpdateGoal={updateActiveGoal}

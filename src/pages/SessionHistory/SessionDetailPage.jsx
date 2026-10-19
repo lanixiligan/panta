@@ -106,16 +106,31 @@ function RepositoryLink({ repository }) {
   );
 }
 
+// A deletion that fails keeps the session, and its error takes the question's place until Delete is tried again.
 function DeleteSession({ onDelete }) {
   const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
+
+  async function confirmDelete() {
+    setDeleting(true);
+    setError('');
+    try {
+      await onDelete();
+    } catch (deleteError) {
+      setError(deleteError.message || 'Couldn’t delete this session. Try again.');
+      setDeleting(false);
+    }
+  }
+
   if (!confirming) {
     return <button className="session-detail-delete" type="button" onClick={() => setConfirming(true)}>Delete session</button>;
   }
   return (
     <div className="session-detail-delete-confirm" role="group" aria-label="Confirm deleting this session">
-      <span>Delete this session from history?</span>
-      <button className="session-detail-delete danger" type="button" onClick={onDelete}>Delete</button>
-      <button className="session-detail-delete" type="button" onClick={() => setConfirming(false)}>Cancel</button>
+      {error ? <span role="alert">{error}</span> : <span>Delete this session from history?</span>}
+      <button className="session-detail-delete danger" type="button" onClick={confirmDelete} disabled={deleting}>{deleting ? 'Deleting…' : 'Delete'}</button>
+      <button className="session-detail-delete" type="button" onClick={() => { setConfirming(false); setError(''); }} disabled={deleting}>Cancel</button>
     </div>
   );
 }

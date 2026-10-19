@@ -13,10 +13,13 @@ async function requestPresence(path, options = {}) {
   } catch {
     // The caller receives a stable, human-readable fallback below.
   }
-  if (!response.ok) throw new Error(payload?.error || 'Unable to load people you follow.');
+  // The status lets callers tell an expired sign-in (401) apart from other failures.
+  if (!response.ok) throw Object.assign(new Error(payload?.error || 'Unable to load people you follow.'), { status: response.status });
   return payload;
 }
 
+// Resolves to { ok, activeSession }: the session running on the server as { id, pausedMs }, null when none is,
+// or undefined when the server couldn't check its storage.
 export function sendPresenceHeartbeat() {
   return requestPresence('/api/presence/heartbeat', { method: 'POST' });
 }

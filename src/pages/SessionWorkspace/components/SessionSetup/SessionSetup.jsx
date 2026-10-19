@@ -83,7 +83,7 @@ function RepositoryHistory({ project, onNavigate }) {
   );
 }
 
-export default function SessionSetup({ selectedProject, onNavigate, repositories, loading, error, onRetry, selectedRepository, selectedRepositoryId, setSelectedRepositoryId, goal, setGoal, handleSubmit, query, setQuery, type, setType, language, setLanguage, sort, setSort, languages, filteredRepositories }) {
+export default function SessionSetup({ selectedProject, onNavigate, repositories, loading, error, onRetry, starting = false, startError = '', sessionsError = '', onRetrySessions, selectedRepository, selectedRepositoryId, setSelectedRepositoryId, goal, setGoal, handleSubmit, query, setQuery, type, setType, language, setLanguage, sort, setSort, languages, filteredRepositories }) {
   // Start is enabled once a repository is chosen and the goal isn't blank.
   const canStart = Boolean(selectedRepository) && Boolean(goal.trim());
 
@@ -217,12 +217,22 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
               placeholder="e.g. Fix the login redirect bug"
             />
           </label>
-          <button className="session-workspace-button" type="submit" disabled={!canStart || loading || Boolean(error) || Boolean(selectedRepository?.isExample)}>
-            {!selectedRepository ? 'Choose a repository first'
-              : selectedRepository.isExample ? 'Examples can’t be tracked'
-                : !goal.trim() ? 'Add a goal first'
-                  : 'Start session'}
+          <button className="session-workspace-button" type="submit" disabled={!canStart || starting || loading || Boolean(error) || Boolean(selectedRepository?.isExample)}>
+            {starting ? 'Starting…'
+              : !selectedRepository ? 'Choose a repository first'
+                : selectedRepository.isExample ? 'Examples can’t be tracked'
+                  : !goal.trim() ? 'Add a goal first'
+                    : 'Start session'}
           </button>
+          {/* One line at most: a failed start, or sessions that couldn't be loaded. */}
+          {startError ? (
+            <div className="dashboard-error" role="alert">{startError}</div>
+          ) : sessionsError ? (
+            <div className="dashboard-error" role="alert">
+              <span>{sessionsError}</span>
+              <button type="button" onClick={onRetrySessions}>Try again</button>
+            </div>
+          ) : null}
         </form>
 
       </aside>

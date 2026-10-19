@@ -4,8 +4,10 @@
 .session-detail-delete:hover { border-color: var(--workspace-danger-border); color: var(--workspace-danger); }
 .session-detail-delete.danger { border-color: var(--workspace-danger-border); background: var(--workspace-danger-bg); color: var(--workspace-danger); }
 .session-detail-delete.danger:hover { border-color: var(--workspace-danger-border); color: var(--workspace-danger); }
+.session-detail-delete:disabled { cursor: default; opacity: .7; }
 .session-detail-delete-confirm { display: flex; align-items: center; gap: 6px; color: var(--workspace-secondary); font-size: 12px; }
 .session-detail-delete-confirm > span { margin-right: 4px; }
+.session-detail-delete-confirm > span[role='alert'] { color: var(--workspace-danger); }
 
 /* Heading: the goal, then where and when */
 .session-detail-page .session-detail-heading { margin-top: 14px; padding-bottom: 0; border-bottom: 0; }

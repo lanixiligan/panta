@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import useSlowWait from './useSlowWait.js';
 
 const AUTH_MESSAGES = {
   not_configured: 'GitHub sign-in is not configured yet. Set the server-side GitHub App environment variables.',
@@ -22,6 +23,9 @@ export default function AuthControl({ loginLabel = 'Sign in with GitHub' }) {
   const [user, setUser] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  // The sign-in link leaves the page, and a sleeping API can take a while to answer, so the button shows progress.
+  const [redirecting, setRedirecting] = useState(false);
+  const slow = useSlowWait(redirecting);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,8 +55,24 @@ export default function AuthControl({ loginLabel = 'Sign in with GitHub' }) {
         setMessage((current) => current || 'Sign-in status is unavailable. Start the app server and try again.');
       });
 
-    return () => { cancelled = true; };
+    // Coming back with Back from GitHub restores this page as it was, still loading.
+    const resetRedirecting = (event) => { if (event.persisted) setRedirecting(false); };
+    window.addEventListener('pageshow', resetRedirecting);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('pageshow', resetRedirecting);
+    };
   }, []);
+
+  function handleSignIn(event) {
+    if (redirecting) {
+      event.preventDefault();
+      return;
+    }
+    // Modified clicks open a new tab, which leaves this page as it is.
+    if (event.button === 0 && !(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)) setRedirecting(true);
+  }
 
   async function handleLogout() {
     setBusy(true);
@@ -77,7 +97,15 @@ export default function AuthControl({ loginLabel = 'Sign in with GitHub' }) {
     <div className="auth-control">
       {status === 'loading' && <span className="auth-checking" role="status">Checking sign-in…</span>}
       {status === 'unauthenticated' && (
-        <a className="github-sign-in" href="/api/auth/github"><GitHubMark /> {loginLabel}</a>
+        <a
+          className={`github-sign-in${redirecting ? ' is-loading' : ''}`}
+          href="/api/auth/github"
+          aria-busy={redirecting}
+          aria-disabled={redirecting}
+          onClick={handleSignIn}
+        >
+          {redirecting ? <span className="github-spinner" aria-hidden="true" /> : <GitHubMark />} {redirecting ? (slow ? 'Waking the server…' : 'Opening GitHub…') : loginLabel}
+        </a>
       )}
       {status === 'authenticated' && user && (
         <div className="auth-user">

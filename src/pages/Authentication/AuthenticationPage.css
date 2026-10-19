@@ -29,7 +29,7 @@
 .auth-screen .github-sign-in::after { display: grid; align-self: stretch; width: 40px; margin-left: 9px; place-items: center; border-left: 1px solid #04230f26; background: #04230f1a; content: '→'; font-size: 15px; transition: background .15s ease; }
 .auth-screen .github-sign-in:hover::after { background: #04230f29; }
 .auth-screen .github-sign-in:focus-visible, .auth-screen .auth-identity-error button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; }
-.auth-screen .github-mark { width: 16px; height: 16px; }
+.auth-screen .github-mark, .auth-screen .github-spinner { width: 16px; height: 16px; }
 .auth-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 24px; }
 .auth-screen .auth-checking, .auth-screen-checking { margin: 0; color: var(--workspace-secondary); font-size: 13px; }
 .auth-screen .auth-message { position: static; width: 100%; max-width: 360px; margin-top: 11px; border-color: var(--workspace-danger-border); background: var(--workspace-danger-bg); color: var(--workspace-danger); box-shadow: none; font-size: 11px; }

@@ -4,6 +4,12 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Stay on Vite 7 and its matching React plugin until the move to Vite 8 is tested.
+    ignore:
+      - dependency-name: vite
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitejs/plugin-react"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:

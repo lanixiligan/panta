@@ -1,10 +1,11 @@
 // Stored-session routes. Every route acts on the signed-in GitHub user's own sessions only.
-import { canonicalGitHubUserId } from './githubApi.js';
+import { canonicalGitHubUserId, revokeAppGrant } from './githubApi.js';
 import { isValidSessionId, toClientSession } from './sessionRecords.js';
 import {
   AlreadyImportedError,
   InvalidSessionError,
   SessionConflictError,
+  deleteAccountData,
   deleteCompletedSessions,
   deleteSession,
   finishSession,
@@ -16,6 +17,7 @@ import {
 } from './sessionStore.js';
 
 const SESSIONS_PATH = '/api/sessions';
+const ACCOUNT_PATH = '/api/account';
 const IMPORT_PATH = '/api/sessions/import';
 const SESSION_PATH = /^\/api\/sessions\/([^/]+)$/;
 const FINISH_PATH = /^\/api\/sessions\/([^/]+)\/finish$/;
@@ -30,6 +32,7 @@ const routes = [
   { match: (pathname) => pathname.match(FINISH_PATH), methods: { POST: finish } },
   { match: (pathname) => pathname.match(ACTIVITY_PATH), methods: { PUT: storeActivity } },
   { match: (pathname) => pathname.match(SESSION_PATH), methods: { PATCH: editGoal, DELETE: remove } },
+  { match: (pathname) => pathname === ACCOUNT_PATH, methods: { DELETE: deleteAccount } },
 ];
 
 export function isSessionRoute(pathname) {
@@ -75,6 +78,19 @@ async function remove({ db, userId, sessionId }) {
   return (await deleteSession(db, userId, sessionId)) ? [204, null] : [404, { error: NOT_FOUND }];
 }
 
+// Data first: if it can't be deleted, nothing else happens. A failed revoke doesn't undo the deletion;
+// `revoked: false` lets the client tell the user to revoke Panta on GitHub.
+async function deleteAccount({ db, userId, session, context }) {
+  await deleteAccountData(db, userId);
+  const revoked = await revokeAppGrant({
+    clientId: context.env.GITHUB_APP_CLIENT_ID,
+    clientSecret: context.env.GITHUB_APP_CLIENT_SECRET,
+    accessToken: session.accessToken,
+  });
+  context.endUserLoginSessions(userId);
+  return [200, { revoked }, { 'Set-Cookie': context.clearSessionCookie }];
+}
+
 function errorResponse(error) {
   if (error instanceof SessionConflictError || error instanceof AlreadyImportedError) return [409, { error: error.message }];
   if (error instanceof InvalidSessionError) return [400, { error: error.message }];
@@ -102,7 +118,7 @@ export async function handleSessionRoute(context) {
   const { session } = getSession();
   const userId = session && canonicalGitHubUserId(session.user);
   if (!userId) {
-    writeJson(response, 401, { error: 'Sign in with GitHub to load your sessions.' });
+    writeJson(response, 401, { error: 'Sign in with GitHub first.' });
     return true;
   }
   if (!db) {
@@ -125,17 +141,18 @@ export async function handleSessionRoute(context) {
 
   let status;
   let body;
+  let headers = {};
   try {
-    [status, body] = await handler({ db, userId, sessionId, readJsonBody });
+    [status, body, headers = {}] = await handler({ db, userId, sessionId, readJsonBody, session, context });
   } catch (error) {
     [status, body] = errorResponse(error);
   }
 
   if (status === 204) {
-    response.writeHead(204, { 'Cache-Control': 'no-store' });
+    response.writeHead(204, { 'Cache-Control': 'no-store', ...headers });
     response.end();
   } else {
-    writeJson(response, status, body);
+    writeJson(response, status, body, headers);
   }
   return true;
 }

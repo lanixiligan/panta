@@ -2,6 +2,7 @@ import { handleAuthRoute } from './authRoutes.js';
 import { isGitHubDataRoute, handleGitHubDataRoute } from './githubRoutes.js';
 import { isSessionRoute, handleSessionRoute } from './sessionRoutes.js';
 import { createDatabase } from './db.js';
+import { canonicalGitHubUserId } from './githubApi.js';
 
 const PANTA_SESSION_COOKIE = 'panta_session';
 const PANTA_OAUTH_STATE_COOKIE = 'panta_oauth_state';
@@ -125,6 +126,18 @@ function createRequestContext(request, response, requestUrl, state) {
     cookieOptions,
     writeJson,
     redirect,
+    // Signs one GitHub user out of every browser, for account deletion.
+    endUserLoginSessions(githubUserId) {
+      let ended = 0;
+      for (const [id, entry] of sessions) {
+        if (canonicalGitHubUserId(entry.user) !== githubUserId) continue;
+        sessions.delete(id);
+        presenceBySession.delete(id);
+        ended += 1;
+      }
+      state.mutualsCache.delete(githubUserId);
+      return ended;
+    },
     getSession({ clearPresenceOnInvalid = false } = {}) {
       const session = sessionId && sessions.get(sessionId);
       if (!session || session.expiresAt <= Date.now()) {

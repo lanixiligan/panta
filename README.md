@@ -109,7 +109,7 @@ The server layer lives in `server/` and is registered as a Vite plugin in `vite.
 | `authRoutes.js` | GitHub sign-in (`/api/auth/github`), the OAuth callback, the current-user check (`/api/auth/me`), logout, and the redirect to the GitHub App installation page (`/api/auth/github/install`). |
 | `githubRoutes.js` | Authenticated data routes: accessible repositories, live and final session commits, presence heartbeats, and GitHub mutuals. |
 | `githubApi.js` | All requests to the GitHub REST API, including pagination, response shaping, and GitHub error and rate-limit handling. |
-| `sessionRoutes.js` | Stored-session routes (`/api/sessions*`) for the signed-in user. |
+| `sessionRoutes.js` | Stored-session routes (`/api/sessions*`) and account deletion (`/api/account`) for the signed-in user. |
 | `sessionStore.js` | All SQL for stored sessions, including the pause rule and the one-time import. |
 | `sessionRecords.js` | What Panta stores for a session (field whitelist) and the mapping to the client's session shape. |
 | `db.js` | The Postgres pool (`DATABASE_URL`) and the schema, created on startup. |
@@ -131,6 +131,7 @@ Data routes used by the frontend:
 | `PUT /api/sessions/:id/activity` | Stores a completed session's commits and activity summary |
 | `DELETE /api/sessions` | Deletes all completed sessions |
 | `POST /api/sessions/import` | One-time import of sessions saved in the browser before session storage |
+| `DELETE /api/account` | Deletes the user's stored data, revokes Panta's GitHub authorization, and signs them out everywhere |
 
 ### Authentication Flow
 

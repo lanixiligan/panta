@@ -286,6 +286,29 @@ export async function exchangeCode({ code, clientId, clientSecret, callbackUrl }
   return result;
 }
 
+// Removes the user's authorization of the app, which also invalidates their access tokens.
+// It needs only the app's client credentials, no extra app permissions. Never throws: deletion of
+// Panta's data stands either way, and the caller reports a failed revoke to the user.
+export async function revokeAppGrant({ clientId, clientSecret, accessToken }) {
+  if (!clientId || !clientSecret || !accessToken) return false;
+  try {
+    const response = await fetch(`https://api.github.com/applications/${encodeURIComponent(clientId)}/grant`, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      body: JSON.stringify({ access_token: accessToken }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    return response.status === 204;
+  } catch {
+    return false;
+  }
+}
+
 export async function getAuthenticatedUser(accessToken) {
   const response = await fetch('https://api.github.com/user', {
     headers: {

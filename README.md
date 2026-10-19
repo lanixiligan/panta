@@ -102,6 +102,53 @@ Routing is implemented in `src/routing.js` and `src/App.jsx` with the History AP
 
 ## Architecture
 
+```mermaid
+flowchart LR
+  subgraph Browser["Browser"]
+    App["React app<br/>App.jsx · pages · routing.js"]
+    ApiClient["src/api/*.js<br/>auth · github · sessions · presence"]
+    Local[("localStorage<br/>example-data toggle,<br/>legacy history until imported")]
+    App --> ApiClient
+    App <--> Local
+  end
+
+  subgraph Vercel["Vercel"]
+    Static["Static build<br/>dist/"]
+    Proxy["vercel.json<br/>/api/* rewrite"]
+  end
+
+  subgraph Render["Render: Node API (server/index.js)"]
+    MW["githubAuth.js<br/>middleware + request context"]
+    Mem[("In memory<br/>login sessions · presence ·<br/>mutuals cache")]
+    AuthR["authRoutes.js<br/>OAuth sign-in, me, logout"]
+    GhR["githubRoutes.js<br/>repos, commits, heartbeat, mutuals"]
+    SessR["sessionRoutes.js<br/>/api/sessions*, /api/account"]
+    Store["sessionStore.js<br/>all SQL, pause rule"]
+    Records["sessionRecords.js<br/>stored-field whitelist"]
+    DB["db.js<br/>pg pool + schema"]
+    GhApi["githubApi.js<br/>only GitHub caller"]
+    MW <--> Mem
+    MW --> AuthR & GhR & SessR
+    SessR --> Store
+    Store --> Records
+    Store --> DB
+    GhR -->|heartbeat applies pause rule| Store
+    AuthR & GhR --> GhApi
+    SessR -->|revoke grant on account delete| GhApi
+  end
+
+  Neon[("Neon Postgres<br/>sessions · accounts")]
+  GitHub["GitHub<br/>OAuth · REST API · GitHub App"]
+
+  App -->|loads| Static
+  ApiClient -->|"/api/* (same origin, panta_session cookie)"| Proxy
+  Proxy --> MW
+  DB --> Neon
+  GhApi --> GitHub
+```
+
+In development, Vite (`npm run dev`) serves the React app and mounts the same middleware in-process, so there is no Vercel proxy and `/api/*` is handled on `localhost:5173`. The GitHub access token stays in the API's memory and never reaches the browser or the database.
+
 ### Server
 
 The server layer lives in `server/` and is registered as a Vite plugin in `vite.config.js`. It runs inside `npm run dev` and `npm run preview`. For deployment, `server/index.js` runs the same middleware as a standalone Node server (`npm start`), serving only `/api/*`.

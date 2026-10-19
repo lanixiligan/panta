@@ -7,6 +7,7 @@ const AUTH_MESSAGES = {
   state: 'The sign-in request could not be verified. Please start again.',
   repository_access: 'The Panta GitHub App link is not configured. Please contact the person maintaining this workspace.',
   callback: 'GitHub could not complete sign-in. Please try again.',
+  revoke_failed: 'Account deleted. Revoke Panta in your GitHub settings.',
   exchange: 'GitHub sign-in could not be completed. Please try again.',
 };
 

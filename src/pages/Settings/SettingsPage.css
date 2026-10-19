@@ -34,6 +34,7 @@
 .settings-confirm { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 .settings-confirm > span { color: var(--workspace-secondary); font-size: 12px; }
 .settings-account + .settings-row { border-top: 1px solid var(--workspace-divider); }
+.settings-note { margin: 0; padding: 14px 20px; border-top: 1px solid var(--workspace-divider); color: var(--workspace-secondary); font-size: 12px; }
 .settings-error { margin: 0; padding: 0 20px 14px; color: var(--workspace-danger); font-size: 12px; }
 
 

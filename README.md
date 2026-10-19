@@ -165,6 +165,8 @@ Before session storage, completed sessions were kept in each browser's `localSto
 Panta stores commit messages, times, and file and line stats. Never code. This applies to every repository, public or private:
 
 - **Session:** an ID, your numeric GitHub user ID (never your username), the start and end times, paused time, your goal, its status, and whether its GitHub activity was retrieved, with any error and when it was last checked.
+- **Running session:** the time of its last heartbeat, used for the pause rule.
+- **Import marker:** the time the one-time import of browser-saved history ran.
 - **Repository:** GitHub's repository ID, name, full name, owner login, whether it is private, and its URL. No description or other details.
 - **Each commit:** SHA, message, time, author and committer names and logins, branches, URL, and lines added, deleted, and changed.
 - **Each file in a commit:** path, status, and lines added, deleted, and changed. No patches or file contents.

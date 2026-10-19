@@ -24,11 +24,16 @@ function SettingsRow({ label, detail, children }) {
   );
 }
 
-export default function SettingsPage({ identity, onLogout, hasActiveSession = false, savedSessionCount = 0, onDeleteHistory }) {
+export default function SettingsPage({ identity, onLogout, hasActiveSession = false, savedSessionCount = 0, sessionsStatus = 'ready', onDeleteHistory, onDeleteAccount, onBeforeLogout }) {
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState('');
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletingHistory, setDeletingHistory] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const [confirmingAccount, setConfirmingAccount] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [accountError, setAccountError] = useState('');
   const username = identity?.username || '';
   const displayName = identity?.displayName?.trim() || username;
   const profileUrl = identity?.profileUrl || `https://github.com/${encodeURIComponent(username)}`;
@@ -37,6 +42,8 @@ export default function SettingsPage({ identity, onLogout, hasActiveSession = fa
     setSigningOut(true);
     setSignOutError('');
     try {
+      // Pending goal edits are sent first; they can't be after the session is gone.
+      await onBeforeLogout?.();
       await logoutCurrentUser();
       onLogout();
     } catch {
@@ -45,10 +52,38 @@ export default function SettingsPage({ identity, onLogout, hasActiveSession = fa
     }
   }
 
-  function deleteHistory() {
-    onDeleteHistory();
+  async function deleteHistory() {
+    setDeletingHistory(true);
+    setDeleteError('');
+    try {
+      await onDeleteHistory();
+    } catch {
+      setDeleteError('Couldn’t delete your history. Try again.');
+    }
+    setDeletingHistory(false);
     setConfirmingDelete(false);
   }
+
+  // On success the app reloads to the sign-in page, so the pending label simply stays.
+  async function deleteAccount() {
+    setDeletingAccount(true);
+    setAccountError('');
+    try {
+      await onDeleteAccount();
+    } catch {
+      setAccountError('Couldn’t delete your account. Try again.');
+      setDeletingAccount(false);
+      setConfirmingAccount(false);
+    }
+  }
+
+  const historyDetail = sessionsStatus === 'loading'
+    ? 'Loading sessions…'
+    : sessionsStatus === 'error'
+      ? 'Couldn’t load your sessions.'
+      : savedSessionCount
+        ? `Removes ${formatCount(savedSessionCount, 'session')} saved in Panta. This can’t be undone.`
+        : 'No saved sessions.';
 
   return (
     <div className="settings-page">
@@ -67,11 +102,11 @@ export default function SettingsPage({ identity, onLogout, hasActiveSession = fa
           </div>
           <a className="settings-button" href={profileUrl} target="_blank" rel="noreferrer">GitHub profile <span aria-hidden="true">↗</span></a>
         </div>
-        {/* Signing out keeps saved sessions; it only asks first when it would end a running session. */}
-        <SettingsRow label="Sign out" detail="Your saved sessions stay in this browser.">
+        {/* Signing out pauses a running session, so it asks first only then. */}
+        <SettingsRow label="Sign out" detail={null}>
           {confirmingSignOut ? (
             <div className="settings-confirm" role="group" aria-label="Confirm signing out">
-              <span>Ends your running session.</span>
+              <span>Pauses your running session.</span>
               <button className="settings-button" type="button" onClick={() => setConfirmingSignOut(false)} disabled={signingOut}>Cancel</button>
               <button className="settings-button is-danger is-solid" type="button" onClick={signOut} disabled={signingOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button>
             </div>
@@ -93,20 +128,30 @@ export default function SettingsPage({ identity, onLogout, hasActiveSession = fa
         </SettingsRow>
       </SettingsGroup>
 
-      <SettingsGroup id="data" title="Session history" tone="danger">
-        <SettingsRow
-          label="Delete session history"
-          detail={savedSessionCount ? `Removes ${formatCount(savedSessionCount, 'session')} saved in this browser. This can’t be undone.` : 'No sessions saved in this browser.'}
-        >
+      <SettingsGroup id="data" title="Data" tone="danger">
+        <SettingsRow label="Delete session history" detail={historyDetail}>
           {confirmingDelete ? (
             <div className="settings-confirm" role="group" aria-label="Confirm deleting session history">
-              <button className="settings-button" type="button" onClick={() => setConfirmingDelete(false)}>Keep sessions</button>
-              <button className="settings-button is-danger is-solid" type="button" onClick={deleteHistory}>Delete</button>
+              <button className="settings-button" type="button" onClick={() => setConfirmingDelete(false)} disabled={deletingHistory}>Keep sessions</button>
+              <button className="settings-button is-danger is-solid" type="button" onClick={deleteHistory} disabled={deletingHistory}>{deletingHistory ? 'Deleting…' : 'Delete'}</button>
             </div>
           ) : (
-            <button className="settings-button is-danger" type="button" onClick={() => setConfirmingDelete(true)} disabled={!savedSessionCount}>Delete history</button>
+            <button className="settings-button is-danger" type="button" onClick={() => setConfirmingDelete(true)} disabled={sessionsStatus !== 'ready' || !savedSessionCount}>Delete history</button>
           )}
         </SettingsRow>
+        {deleteError && <p className="settings-error" role="alert">{deleteError}</p>}
+        <SettingsRow label="Delete account" detail="Deletes your sessions and disconnects GitHub. This can’t be undone.">
+          {confirmingAccount ? (
+            <div className="settings-confirm" role="group" aria-label="Confirm deleting your account">
+              <button className="settings-button" type="button" onClick={() => setConfirmingAccount(false)} disabled={deletingAccount}>Keep account</button>
+              <button className="settings-button is-danger is-solid" type="button" onClick={deleteAccount} disabled={deletingAccount}>{deletingAccount ? 'Deleting…' : 'Delete account'}</button>
+            </div>
+          ) : (
+            <button className="settings-button is-danger" type="button" onClick={() => setConfirmingAccount(true)}>Delete account</button>
+          )}
+        </SettingsRow>
+        {accountError && <p className="settings-error" role="alert">{accountError}</p>}
+        <p className="settings-note">Panta stores commit messages, times, and file and line stats. Never code.</p>
       </SettingsGroup>
     </div>
   );

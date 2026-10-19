@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getCurrentUser } from './api/auth.js';
 import { getAccessibleRepositories, getActiveSessionCommits, getSessionActivity } from './api/github.js';
+import { flushSync } from 'react-dom';
 import * as sessionsApi from './api/sessions.js';
 import OverviewPage from './pages/Overview/OverviewPage.jsx';
 import ProjectsPage from './pages/Projects/ProjectsPage.jsx';
@@ -773,6 +774,17 @@ export default function App() {
     void retrieveSessionActivity(session);
   }
 
+  // Deletes the account on the server, then reloads so no state survives. Rejects when the deletion fails.
+  async function deleteAccount() {
+    const { revoked } = await sessionsApi.deleteAccount();
+    try {
+      Object.keys(localStorage).filter((key) => key.startsWith('panta.sessions.')).forEach((key) => localStorage.removeItem(key));
+    } catch { /* storage unavailable */ }
+    // Disarms the leave-site prompt a running session would show; the commit must land before navigating.
+    flushSync(() => resetSessionState());
+    window.location.assign(revoked ? '/' : '/?auth_error=revoke_failed');
+  }
+
   // Signing out clears this tab only. A running session stays in Panta and resumes after the next sign-in.
   function handleLogout() {
     resetSessionState();
@@ -908,7 +920,7 @@ export default function App() {
             : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Repositories</button></section>
         )}
         {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onNavigate={navigate} />}
-        {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} onDeleteHistory={deleteSessionHistory} />}
+        {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
         {view === 'Session Detail' && (
           detailSession
             ? <SessionDetailPage

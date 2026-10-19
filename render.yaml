@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: panta-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GITHUB_APP_CLIENT_ID
+        sync: false
+      - key: GITHUB_APP_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_APP_SLUG
+        sync: false
+      # The Vercel URL, not Render's: https://<your-site>.vercel.app/api/auth/github/callback
+      - key: GITHUB_CALLBACK_URL
+        sync: false

@@ -103,7 +103,7 @@ Routing is implemented in `src/routing.js` and `src/App.jsx` with the History AP
 
 ### Server
 
-The server layer lives in `server/` and is registered as a Vite plugin in `vite.config.js`. It runs inside `npm run dev` and `npm run preview`; there is no separate server process.
+The server layer lives in `server/` and is registered as a Vite plugin in `vite.config.js`. It runs inside `npm run dev` and `npm run preview`. For deployment, `server/index.js` runs the same middleware as a standalone Node server (`npm start`), serving only `/api/*`.
 
 | Module | Responsibility |
 | --- | --- |
@@ -157,9 +157,12 @@ The folder holds only example data; `index.js` exposes it as `getDummySessions()
 panta/
 ├── index.html
 ├── vite.config.js            # Vite config; registers the server middleware
+├── vercel.json               # Frontend hosting: proxies /api to the API, falls back to index.html
+├── render.yaml               # API hosting on Render
 ├── package.json
 ├── .env.example
 ├── server/
+│   ├── index.js              # Standalone API server for deployment
 │   ├── githubAuth.js         # Middleware entry, sessions, presence, Vite plugin
 │   ├── authRoutes.js         # OAuth sign-in, callback, me, logout, install link
 │   ├── githubRoutes.js       # Repository, commit, presence, and mutuals routes
@@ -281,6 +284,16 @@ npm run preview
 ```
 
 `npm run preview` serves the production build with the same API middleware. Preview runs in production mode, where the server only accepts an HTTPS `GITHUB_CALLBACK_URL` and marks cookies `Secure`, so sign-in with the local `http://` callback works under `npm run dev` only.
+
+## Deployment
+
+The frontend is a static build on Vercel, and the API runs as a Node service on Render. Vercel proxies `/api/*` to Render, so the browser only ever talks to the Vercel domain and the `panta_session` cookie and OAuth callback stay same-origin.
+
+1. **API on Render.** Create a Blueprint from `render.yaml` (or a Node web service with build `npm ci --omit=dev` and start `npm start`). Set `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_SLUG`, and `GITHUB_CALLBACK_URL`. `/healthz` is the health check.
+2. **Frontend on Vercel.** Import the repository; Vercel detects Vite. In `vercel.json`, replace `panta-api.onrender.com` with your Render service URL.
+3. **Callback URL.** Set `GITHUB_CALLBACK_URL` to `https://<your-site>.vercel.app/api/auth/github/callback` (the Vercel domain, not Render's) and add the same URL to the GitHub App.
+
+Logins and presence live in the API process's memory, so a restart signs everyone out and only one instance can run. Render's free tier sleeps after about 15 minutes idle and takes about a minute to wake, which also signs everyone out.
 
 ## GitHub App Configuration
 

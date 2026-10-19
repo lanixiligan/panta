@@ -1,16 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { calculateSessionAnalytics } from '../../analytics/sessionAnalytics.js';
 import { followRouteLink, projectDetailPath, readSearchParam, updateSearchParams } from '../../routing.js';
+import DateRangePicker, { readRange, rangeBounds, toDayString, writeRange } from '../../components/filters/DateRangePicker.jsx';
 import WorkCalendar from '../../components/analytics/WorkCalendar.jsx';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
 import { formatCount } from '../../sessions/sessionHelpers.js';
 
-const timeRanges = [
-  { value: 'week', label: 'This week' },
-  { value: 'month', label: 'This month' },
-  { value: 'All time', label: 'All time' },
-];
-const DEFAULT_RANGE = 'month';
+const DEFAULT_PERIOD = 'month';
 
 function formatDuration(milliseconds) {
   if (!Number.isFinite(milliseconds) || milliseconds < 60_000) return '<1m';
@@ -173,22 +169,29 @@ function GitHubActivity({ analytics }) {
   );
 }
 
-const EMPTY_PERIOD = { week: 'No sessions yet this week.', month: 'No sessions yet this month.' };
+const EMPTY_PERIOD = { today: 'No sessions yet today.', week: 'No sessions yet this week.', month: 'No sessions yet this month.' };
 
-function AnalyticsEmptyState({ range, hasAnySessions, onShowAllTime }) {
+function AnalyticsEmptyState({ period, hasAnySessions, onShowAllTime }) {
   return (
     <section className="analytics-empty-state" role="status">
-      <h2>{hasAnySessions ? EMPTY_PERIOD[range] || 'No sessions in this period.' : 'Complete a session to start building your work history.'}</h2>
-      {hasAnySessions && <button className="text-link" type="button" onClick={onShowAllTime}>Show all time <span aria-hidden="true">→</span></button>}
+      <h2>{hasAnySessions ? EMPTY_PERIOD[period] || 'No sessions in this period.' : 'Complete a session to start building your work history.'}</h2>
+      {hasAnySessions && period !== 'all' && <button className="text-link" type="button" onClick={onShowAllTime}>Show all time <span aria-hidden="true">→</span></button>}
     </section>
   );
 }
 
 export default function AnalyticsPage({ sessions = [], onNavigate }) {
-  // The range lives in the URL (?range=) so links and reloads keep the view.
-  const [range, setRangeState] = useState(() => (timeRanges.some(({ value }) => value === readSearchParam('range')) ? readSearchParam('range') : DEFAULT_RANGE));
-  const setRange = (value) => { setRangeState(value); updateSearchParams({ range: value === DEFAULT_RANGE ? null : value }); };
-  const analytics = useMemo(() => calculateSessionAnalytics(sessions, range), [sessions, range]);
+  // The range lives in the URL (?period= or ?from=&to=) so links and reloads keep the view.
+  const [range, setRangeState] = useState(() => readRange(new URLSearchParams(window.location.search), DEFAULT_PERIOD));
+  const setRange = (next) => {
+    const params = new URLSearchParams();
+    writeRange(params, next, DEFAULT_PERIOD);
+    setRangeState(next);
+    updateSearchParams({ period: params.get('period'), from: params.get('from'), to: params.get('to'), date: null });
+  };
+  const bounds = useMemo(() => rangeBounds(range), [range]);
+  const analytics = useMemo(() => calculateSessionAnalytics(sessions, bounds), [sessions, bounds]);
+  const activeDays = useMemo(() => new Set(sessions.map((session) => toDayString(new Date(session.startedAt)))), [sessions]);
   const hasSessions = analytics.sessionCount > 0;
 
   return (
@@ -196,22 +199,20 @@ export default function AnalyticsPage({ sessions = [], onNavigate }) {
       <section className="analytics-page-intro">
         <div>
           <h1>Analytics</h1>
-          <p>
-            {range === 'month'
-              ? formatDate(analytics.rangeStart, { month: 'long', year: 'numeric' })
-              : <>{formatDate(analytics.rangeStart, { month: 'short', day: 'numeric', year: 'numeric' })} – {formatDate(analytics.rangeEnd, { month: 'short', day: 'numeric', year: 'numeric' })}</>}
-          </p>
+          {range.period !== 'custom' && (
+            <p>
+              {range.period === 'month'
+                ? formatDate(analytics.rangeStart, { month: 'long', year: 'numeric' })
+                : <>{formatDate(analytics.rangeStart, { month: 'short', day: 'numeric', year: 'numeric' })} – {formatDate(analytics.rangeEnd, { month: 'short', day: 'numeric', year: 'numeric' })}</>}
+            </p>
+          )}
         </div>
         <div className="analytics-controls">
-          <div className="analytics-time-range" role="group" aria-label="Time range">
-            {timeRanges.map(({ value, label }) => (
-              <button key={value} type="button" aria-pressed={range === value} className={range === value ? 'selected' : ''} onClick={() => setRange(value)}>{label}</button>
-            ))}
-          </div>
+          <DateRangePicker value={range} onChange={setRange} activeDays={activeDays} />
         </div>
       </section>
 
-      {!hasSessions ? <AnalyticsEmptyState range={range} hasAnySessions={analytics.totalCompletedSessions > 0} onShowAllTime={() => setRange('All time')} /> : (
+      {!hasSessions ? <AnalyticsEmptyState period={range.period} hasAnySessions={analytics.totalCompletedSessions > 0} onShowAllTime={() => setRange({ period: 'all' })} /> : (
         <>
           <SummaryMetrics analytics={analytics} />
           <GitHubActivity analytics={analytics} />

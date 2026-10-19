@@ -3,11 +3,7 @@
 .analytics-page-intro h1 { margin: 0 0 6px; color: var(--workspace-text); font-weight: 500; letter-spacing: -.04em; }
 .analytics-page-intro p { margin: 0; color: var(--workspace-secondary); font-size: 13px; }
 .analytics-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; }
-.analytics-time-range { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--workspace-border); border-radius: 6px; background: var(--workspace-surface); }
-.analytics-time-range button { min-height: 30px; padding: 0 11px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--workspace-muted); font: 12px 'DM Sans', sans-serif; cursor: pointer; }
-.analytics-time-range button:hover { color: var(--workspace-text); }
-.analytics-time-range button.selected { border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-text); }
-.analytics-time-range button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
+@media (min-width: 681px) { .analytics-controls .date-range-popover { right: 0; left: auto; } }
 
 /* Summary */
 .analytics-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--workspace-border); border-radius: 8px; background: var(--workspace-surface); }
@@ -90,7 +86,5 @@ a.analytics-calendar-day:focus-visible { outline: 2px solid var(--workspace-focu
   .analytics-summary { grid-template-columns: 1fr; }
   .analytics-summary-metric + .analytics-summary-metric { border-top: 1px solid var(--workspace-divider); border-left: 0; }
   .analytics-summary-metric strong { font-size: 22px; }
-  .analytics-controls, .analytics-time-range { width: 100%; }
-  .analytics-time-range button { flex: 1; }
-  .analytics-github-note { margin-left: 0; }
+  .analytics-controls,     .analytics-github-note { margin-left: 0; }
 }

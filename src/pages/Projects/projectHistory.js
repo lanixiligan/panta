@@ -36,7 +36,7 @@ function buildProjects(sessions, repositories) {
   const accessibleById = new Map(repositories.map((repository) => [`id:${repository.id}`, repository]));
 
   return [...sessionsByProject.entries()].flatMap(([key, projectSessions]) => {
-    const history = calculateSessionAnalytics(projectSessions, 'All time');
+    const history = calculateSessionAnalytics(projectSessions, null);
     if (!history.sessionCount) return [];
 
     const latestSession = history.sessions[0].session;

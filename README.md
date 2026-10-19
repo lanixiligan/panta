@@ -54,15 +54,15 @@ Each repository card keeps the total session time and session count separate fro
 
 ### Analytics
 
-Aggregated views of completed sessions for this week (Monday first, matching Overview), this month, or all time, each organized around a question:
+Aggregated views of completed sessions, each organized around a question. The date picker is the same calendar as Session History: any span of days, or Today, Week (Monday first, matching Overview), and Month quick picks, with Clear for all time. It opens on this month.
 
 - **Summary** — session time, sessions, and active days (days with at least one session, out of the days in the period). Commits live in **What GitHub recorded**.
 - **What GitHub recorded** — one line with the commits and lines added and deleted during sessions, how many sessions had commits, and how many have no recorded activity.
-- **Session time** — per day across the whole week or month (days still ahead are shown empty), or per week for all time when it spans more than 45 days, with a tooltip for the session count in each bar. Like the calendar and Repositories, a session counts entirely toward the day it started.
+- **Session time** — per day across the whole range (days still ahead are shown empty), or per week when it spans more than 45 days, with a tooltip for the session count in each bar. Like the calendar and Repositories, a session counts entirely toward the day it started.
 - **Where your time went** — the five repositories with the most session time and their session time with a bar, then one line totalling the rest; real repositories link to their Repositories page.
 - **When you work** — a month calendar with each date shaded by its session time (credited to the day a session started). Hovering or focusing a date shows its session time, session count, and repositories, and a date with sessions links to Session History filtered to that day; arrows move between months, back to your first session. It ignores the time range.
 
-Values that were never recorded are shown as unavailable rather than zero. Analytics includes the example sessions from `src/dummy-data/` while example data is shown, and the page notes when they are part of the totals. The range and the month shown in the calendar are kept in the URL.
+Values that were never recorded are shown as unavailable rather than zero. Analytics includes the example sessions from `src/dummy-data/` while example data is shown, and the page notes when they are part of the totals. The range (`?period=` or `?from=&to=`) and the month shown in the calendar are kept in the URL.
 
 ### Socials
 

@@ -109,6 +109,10 @@ The server layer lives in `server/` and is registered as a Vite plugin in `vite.
 | `authRoutes.js` | GitHub sign-in (`/api/auth/github`), the OAuth callback, the current-user check (`/api/auth/me`), logout, and the redirect to the GitHub App installation page (`/api/auth/github/install`). |
 | `githubRoutes.js` | Authenticated data routes: accessible repositories, live and final session commits, presence heartbeats, and GitHub mutuals. |
 | `githubApi.js` | All requests to the GitHub REST API, including pagination, response shaping, and GitHub error and rate-limit handling. |
+| `sessionRoutes.js` | Stored-session routes (`/api/sessions*`) for the signed-in user. |
+| `sessionStore.js` | All SQL for stored sessions, including the pause rule and the one-time import. |
+| `sessionRecords.js` | What Panta stores for a session (field whitelist) and the mapping to the client's session shape. |
+| `db.js` | The Postgres pool (`DATABASE_URL`) and the schema, created on startup. |
 
 Data routes used by the frontend:
 
@@ -117,8 +121,16 @@ Data routes used by the frontend:
 | `GET /api/github/repositories` | Repositories the signed-in user can access through the app |
 | `GET /api/github/repos/:owner/:repo/active-session-commits` | Commits during an active session across all branches (polled every 30 seconds) |
 | `GET /api/github/repos/:owner/:repo/session-commits` | Final commits for a completed session across all branches, with file, line, and branch details |
-| `POST /api/presence/heartbeat` | Marks the signed-in user as present (sent every 30 seconds) |
+| `POST /api/presence/heartbeat` | Marks the signed-in user as present and keeps the running session's pause clock current (sent every 30 seconds) |
 | `GET /api/social/people-following` | GitHub mutuals with online/offline presence |
+| `GET /api/sessions` | The signed-in user's running session and completed sessions |
+| `POST /api/sessions` | Starts a session (one running session at a time) |
+| `PATCH /api/sessions/:id` | Updates a session's goal |
+| `DELETE /api/sessions/:id` | Deletes a completed session, or cancels the running one |
+| `POST /api/sessions/:id/finish` | Ends the running session; the server records the end time and duration |
+| `PUT /api/sessions/:id/activity` | Stores a completed session's commits and activity summary |
+| `DELETE /api/sessions` | Deletes all completed sessions |
+| `POST /api/sessions/import` | One-time import of sessions saved in the browser before session storage |
 
 ### Authentication Flow
 
@@ -164,7 +176,11 @@ panta/
 │   ├── githubAuth.js         # Middleware entry, sessions, presence, Vite plugin
 │   ├── authRoutes.js         # OAuth sign-in, callback, me, logout, install link
 │   ├── githubRoutes.js       # Repository, commit, presence, and mutuals routes
-│   └── githubApi.js          # GitHub REST API client
+│   ├── githubApi.js          # GitHub REST API client
+│   ├── sessionRoutes.js      # Stored-session routes
+│   ├── sessionStore.js       # Session SQL
+│   ├── sessionRecords.js     # Stored-field whitelist and row mapping
+│   └── db.js                 # Postgres pool and schema
 └── src/
     ├── main.jsx              # Entry point and render error boundary
     ├── App.jsx               # Application state, routing, and page composition

@@ -7,6 +7,7 @@ import {
   getAuthenticatedUserList,
   getSessionCommitActivity,
 } from './githubApi.js';
+import { touchActiveSession } from './sessionStore.js';
 
 const ACCESSIBLE_REPOSITORIES_PATH = '/api/github/repositories';
 const PRESENCE_HEARTBEAT_PATH = '/api/presence/heartbeat';
@@ -54,6 +55,7 @@ export async function handleGitHubDataRoute(context) {
     presenceBySession,
     mutualsCache,
     mutualsRequests,
+    db,
   } = context;
   const { pathname } = requestUrl;
 
@@ -74,7 +76,20 @@ export async function handleGitHubDataRoute(context) {
       return true;
     }
     presenceBySession.set(sessionId, { githubUserId, lastSeenAt: Date.now() });
-    writeJson(response, 200, { ok: true });
+
+    // The heartbeat also keeps the running session's pause clock current. `activeSession` is null when
+    // no session is running (finished or cancelled in another tab) and left out when storage failed,
+    // so a database problem never breaks presence.
+    let activeSession;
+    if (db) {
+      try {
+        const row = await touchActiveSession(db, githubUserId);
+        activeSession = row ? { id: row.id, pausedMs: Number(row.paused_ms) } : null;
+      } catch (error) {
+        console.error('Session heartbeat failed:', error.message);
+      }
+    }
+    writeJson(response, 200, { ok: true, activeSession });
     return true;
   }
 

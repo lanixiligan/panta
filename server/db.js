@@ -47,9 +47,23 @@ export function createDatabase(env = process.env) {
   // An idle client can drop (Neon suspends idle compute); without a listener that error crashes the process.
   pool.on('error', (error) => console.error('Database connection error:', error.message));
 
-  const query = (text, params) => pool.query(text, params);
+  // Created once, before the first query. A failure (Neon unreachable at startup) is retried on the next query.
+  let schemaReady = null;
+  function ensureSchema() {
+    schemaReady ??= pool.query(SCHEMA).then(() => undefined, (error) => {
+      schemaReady = null;
+      throw error;
+    });
+    return schemaReady;
+  }
+
+  async function query(text, params) {
+    await ensureSchema();
+    return pool.query(text, params);
+  }
 
   async function transaction(fn) {
+    await ensureSchema();
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -64,7 +78,12 @@ export function createDatabase(env = process.env) {
     }
   }
 
-  const ready = query(SCHEMA).then(() => undefined);
-
-  return { query, transaction, ready, close: () => pool.end() };
+  return {
+    query,
+    transaction,
+    get ready() {
+      return ensureSchema();
+    },
+    close: () => pool.end(),
+  };
 }

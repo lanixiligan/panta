@@ -20,14 +20,15 @@ Sign-in needs `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_CA
 
 ## Architecture
 
-### Server is a Vite plugin, not a separate process
+### Server is one middleware, mounted by Vite or by `server/index.js`
 
-`vite.config.js` registers `githubAuthApi()` from `server/githubAuth.js`, which mounts one middleware into both the dev and preview servers. There is no standalone backend and no database.
+`vite.config.js` registers `githubAuthApi()` from `server/githubAuth.js`, which mounts one middleware into both the dev and preview servers. In deployment, `server/index.js` runs the same middleware as a standalone Node server (Render). Stored sessions live in Postgres (`server/db.js`, `DATABASE_URL`); everything else is in memory.
 
-- `githubAuth.js` owns all server state in in-memory `Map`s (login sessions keyed by the `panta_session` cookie, presence, mutuals cache), prunes expired entries on each request, and builds a per-request `context` object (cookies, env, `getSession()`, `writeJson`, `redirect`, cookie helpers). Paths it doesn't handle fall through to `next()`.
+- `githubAuth.js` owns the in-memory state in `Map`s (login sessions keyed by the `panta_session` cookie, presence, mutuals cache) and the database handle, prunes expired entries on each request, and builds a per-request `context` object (cookies, env, `db`, `getSession()`, `readJsonBody()`, `writeJson`, `redirect`, cookie helpers). Paths it doesn't handle fall through to `next()`. Without `DATABASE_URL`, sign-in still works and the session routes return 503.
 - Route handlers in `authRoutes.js` and `githubRoutes.js` take that `context` and return `true` when they handled the request. Dispatch is plain string and regex matching on `"METHOD /path"`. To add a data route, add its path to `isGitHubDataRoute()` and handle it in `handleGitHubDataRoute()`.
+- `sessionRoutes.js` handles `/api/sessions*` from a small route table. All SQL lives in `sessionStore.js`, scoped to the signed-in GitHub user ID; Postgres's `now()` is the only clock for session times, and the pause rule (`touchActiveSession`) is one `UPDATE`. `sessionRecords.js` whitelists what is stored (commit metadata and file and line stats, never code or diffs) and maps rows to the client's session shape. Keep new stored fields going through it.
 - `githubApi.js` is the only module that calls the GitHub REST API. It handles pagination, response shaping, and `GitHubApiError` (status plus message). Route handlers pass that status and message straight to the client. The GitHub access token never leaves the server.
-- Restarting the dev server clears every login session and all presence.
+- Restarting the dev server clears every login session and all presence. Stored sessions survive.
 
 ### Frontend: one stateful `App.jsx`, no router or state library
 

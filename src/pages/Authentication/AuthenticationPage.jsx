@@ -31,7 +31,7 @@ export default function AuthenticationPage({ checking, identityError, onRetryIde
         )}
         <div className="auth-actions">
           {checking
-            ? <p className="auth-screen-checking" role="status">{slow ? 'Waking the server… this can take up to a minute' : 'Checking your GitHub session…'}</p>
+            ? <p className="auth-screen-checking" role="status"><span className="dashboard-spinner" aria-hidden="true" />{slow ? 'Waking the server… this can take up to a minute' : 'Checking your GitHub session…'}</p>
             : <AuthControl loginLabel="Continue with GitHub" />}
         </div>
       </section>

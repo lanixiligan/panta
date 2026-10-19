@@ -76,7 +76,7 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
         <div className="sidebar-socials-content">
           <div className="sidebar-mutuals-total">Mutuals ({mutuals.length})</div>
           {loading || error ? (
-            <p className="sidebar-socials-note">{loading ? 'Loading mutuals…' : 'Couldn’t load your GitHub mutuals. Panta will try again in a minute.'}</p>
+            <p className="sidebar-socials-note">{loading ? <><span className="dashboard-spinner" aria-hidden="true" />Loading mutuals…</> : 'Couldn’t load your GitHub mutuals. Panta will try again in a minute.'}</p>
           ) : mutuals.length === 0 ? (
             <p className="sidebar-socials-note">No GitHub mutuals yet.<br />Follow someone who follows you to build your mutuals.</p>
           ) : (

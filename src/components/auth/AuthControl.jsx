@@ -96,7 +96,7 @@ export default function AuthControl({ loginLabel = 'Sign in with GitHub' }) {
 
   return (
     <div className="auth-control">
-      {status === 'loading' && <span className="auth-checking" role="status">Checking sign-in…</span>}
+      {status === 'loading' && <span className="auth-checking" role="status"><span className="dashboard-spinner" aria-hidden="true" />Checking sign-in…</span>}
       {status === 'unauthenticated' && (
         <a
           className={`github-sign-in${redirecting ? ' is-loading' : ''}`}

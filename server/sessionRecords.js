@@ -5,7 +5,12 @@
 export const PAUSE_AFTER_MS = 90_000;
 
 const MAX_GOAL_LENGTH = 2000;
-const MAX_SESSION_ID_LENGTH = 100;
+const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{1,100}$/;
+
+// Session IDs appear in API paths, so stored IDs must be ones the routes accept.
+export function isValidSessionId(value) {
+  return typeof value === 'string' && SESSION_ID_PATTERN.test(value);
+}
 
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -101,7 +106,7 @@ export function sanitizeGoal(value) {
 // A completed session from the browser's old localStorage history. Example sessions are never stored.
 export function sanitizeImportedSession(value) {
   if (!isObject(value) || value.status !== 'completed' || value.source === 'placeholder') return null;
-  if (typeof value.id !== 'string' || !value.id || value.id.length > MAX_SESSION_ID_LENGTH) return null;
+  if (!isValidSessionId(value.id)) return null;
   const startedAt = isoOrNull(value.startedAt);
   const endedAt = isoOrNull(value.endedAt);
   if (!startedAt || !endedAt || Date.parse(endedAt) < Date.parse(startedAt)) return null;

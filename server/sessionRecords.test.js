@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PAUSE_AFTER_MS,
+  isValidSessionId,
   sanitizeActivity,
   sanitizeCommits,
   sanitizeGoal,
@@ -23,6 +24,14 @@ const repository = {
 
 test('PAUSE_AFTER_MS is the 90 second presence window', () => {
   assert.equal(PAUSE_AFTER_MS, 90_000);
+});
+
+test('isValidSessionId accepts the client format and rejects path-unsafe IDs', () => {
+  assert.equal(isValidSessionId('session-1760868000000-ab12cd'), true);
+  assert.equal(isValidSessionId('a/b'), false);
+  assert.equal(isValidSessionId(''), false);
+  assert.equal(isValidSessionId('x'.repeat(101)), false);
+  assert.equal(isValidSessionId(7), false);
 });
 
 test('sanitizeCommits drops patch and unknown fields', () => {
@@ -85,6 +94,7 @@ test('sanitizeImportedSession skips examples and bad rows', () => {
   assert.equal(sanitizeImportedSession({ ...valid, status: 'active' }), null);
   assert.equal(sanitizeImportedSession({ ...valid, endedAt: '2026-10-19T09:00:00Z' }), null);
   assert.equal(sanitizeImportedSession({ ...valid, id: 'x'.repeat(101) }), null);
+  assert.equal(sanitizeImportedSession({ ...valid, id: 'has/slash' }), null);
   const row = sanitizeImportedSession(valid);
   assert.ok(row);
   assert.equal(row.goal, 'ship');

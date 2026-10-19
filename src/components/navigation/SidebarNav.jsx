@@ -178,7 +178,7 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
-        <span className="brand-symbol" aria-hidden="true">P</span><span><strong>Panta</strong><small>Your work, over time.</small></span>
+        <span><img className="brand-wordmark" src="/logos/panta-logo-kit/panta-wordmark.svg" alt="" /><small>Your work, over time.</small></span>
       </a>
       <NavLinks pathname={pathname} onNavigate={onNavigate} />
       <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />

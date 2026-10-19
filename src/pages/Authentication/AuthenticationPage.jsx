@@ -26,7 +26,7 @@ export default function AuthenticationPage({ checking, identityError, onRetryIde
       </header>
 
       <section className="auth-hero" aria-labelledby="auth-heading">
-        <h1 id="auth-heading">Panta</h1>
+        <h1 id="auth-heading"><img src="/logos/panta-logo-kit/panta-wordmark.svg" alt="Panta" /></h1>
         <p className="auth-tagline">Your work, over time</p>
         <p className="auth-subline">Pick a repository, set a goal, and get a recap of every commit from the session.</p>
 

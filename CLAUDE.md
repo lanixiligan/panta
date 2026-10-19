@@ -11,9 +11,10 @@ npm install
 npm run dev       # Vite dev server + API middleware at http://localhost:5173
 npm run build     # production build to dist/
 npm run preview   # serves dist/ with the same API middleware, in production mode
+npm test          # node:test unit tests for pure modules (*.test.js)
 ```
 
-There is no test suite, linter, or formatter configured. Verify changes with `npm run build` and by running the app.
+There is no linter or formatter configured. `npm test` covers only pure modules (no database, browser, or GitHub calls). Verify everything else with `npm run build` and by running the app.
 
 Sign-in needs `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, and `GITHUB_CALLBACK_URL` in the root `.env` (see `.env.example`). Only the server reads them. Never expose them through `VITE_` variables. `npm run preview` runs in production mode, which rejects a non-HTTPS callback URL and sets `Secure` cookies, so local sign-in only works under `npm run dev`.
 

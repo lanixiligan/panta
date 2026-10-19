@@ -112,7 +112,7 @@ function SessionWorkspaceLink({ session, now, pathname, onNavigate }) {
   );
 }
 
-function UserProfileMenu({ identity, view, pathname, onNavigate, onLogout }) {
+function UserProfileMenu({ identity, view, pathname, onNavigate, onBeforeLogout, onLogout }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -141,6 +141,8 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onLogout }) {
     setBusy(true);
     setError('');
     try {
+      // Anything waiting to be saved (a goal edit) is sent while the sign-in still works.
+      await onBeforeLogout?.();
       await logoutCurrentUser();
       setOpen(false);
       onLogout();
@@ -174,7 +176,7 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onLogout }) {
   );
 }
 
-export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onLogout, mutuals, mutualsLoading, mutualsError, showExamples, onToggleExamples }) {
+export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError, showExamples, onToggleExamples }) {
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
@@ -193,7 +195,7 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
       )}
       <div className="sidebar-bottom">
         {identityStatus === 'authenticated' && identity ? (
-          <UserProfileMenu identity={identity} view={view} pathname={pathname} onNavigate={onNavigate} onLogout={onLogout} />
+          <UserProfileMenu identity={identity} view={view} pathname={pathname} onNavigate={onNavigate} onBeforeLogout={onBeforeLogout} onLogout={onLogout} />
         ) : (
           <div className="sidebar-auth"><AuthControl /></div>
         )}

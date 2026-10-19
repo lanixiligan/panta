@@ -29,7 +29,8 @@ function CancelSession({ onCancel, disabled }) {
   );
 }
 
-export default function ActiveSession({ session, now, onFinish, onCancel, onUpdateGoal, isEnding, endingAt, error = '' }) {
+// `error` is { message, onRetry? }: a failed finish or cancel (its own button tries again), or a goal that couldn't be saved.
+export default function ActiveSession({ session, now, onFinish, onCancel, onUpdateGoal, isEnding, endingAt, error = null }) {
   const elapsedEnd = isEnding && endingAt ? new Date(endingAt).getTime() : now;
   const elapsed = formatElapsed(getActiveElapsedMs(session, elapsedEnd));
   const commits = session.commits || [];
@@ -56,8 +57,12 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
             {isEnding ? 'Syncing final activity…' : 'End Session'}
           </button>
         </div>
-        {/* A failed finish or cancel. The session is still running, so the same button tries again. */}
-        {error && <div className="dashboard-error" role="alert">{error}</div>}
+        {error && (
+          <div className="dashboard-error" role="alert">
+            <span>{error.message}</span>
+            {error.onRetry && <button type="button" onClick={error.onRetry}>Try again</button>}
+          </div>
+        )}
       </div>
 
       <section className="session-console-activity" aria-labelledby="session-console-activity-heading" aria-live="polite">

@@ -129,7 +129,8 @@ Data routes used by the frontend:
 | `GET /api/sessions` | The signed-in user's running session and completed sessions |
 | `POST /api/sessions` | Starts a session (one running session at a time) |
 | `PATCH /api/sessions/:id` | Updates a session's goal |
-| `DELETE /api/sessions/:id` | Deletes a completed session, or cancels the running one |
+| `DELETE /api/sessions/:id` | Deletes a session (Session detail's delete) |
+| `POST /api/sessions/:id/cancel` | Discards the running session; a session that has already ended answers 404 and is kept |
 | `POST /api/sessions/:id/finish` | Ends the running session; the server records the end time and duration |
 | `PUT /api/sessions/:id/activity` | Stores a completed session's commits and activity summary |
 | `DELETE /api/sessions` | Deletes all completed sessions |

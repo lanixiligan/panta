@@ -5,6 +5,7 @@
 .session-detail-delete.danger { border-color: var(--workspace-danger-border); background: var(--workspace-danger-bg); color: var(--workspace-danger); }
 .session-detail-delete.danger:hover { border-color: var(--workspace-danger-border); color: var(--workspace-danger); }
 .session-detail-delete:disabled { cursor: default; opacity: .7; }
+.session-detail-delete:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
 .session-detail-delete-confirm { display: flex; align-items: center; gap: 6px; color: var(--workspace-secondary); font-size: 12px; }
 .session-detail-delete-confirm > span { margin-right: 4px; }
 .session-detail-delete-confirm > span[role='alert'] { color: var(--workspace-danger); }
@@ -14,6 +15,7 @@
 .session-detail-page .session-detail-heading h1 { margin: 0 0 10px; }
 .session-detail-heading h1.empty { color: var(--workspace-muted); font-style: italic; font-weight: 400; }
 .session-detail-heading > .session-detail-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin: 0; color: var(--workspace-text); font-size: 13px; font-weight: 500; }
+.session-detail-heading > .dashboard-error { margin-top: 12px; }
 /* The shared heading rule dims every span; here only the separators stay faint. */
 .session-detail-heading > .session-detail-meta span { padding: 0; color: inherit; }
 .session-detail-heading > .session-detail-meta > [aria-hidden] { color: var(--workspace-faint); }

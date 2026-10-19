@@ -306,7 +306,7 @@ function FilesSection({ files, selectedFile, onSelectFile }) {
   );
 }
 
-export default function SessionDetailPage({ session, onBack, onRetryActivity, onDelete, onUpdateGoal, backHref = routePaths['Session History'], backLabel = '← Session History' }) {
+export default function SessionDetailPage({ session, onBack, onRetryActivity, onDelete, onUpdateGoal, goalError = '', onRetryGoal, backHref = routePaths['Session History'], backLabel = '← Session History' }) {
   // The file filter lives in the URL (?file=), so a reload or a shared link keeps it.
   const [selectedFile, setSelectedFileState] = useState(() => new URLSearchParams(window.location.search).get('file'));
   function setSelectedFile(filename) {
@@ -342,6 +342,13 @@ export default function SessionDetailPage({ session, onBack, onRetryActivity, on
           {hasTimes && <><span aria-hidden="true">·</span><span>{formatTimeRange(session.startedAt, session.endedAt)}</span></>}
           {isPlaceholder && <span className="session-detail-badge">Example</span>}
         </p>
+        {/* A goal edit that couldn't be saved stays on the page until a retry saves it. */}
+        {goalError && (
+          <div className="dashboard-error" role="alert">
+            <span>{goalError}</span>
+            <button type="button" onClick={onRetryGoal}>Try again</button>
+          </div>
+        )}
       </header>
 
       <SessionStats session={session} isPlaceholder={isPlaceholder} commits={commits} files={files} branches={branches} onRetry={() => onRetryActivity(session)} />

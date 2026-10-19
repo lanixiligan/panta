@@ -18,7 +18,8 @@ function sortProjects(projects, sort) {
   return projects;
 }
 
-export default function ProjectsPage({ projects: realProjects = [], exampleProjects = [], onNavigate, onStartSession }) {
+// `notice` is one line from App while the sessions load or when they couldn't be loaded; the empty state waits for it.
+export default function ProjectsPage({ projects: realProjects = [], exampleProjects = [], notice = null, onNavigate, onStartSession }) {
   // Search, sort, and page live in the URL (?q=, ?sort=, ?page=).
   const [query, setQueryState] = useState(() => readSearchParam('q') || '');
   const [sort, setSortState] = useState(() => (sortOptions.some(([value]) => value === readSearchParam('sort')) ? readSearchParam('sort') : 'recent'));
@@ -61,6 +62,8 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
         <p>Every repository you’ve worked on through Panta, with the time you declared and what GitHub saw.</p>
       </section>
 
+      {notice}
+
       {projects.length ? (
         <section className="project-list-section" aria-label="Repositories">
           <div className="project-toolbar">
@@ -86,7 +89,7 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
           )}
           <Pager page={currentPage} pageCount={pageCount} onChange={goToPage} label="Repository pages" />
         </section>
-      ) : (
+      ) : !notice && (
         <div className="session-empty-state">
           <span className="empty-state-mark" aria-hidden="true">⌂</span>
           <div><h3>No repositories yet</h3><p>Complete your first session and the repository will appear here.</p></div>

@@ -194,7 +194,8 @@ function EmptyHistory({ hasFilters }) {
   );
 }
 
-export default function SessionHistoryPage({ sessions = [], onSelectSession }) {
+// `notice` is one line from App while the sessions load or when they couldn't be loaded; the empty state waits for it.
+export default function SessionHistoryPage({ sessions = [], notice = null, onSelectSession }) {
   const initial = useMemo(readHistoryParams, []);
   const [query, setQuery] = useState(initial.query);
   const [repository, setRepository] = useState(initial.repository);
@@ -291,6 +292,8 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession }) {
         </div>
       </section>
 
+      {notice}
+
       <section className="session-history-workspace" aria-label="Session history">
         <div className="session-history-toolbar">
           <label className="session-history-search">
@@ -343,7 +346,7 @@ export default function SessionHistoryPage({ sessions = [], onSelectSession }) {
           </div>
         )}
 
-        {!filteredSessions.length && <EmptyHistory hasFilters={hasFilters || sessions.length > 0} />}
+        {!filteredSessions.length && !notice && <EmptyHistory hasFilters={hasFilters || sessions.length > 0} />}
       </section>
     </div>
   );

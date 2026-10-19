@@ -137,7 +137,17 @@ export async function saveActivity(db, userId, id, { activity, commits, activity
   return rows[0] ?? null;
 }
 
-// Deletes one session in either state; deleting the active one is how a session is cancelled.
+// Cancelling deletes only a running session, so a tab that still shows one already finished elsewhere can't delete it.
+export async function cancelActiveSession(db, userId, id) {
+  assertUserId(userId);
+  const { rowCount } = await db.query(
+    `DELETE FROM sessions WHERE github_user_id = $1 AND id = $2 AND status = 'active'`,
+    [userId, id],
+  );
+  return rowCount > 0;
+}
+
+// Deletes one session in either state, as Session Detail's delete does. Cancelling uses cancelActiveSession.
 export async function deleteSession(db, userId, id) {
   assertUserId(userId);
   const { rowCount } = await db.query(`DELETE FROM sessions WHERE github_user_id = $1 AND id = $2`, [userId, id]);

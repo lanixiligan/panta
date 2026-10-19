@@ -20,7 +20,7 @@ const phaseCopy = {
 const REPOSITORY_TYPES = ['all', 'public', 'private'];
 const REPOSITORY_SORTS = ['updated', 'name'];
 
-export default function SessionWorkspacePage({ repositories: githubRepositories = [], exampleRepositories = [], exampleProjects = [], loading, error, onRetry, onStart, starting = false, startError = '', sessionsError = '', onRetrySessions, activeSession, completedSession, now, onFinish, onCancel, onUpdateGoal, isEndingSession, sessionEndingAt, sessionActionError = '', onViewCompletedSession, onStartAnother, onRetryActivity, projects = [], onNavigate }) {
+export default function SessionWorkspacePage({ repositories: githubRepositories = [], exampleRepositories = [], exampleProjects = [], loading, error, onRetry, onStart, starting = false, startError = '', sessionsError = '', onRetrySessions, activeSession, completedSession, now, onFinish, onCancel, onUpdateGoal, isEndingSession, sessionEndingAt, activeSessionError = null, onViewCompletedSession, onStartAnother, onRetryActivity, projects = [], onNavigate }) {
   // Search, type, language, and sort live in the URL (?q=, ?type=, ?language=, ?sort=), so a reload or Back keeps the list as it was.
   const [query, setQueryState] = useState(() => readSearchParam('q') || '');
   const [type, setTypeState] = useState(() => (REPOSITORY_TYPES.includes(readSearchParam('type')) ? readSearchParam('type') : 'all'));
@@ -96,7 +96,7 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
           onRetryActivity={onRetryActivity}
         />
       ) : activeSession ? (
-        <ActiveSession session={activeSession} now={now} onFinish={onFinish} onCancel={onCancel} onUpdateGoal={onUpdateGoal} isEnding={isEndingSession} endingAt={sessionEndingAt} error={sessionActionError} />
+        <ActiveSession session={activeSession} now={now} onFinish={onFinish} onCancel={onCancel} onUpdateGoal={onUpdateGoal} isEnding={isEndingSession} endingAt={sessionEndingAt} error={activeSessionError} />
       ) : (
         <SessionSetup
           repositories={repositories}

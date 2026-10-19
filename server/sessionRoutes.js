@@ -5,6 +5,7 @@ import {
   AlreadyImportedError,
   InvalidSessionError,
   SessionConflictError,
+  cancelActiveSession,
   deleteAccountData,
   deleteCompletedSessions,
   deleteSession,
@@ -21,6 +22,7 @@ const ACCOUNT_PATH = '/api/account';
 const IMPORT_PATH = '/api/sessions/import';
 const SESSION_PATH = /^\/api\/sessions\/([^/]+)$/;
 const FINISH_PATH = /^\/api\/sessions\/([^/]+)\/finish$/;
+const CANCEL_PATH = /^\/api\/sessions\/([^/]+)\/cancel$/;
 const ACTIVITY_PATH = /^\/api\/sessions\/([^/]+)\/activity$/;
 const IMPORT_LIMIT_BYTES = 5_000_000;
 const NOT_FOUND = 'That session could not be found.';
@@ -30,6 +32,7 @@ const routes = [
   { match: (pathname) => pathname === SESSIONS_PATH, methods: { GET: listAll, POST: start, DELETE: deleteHistory } },
   { match: (pathname) => pathname === IMPORT_PATH, methods: { POST: importLegacy } },
   { match: (pathname) => pathname.match(FINISH_PATH), methods: { POST: finish } },
+  { match: (pathname) => pathname.match(CANCEL_PATH), methods: { POST: cancel } },
   { match: (pathname) => pathname.match(ACTIVITY_PATH), methods: { PUT: storeActivity } },
   { match: (pathname) => pathname.match(SESSION_PATH), methods: { PATCH: editGoal, DELETE: remove } },
   { match: (pathname) => pathname === ACCOUNT_PATH, methods: { DELETE: deleteAccount } },
@@ -61,6 +64,11 @@ async function importLegacy({ db, userId, readJsonBody }) {
 async function finish({ db, userId, sessionId }) {
   const row = await finishSession(db, userId, sessionId);
   return row ? [200, { session: toClientSession(row) }] : [404, { error: 'That session isn’t running.' }];
+}
+
+// Only a running session is discarded. A 404 tells a stale tab that its session already ended elsewhere.
+async function cancel({ db, userId, sessionId }) {
+  return (await cancelActiveSession(db, userId, sessionId)) ? [204, null] : [404, { error: 'That session isn’t running.' }];
 }
 
 async function storeActivity({ db, userId, sessionId, readJsonBody }) {

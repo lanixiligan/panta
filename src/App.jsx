@@ -112,8 +112,12 @@ export default function App() {
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [startError, setStartError] = useState('');
   const [sessionsError, setSessionsError] = useState('');
+  // 'loading' until the first session list arrives, then 'ready'. 'error' when it couldn't be loaded at all.
+  const [sessionsStatus, setSessionsStatus] = useState('loading');
   // A failed finish or cancel, shown with the running session.
   const [sessionActionError, setSessionActionError] = useState('');
+  // Sessions whose latest goal edit couldn't be saved. The edit stays pending until a retry succeeds.
+  const [failedGoalSaves, setFailedGoalSaves] = useState([]);
   const loadId = useRef(0);
   const endingSession = useRef(false);
   const startingSession = useRef(false);
@@ -125,7 +129,8 @@ export default function App() {
   const deletedSessionIds = useRef(new Set());
   // Sessions whose GitHub activity is being retrieved, so a list load doesn't start a second retrieval.
   const activityRequests = useRef(new Set());
-  const goalSaveTimers = useRef(new Map());
+  // Goal edits not yet saved, by session ID: { goal, timer }.
+  const goalSaves = useRef(new Map());
   const [showExamples, setShowExamples] = useState(readShowExamples);
   const allDummySessions = useMemo(() => getDummySessions(), []);
   // The sidebar's "Show example data" setting hides every example session, project, and repository at once.
@@ -163,6 +168,7 @@ export default function App() {
 
   useEffect(() => {
     function syncPathname() {
+      void flushGoalSaves();
       setPathname(window.location.pathname);
     }
     window.addEventListener('popstate', syncPathname);
@@ -190,16 +196,22 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', confirmLeaving);
   }, [hasActiveSession]);
 
+  // Goal edits still waiting are sent when the page goes away; keepalive lets the request outlive it.
   useEffect(() => {
-    const timers = goalSaveTimers.current;
+    function sendPendingGoals() {
+      void flushGoalSaves({ keepalive: true });
+    }
+    window.addEventListener('pagehide', sendPendingGoals);
     return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
-      timers.clear();
+      window.removeEventListener('pagehide', sendPendingGoals);
+      sendPendingGoals();
     };
   }, []);
 
   function navigate(path, state = {}) {
     if (path === window.location.pathname) return;
+    // A goal edit still waiting is sent now, rather than after the page that shows it has gone.
+    void flushGoalSaves();
     window.history.pushState(state, '', path);
     setPathname(window.location.pathname);
   }
@@ -243,6 +255,7 @@ export default function App() {
 
       setIdentity(user);
       setIdentityStatus('authenticated');
+      setSessionsStatus('loading');
       void loadSessions(user.username);
       setRepositoriesLoading(true);
       try {
@@ -279,7 +292,8 @@ export default function App() {
     await refreshSessions();
   }
 
-  // Loads the signed-in user's sessions from Panta. Resolves to false when they couldn't be loaded.
+  // Loads the signed-in user's sessions from Panta. Resolves to false when they couldn't be loaded. Once a list has
+  // loaded, a later failure leaves the sessions shown and only Session Setup reports it.
   async function refreshSessions() {
     const requestId = ++sessionListRequest.current;
     const shownId = activeSessionRef.current?.id ?? null;
@@ -287,16 +301,27 @@ export default function App() {
       const list = await sessionsApi.listSessions();
       if (requestId === sessionListRequest.current) {
         setSessionsError('');
+        setSessionsStatus('ready');
         applySessionList(list, shownId);
       }
       return true;
     } catch (error) {
       if (requestId === sessionListRequest.current) {
-        if (error.status === 401) void loadWorkspace();
-        else setSessionsError(error.message);
+        if (error.status === 401) {
+          void loadWorkspace();
+        } else {
+          setSessionsError(error.message);
+          setSessionsStatus((current) => (current === 'ready' ? current : 'error'));
+        }
       }
       return false;
     }
+  }
+
+  function retrySessions() {
+    if (!identity) return;
+    setSessionsStatus((current) => (current === 'ready' ? current : 'loading'));
+    void loadSessions(identity.username);
   }
 
   // Sessions from the list that this tab doesn't have yet are added. Ones it has keep this tab's copy, which is at least
@@ -349,17 +374,20 @@ export default function App() {
     void refreshSessions();
   }
 
-  // Clears this tab's sessions on sign-out. They stay in Panta, and a running one resumes after the next sign-in.
+  // Clears this tab's sessions on sign-out. They stay in Panta, and a running one resumes after the next sign-in. Goal
+  // edits were sent before signing out (see flushGoalSaves); one still unsaved now can't be, without a sign-in.
   function resetSessionState() {
     sessionListRequest.current += 1;
-    goalSaveTimers.current.forEach((timer) => window.clearTimeout(timer));
-    goalSaveTimers.current.clear();
+    goalSaves.current.forEach(({ timer }) => window.clearTimeout(timer));
+    goalSaves.current.clear();
+    setFailedGoalSaves([]);
     setActiveSession(null);
     setCompletedSession(null);
     setRealSessions([]);
     setIsEndingSession(false);
     setSessionEndingAt(null);
     setSessionsError('');
+    setSessionsStatus('loading');
   }
 
   useEffect(() => {
@@ -521,7 +549,8 @@ export default function App() {
     }
   }
 
-  // Discarding deletes the running session from Panta. A 404 means it already ended in another tab or browser.
+  // Discarding deletes the session only while it's still running. A 404 means it already ended in another tab or browser;
+  // if it was finished there, it stays finished and appears in the list.
   async function cancelSession() {
     if (!activeSession || endingSession.current || cancellingSession.current) return;
     const sessionId = activeSession.id;
@@ -529,7 +558,7 @@ export default function App() {
     setSessionActionError('');
     let endedElsewhere = false;
     try {
-      await sessionsApi.deleteSession(sessionId);
+      await sessionsApi.cancelSession(sessionId);
     } catch (error) {
       if (error.status !== 404) {
         cancellingSession.current = false;
@@ -641,19 +670,52 @@ export default function App() {
   // The goal changes on the page at once and is saved to Panta when it has stood for a moment, one request per session.
   // A save still waiting when the session finishes lands on the finished session, which accepts goal edits too.
   function scheduleGoalSave(sessionId, goal) {
-    const timers = goalSaveTimers.current;
-    window.clearTimeout(timers.get(sessionId));
-    timers.set(sessionId, window.setTimeout(() => {
-      timers.delete(sessionId);
-      sessionsApi.updateSessionGoal(sessionId, goal).catch((error) => {
-        if (error.status === 401) void loadWorkspace();
-      });
-    }, GOAL_SAVE_DELAY_MS));
+    const pending = goalSaves.current.get(sessionId);
+    if (pending) window.clearTimeout(pending.timer);
+    goalSaves.current.set(sessionId, { goal, timer: window.setTimeout(() => { void saveGoal(sessionId); }, GOAL_SAVE_DELAY_MS) });
+    setGoalSaveFailed(sessionId, false);
+  }
+
+  // Sends the session's waiting goal edit. One that fails stays waiting, with a line to try again; it's also sent again on
+  // the next page change, before signing out from the sidebar, and when the page goes away.
+  async function saveGoal(sessionId, { keepalive = false } = {}) {
+    const pending = goalSaves.current.get(sessionId);
+    if (!pending) return;
+    window.clearTimeout(pending.timer);
+    let settled = false;
+    try {
+      await sessionsApi.updateSessionGoal(sessionId, pending.goal, { keepalive });
+      settled = true;
+    } catch (error) {
+      if (error.status === 401) {
+        void loadWorkspace();
+        return;
+      }
+      // A 404 means the session is gone, so there's nothing left to save.
+      settled = error.status === 404;
+    }
+    // An edit made while this one was being sent is newer, and it's saved on its own.
+    if (goalSaves.current.get(sessionId) !== pending) return;
+    if (settled) goalSaves.current.delete(sessionId);
+    setGoalSaveFailed(sessionId, !settled);
+  }
+
+  // Resolves once every waiting goal edit has been sent, whether or not it was saved.
+  function flushGoalSaves(options) {
+    return Promise.all([...goalSaves.current.keys()].map((sessionId) => saveGoal(sessionId, options)));
+  }
+
+  function setGoalSaveFailed(sessionId, failed) {
+    setFailedGoalSaves((current) => {
+      if (current.includes(sessionId) === failed) return current;
+      return failed ? [...current, sessionId] : current.filter((id) => id !== sessionId);
+    });
   }
 
   function cancelGoalSave(sessionId) {
-    window.clearTimeout(goalSaveTimers.current.get(sessionId));
-    goalSaveTimers.current.delete(sessionId);
+    window.clearTimeout(goalSaves.current.get(sessionId)?.timer);
+    goalSaves.current.delete(sessionId);
+    setGoalSaveFailed(sessionId, false);
   }
 
   function updateSessionGoal(sessionId, goal) {
@@ -733,6 +795,24 @@ export default function App() {
     onRetryRepositories: () => identity && loadRepositories(),
   };
 
+  // One line for pages that list sessions, while the first list loads or when it couldn't be loaded. Until then a missing
+  // session or repository isn't "not found".
+  const sessionsNotice = sessionsStatus === 'loading'
+    ? <p className="dashboard-empty-note" role="status"><span className="dashboard-spinner" />Loading sessions…</p>
+    : sessionsStatus === 'error'
+      ? <div className="dashboard-error" role="alert"><span>{sessionsError}</span><button type="button" onClick={retrySessions}>Try again</button></div>
+      : null;
+  const goalSaveError = 'Couldn’t save the goal.';
+  // The running session shows a failed finish or cancel, or else a goal edit that couldn't be saved.
+  const activeSessionError = sessionActionError
+    ? { message: sessionActionError }
+    : activeSession && failedGoalSaves.includes(activeSession.id)
+      ? { message: goalSaveError, onRetry: () => { void saveGoal(activeSession.id); } }
+      : null;
+  const detailSession = view === 'Session Detail'
+    ? (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId))
+    : null;
+
   // The example-session preview is public, so visitors can see a recap before signing in.
   if (view === 'Preview') return <PreviewPage onNavigate={navigate} signedIn={identityStatus === 'authenticated'} />;
 
@@ -757,6 +837,7 @@ export default function App() {
         onNavigate={navigate}
         activeSession={displayedActiveSession}
         now={now}
+        onBeforeLogout={flushGoalSaves}
         onLogout={handleLogout}
         mutuals={mutuals}
         mutualsLoading={mutualsLoading}
@@ -784,20 +865,21 @@ export default function App() {
         {view === 'Session Workspace' && (
           <SessionWorkspacePage
             repositories={repositories}
-            loading={repositoriesLoading}
+            // Setup waits for the sessions too, so a running session is resumed before another can be started.
+            loading={repositoriesLoading || sessionsStatus === 'loading'}
             error={repositoriesError}
             onRetry={() => identity && loadRepositories()}
             onStart={startSession}
             starting={isStartingSession}
             startError={startError}
             sessionsError={sessionsError}
-            onRetrySessions={() => identity && loadSessions(identity.username)}
+            onRetrySessions={retrySessions}
             activeSession={displayedActiveSession}
             completedSession={completedSession}
             now={now}
             isEndingSession={isEndingSession}
             sessionEndingAt={sessionEndingAt}
-            sessionActionError={sessionActionError}
+            activeSessionError={activeSessionError}
             onFinish={finishSession}
             onCancel={cancelSession}
             onUpdateGoal={updateActiveGoal}
@@ -812,36 +894,38 @@ export default function App() {
         )}
         {view === 'Session History' && (
           identityStatus === 'authenticated'
-            ? <SessionHistoryPage sessions={sessionItems} onSelectSession={(sessionId) => openSession(sessionId, { fromHistory: true })} />
+            ? <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { fromHistory: true })} />
             : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
         )}
         {view === 'Projects' && (
           identityStatus === 'authenticated'
-            ? <ProjectsPage projects={projects} exampleProjects={exampleProjects} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
+            ? <ProjectsPage projects={projects} exampleProjects={exampleProjects} notice={sessionsNotice} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
             : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
         )}
         {view === 'Project Detail' && (
           routeProject
             ? <ProjectDetailPage key={routeProject.key} project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
-            : <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Repositories</button></section>
+            : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Repositories</button></section>
         )}
         {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} onNavigate={navigate} />}
         {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} onDeleteHistory={deleteSessionHistory} />}
         {view === 'Session Detail' && (
-          (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId))
+          detailSession
             ? <SessionDetailPage
                 key={route.sessionId}
-                session={completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId)}
+                session={detailSession}
                 onRetryActivity={retrySessionActivity}
                 onDelete={deleteSession}
                 onUpdateGoal={updateSessionGoal}
+                goalError={failedGoalSaves.includes(detailSession.id) ? goalSaveError : ''}
+                onRetryGoal={() => { void saveGoal(detailSession.id); }}
                 onBack={() => {
                   setCompletedSession(null);
                   if (window.history.state?.returnToHistory) window.history.back();
                   else navigate(routePaths['Session History']);
                 }}
               />
-            : <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths['Session History'])}>Back to Session History</button></section>
+            : sessionsNotice || <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths['Session History'])}>Back to Session History</button></section>
         )}
         {view === 'Not Found' && <NotFoundPage onGoHome={() => navigate(routePaths.Overview)} />}
         </main>

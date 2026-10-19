@@ -12,7 +12,8 @@ function sessionPath(id, suffix = '') {
 }
 
 // The server requires a JSON content type on requests with a body, and reads no body on the others.
-async function request(method, path, body) {
+// `keepalive` lets a request finish after the page that sent it is gone.
+async function request(method, path, body, { keepalive = false } = {}) {
   const headers = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
 
@@ -24,6 +25,7 @@ async function request(method, path, body) {
       cache: 'no-store',
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
+      keepalive,
     });
   } catch {
     throw requestError('Could not reach Panta. Check your connection and try again.', 0);
@@ -55,14 +57,21 @@ export async function createSession({ id, repository, goal }) {
   return session;
 }
 
-export async function updateSessionGoal(id, goal) {
-  const { session } = await request('PATCH', sessionPath(id), { goal });
+// Pass { keepalive: true } when the page is going away.
+export async function updateSessionGoal(id, goal, { keepalive = false } = {}) {
+  const { session } = await request('PATCH', sessionPath(id), { goal }, { keepalive });
   return session;
 }
 
-// Deletes a completed session, or cancels the running one.
+// Deletes a session, as Session Detail does. The running session is discarded with cancelSession.
 export async function deleteSession(id) {
   await request('DELETE', sessionPath(id));
+}
+
+// Discards the running session. A 404 means it isn't running any more (finished or cancelled elsewhere), and a
+// finished session is never deleted this way.
+export async function cancelSession(id) {
+  await request('POST', sessionPath(id, '/cancel'));
 }
 
 export async function finishSession(id) {

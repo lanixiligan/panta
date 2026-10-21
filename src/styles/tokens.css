@@ -1,5 +1,6 @@
-/* Panta's palette. Every colour in the app comes from here; components never use raw hex values,
-   except translucent glows and shadows built from these colours. */
+/* Panta's design tokens. Every colour, font, size, space, radius, shadow, and duration in the app comes from here;
+   components never use raw values for these, except one-off display sizes and chart geometry.
+*/
 :root {
   /* Surfaces, darkest to lightest */
   --workspace-bg: #07110C;
@@ -19,28 +20,110 @@
   --workspace-muted: #7D9888;
   --workspace-faint: #4D6155;
 
-  /* Green accents. The neon accent is for small marks only (live dot, ticks, active markers);
+  /* Green accents. The accent is for small marks only (live dot, ticks, active markers);
      links, hover text, and large highlighted areas use the softer green. */
   --workspace-accent: #39FF88;
   --workspace-accent-soft: #5FD394;
   --workspace-focus: #39FF8899;
+
+  /* Translucent accent effects: glows, rings, tints, and the sign-in backdrop */
+  --workspace-accent-glow: #39FF8866;
+  --workspace-accent-ring: #39FF881F;
+  --workspace-accent-tint: #39FF880D;
+  --workspace-accent-line: #39FF88B3;
+  --workspace-focus-halo: #39FF8840;
+  --workspace-glow-strong: #39FF8817;
+  --workspace-glow-faint: #39FF8808;
+  --workspace-ghost: #39FF8806;
+  --workspace-dots: #21402D33;
+  --workspace-underline: #3D7A5266;
+  --workspace-hover-overlay: #FFFFFF08;
+  --workspace-shadow: #00000066;
 
   /* Primary buttons */
   --workspace-action: #2A9D5C;
   --workspace-action-hover: #31AD67;
   --workspace-action-border: #33B26A;
   --workspace-action-text: #04230F;
+  --workspace-action-shade: #04230F1A;
+  --workspace-action-shade-strong: #04230F29;
 
-  /* Data: calendar and chart shades (low to high), and line changes */
+  /* Data: calendar and chart shades (low to high), the text on them, and line changes */
   --workspace-level-1: #1D4A30;
   --workspace-level-2: #23703F;
   --workspace-level-3: #2E9455;
   --workspace-level-4: #45C47A;
+  --workspace-on-level: #9FBDAA;
+  --workspace-on-level-strong: #04230F;
   --workspace-additions: #82C895;
   --workspace-deletions: #C58D81;
+
+  /* File types on Session detail, largest share first */
+  --workspace-type-0: #39FF88;
+  --workspace-type-1: #1F8F55;
+  --workspace-type-2: #A8F0C4;
+  --workspace-type-3: #2F5C43;
+  --workspace-type-4: #6FC493;
+  --workspace-type-5: #5F796A;
 
   /* Errors and destructive actions */
   --workspace-danger: #E0A397;
   --workspace-danger-bg: #1C1412;
   --workspace-danger-border: #563C38;
+
+  /* Fonts: DM Sans for text, DM Mono for labels, figures, and code */
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
+  --text-display: clamp(26px, calc(2.8vw / var(--ui-zoom)), 34px);
+
+  /* Spacing: 2px steps up to 16, then 4px and 8px steps */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+
+  /* Radii: tiny marks, badges, controls, small surfaces, cards */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-pill: 999px;
+
+  /* Control heights: compact, default, and touch or primary */
+  --control-sm: 32px;
+  --control-md: 38px;
+  --control-lg: 44px;
+
+  /* Shadows */
+  --shadow-menu: 0 9px 24px var(--workspace-shadow);
+  --shadow-popover: 0 18px 40px var(--workspace-shadow);
+  --shadow-tooltip: 0 6px 20px var(--workspace-shadow);
+  --shadow-focus: 0 0 0 3px var(--workspace-focus-halo);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 150ms;
 }

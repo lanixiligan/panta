@@ -1,32 +1,32 @@
 .auth-control { position: relative; display: flex; align-items: center; min-height: 38px; }
-.auth-checking { color: var(--workspace-muted); font-size: 13px; white-space: nowrap; }
-.github-sign-in { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 1px solid var(--workspace-border-strong); border-radius: 8px; background: var(--workspace-surface); color: var(--workspace-text); text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.auth-checking { color: var(--workspace-muted); font-size: var(--text-sm); white-space: nowrap; }
+.github-sign-in { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 36px; padding: 0 var(--space-3); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-lg); background: var(--workspace-surface); color: var(--workspace-text); text-decoration: none; font-size: var(--text-sm); font-weight: 600; white-space: nowrap; }
 .github-sign-in:hover { border-color: var(--workspace-border-hover); background: var(--workspace-raised); }
 .github-mark { width: 16px; height: 16px; }
 .github-sign-in.is-loading { cursor: progress; }
 .github-spinner { box-sizing: border-box; width: 16px; height: 16px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: github-spin .7s linear infinite; }
 @keyframes github-spin { to { transform: rotate(360deg); } }
-.auth-user { display: flex; align-items: center; gap: 8px; }
+.auth-user { display: flex; align-items: center; gap: var(--space-2); }
 .auth-avatar { width: 27px; height: 27px; border: 1px solid var(--workspace-border); border-radius: 50%; }
-.auth-username { max-width: 120px; overflow: hidden; color: var(--workspace-text); font-size: 13px; font-weight: 600; text-overflow: ellipsis; }
-.logout-button { padding: 6px 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--workspace-secondary); font-size: 12px; cursor: pointer; }
+.auth-username { max-width: 120px; overflow: hidden; color: var(--workspace-text); font-size: var(--text-sm); font-weight: 600; text-overflow: ellipsis; }
+.logout-button { padding: var(--space-1-5) var(--space-2); border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--workspace-secondary); font-size: var(--text-xs); cursor: pointer; }
 .logout-button:hover:not(:disabled) { border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-text); }
 .logout-button:disabled { cursor: wait; }
-.auth-message { position: absolute; z-index: 2; top: calc(100% + 7px); right: 0; width: max-content; max-width: min(320px, calc(80vw / var(--ui-zoom))); margin: 0; padding: 9px 11px; border: 1px solid var(--workspace-danger-border); border-radius: 8px; background: var(--workspace-danger-bg); color: var(--workspace-danger); box-shadow: 0 8px 24px #0005; font-size: 12px; line-height: 1.5; }
+.auth-message { position: absolute; z-index: 2; top: calc(100% + 7px); right: 0; width: max-content; max-width: min(320px, calc(80vw / var(--ui-zoom))); margin: 0; padding: var(--space-2) var(--space-3); border: 1px solid var(--workspace-danger-border); border-radius: var(--radius-lg); background: var(--workspace-danger-bg); color: var(--workspace-danger); box-shadow: var(--shadow-menu); font-size: var(--text-xs); line-height: 1.5; }
 @media (max-width: 620px) {
   .auth-control { min-height: 34px; }
-  .github-sign-in { min-height: 34px; padding: 0 9px; font-size: 12px; }
-  .auth-user { gap: 5px; }
+  .github-sign-in { min-height: 34px; padding: 0 var(--space-2); font-size: var(--text-xs); }
+  .auth-user { gap: var(--space-1); }
   .auth-username { display: none; }
 }
 @media (max-width: 520px) {
-  .app-shell-dark .auth-user { gap: 6px; }
-  .app-shell-dark .auth-username { display: inline; max-width: 84px; font-size: 12px; }
+  .app-shell-dark .auth-user { gap: var(--space-1-5); }
+  .app-shell-dark .auth-username { display: inline; max-width: 84px; font-size: var(--text-xs); }
   .app-shell-dark .auth-avatar { width: 24px; height: 24px; }
-  .app-shell-dark .logout-button { padding: 5px; font-size: 11px; }
-  .app-shell-dark .github-sign-in { min-height: 32px; padding: 0 8px; font-size: 11px; }
+  .app-shell-dark .logout-button { padding: var(--space-1); font-size: var(--text-2xs); }
+  .app-shell-dark .github-sign-in { min-height: 32px; padding: 0 var(--space-2); font-size: var(--text-2xs); }
   .app-shell-dark .github-mark, .app-shell-dark .github-spinner { width: 14px; height: 14px; }
 }
 @media (max-width: 390px) {
-  .auth-control { margin-top: 2px; }
+  .auth-control { margin-top: var(--space-0-5); }
 }

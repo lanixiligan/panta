@@ -204,7 +204,8 @@ export function createGitHubAuthMiddleware(env = process.env) {
 
 export function githubAuthApi(env = process.env) {
   // Built per server, not at config load, so `vite build` never opens a database connection.
-  const mount = (server) => server.middlewares.use(createGitHubAuthMiddleware(env));
+  // No return value: Vite would call a returned function as a post-hook.
+  const mount = (server) => { server.middlewares.use(createGitHubAuthMiddleware(env)); };
   return {
     name: 'panta-github-auth-api',
     configureServer: mount,

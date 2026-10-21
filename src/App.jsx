@@ -26,7 +26,7 @@ import { getSessionListItems, getWeeklySummary } from './sessions/sessionHelpers
 import { dummyRepositories, getDummySessionById, getDummySessions } from './dummy-data/index.js';
 import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
 import { getGitHubMutuals, sendPresenceHeartbeat } from './api/presence.js';
-import { applyTheme, readThemeChoice, resolveTheme, systemPrefersLight, watchSystemTheme } from './theme.js';
+import { applyTheme, readThemeChoice, resolveTheme, saveThemeChoice, systemPrefersLight, watchSystemTheme } from './theme.js';
 
 // Completed sessions this browser saved before sessions were stored in Panta. They are read only to import them once.
 function legacySessionsKey(username) {
@@ -146,7 +146,7 @@ export default function App() {
   // Goal edits not yet saved, by session ID: { goal, timer }.
   const goalSaves = useRef(new Map());
   const [showExamples, setShowExamples] = useState(readShowExamples);
-  const [themeChoice] = useState(readThemeChoice);
+  const [themeChoice, setThemeChoice] = useState(readThemeChoice);
   const [prefersLight, setPrefersLight] = useState(systemPrefersLight);
   // The theme follows the viewer's choice, or the system's setting, live, while the choice is "system".
   useEffect(() => watchSystemTheme(setPrefersLight), []);
@@ -573,6 +573,11 @@ export default function App() {
     }
   }
 
+  function changeTheme(choice) {
+    setThemeChoice(choice);
+    saveThemeChoice(choice);
+  }
+
   // Discarding deletes the session only while it's still running. A 404 means it already ended in another tab or browser;
   // if it was finished there, it stays finished and appears in the list.
   async function cancelSession() {
@@ -887,6 +892,8 @@ export default function App() {
         mutualsError={mutualsError}
         showExamples={showExamples}
         onToggleExamples={toggleExamples}
+        theme={themeChoice}
+        onChangeTheme={changeTheme}
       />
       <div className={`workspace-main${['Overview', 'Settings', 'Session Detail'].includes(view) ? ' workspace-main-fit' : ''}`}>
         <main className="app-main" id="main-content" tabIndex={-1}>

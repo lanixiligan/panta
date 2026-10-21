@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, UserRound } from 'lucide-react';
 import AuthControl from '../auth/AuthControl.jsx';
 import { PantaLockup } from '../brand/PantaLogo.jsx';
+import ThemeToggle from '../theme/ThemeToggle.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { followRouteLink, routePaths } from '../../routing.js';
 import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
@@ -172,7 +173,7 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onBeforeLogout,
   );
 }
 
-export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError, showExamples, onToggleExamples }) {
+export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError, showExamples, onToggleExamples, theme, onChangeTheme }) {
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
@@ -183,12 +184,15 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
       <div className="sidebar-workspace">
         <SessionWorkspaceLink session={activeSession} now={now} pathname={pathname} onNavigate={onNavigate} />
       </div>
-      {onToggleExamples && (
-        <label className="sidebar-examples-toggle">
-          <input type="checkbox" checked={showExamples} onChange={(event) => onToggleExamples(event.target.checked)} />
-          Show example data
-        </label>
-      )}
+      <div className="sidebar-preferences">
+        {onToggleExamples && (
+          <label className="sidebar-examples-toggle">
+            <input type="checkbox" checked={showExamples} onChange={(event) => onToggleExamples(event.target.checked)} />
+            Show example data
+          </label>
+        )}
+        <ThemeToggle value={theme} onChange={onChangeTheme} />
+      </div>
       <div className="sidebar-bottom">
         {identityStatus === 'authenticated' && identity ? (
           <UserProfileMenu identity={identity} view={view} pathname={pathname} onNavigate={onNavigate} onBeforeLogout={onBeforeLogout} onLogout={onLogout} />

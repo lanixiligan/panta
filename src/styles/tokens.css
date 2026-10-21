@@ -10,6 +10,7 @@
   --workspace-sidebar: #0B1510;
   --workspace-surface: #101F16;
   --workspace-raised: #15291D;
+  --workspace-pressed: #1A3324;
 
   /* Lines */
   --workspace-divider: #183022;
@@ -144,6 +145,7 @@
   --workspace-sidebar: #EBF1EC;
   --workspace-surface: #FFFFFF;
   --workspace-raised: #E7EFE9;
+  --workspace-pressed: #DFE9E2;
 
   --workspace-divider: #E2EAE4;
   --workspace-border: #D2DFD6;

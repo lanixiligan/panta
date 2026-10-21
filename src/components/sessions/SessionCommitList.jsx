@@ -14,11 +14,11 @@ function formatTimestamp(value, mode, now) {
   return new Intl.DateTimeFormat(undefined, options).format(date);
 }
 
+// Commits arrive newest first in GitHub's history order, and commits made in the same second (a rebase, say) keep that
+// order through the stable sort, so oldest first is the reverse rather than a second sort, which would leave ties backwards.
 export function orderCommits(commits = [], direction = 'newest') {
-  return [...commits].sort((left, right) => {
-    const difference = Date.parse(left.timestamp || 0) - Date.parse(right.timestamp || 0);
-    return direction === 'oldest' ? difference : -difference;
-  });
+  const newest = [...commits].sort((left, right) => Date.parse(right.timestamp || 0) - Date.parse(left.timestamp || 0));
+  return direction === 'oldest' ? newest.reverse() : newest;
 }
 
 // `linkRows` makes each whole row the link to the commit on GitHub (the active session); otherwise only the message links.

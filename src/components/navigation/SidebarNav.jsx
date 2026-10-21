@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, UserRound } from 'lucide-react';
 import AuthControl from '../auth/AuthControl.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { followRouteLink, routePaths } from '../../routing.js';
@@ -6,25 +7,19 @@ import RepositoryName, { repositoryFullName } from '../repository/RepositoryName
 import { formatElapsed, getActiveElapsedMs } from '../../sessions/sessionHelpers.js';
 
 const items = [
-  { label: 'Overview', view: 'Overview', path: routePaths.Overview, icon: '▣' },
-  { label: 'Session History', view: 'Session History', path: routePaths['Session History'], icon: '◷' },
-  {
-    label: 'Repositories',
-    view: 'Projects',
-    path: routePaths.Projects,
-    // The same repository icon RepositoryName draws next to every repository name.
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 4.5h11a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z" /><path d="M5 17a3 3 0 0 1 3-3h11" /></svg>,
-  },
-  { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, icon: '▥' },
+  { label: 'Overview', view: 'Overview', path: routePaths.Overview, Icon: LayoutDashboard },
+  { label: 'Session History', view: 'Session History', path: routePaths['Session History'], Icon: History },
+  { label: 'Repositories', view: 'Projects', path: routePaths.Projects, Icon: FolderGit2 },
+  { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, Icon: ChartNoAxesCombined },
 ];
 
 function NavLinks({ pathname, onNavigate }) {
   return (
     <nav className="sidebar-nav" aria-label="Main navigation">
-      {items.map(({ label, view, path, icon }) => {
+      {items.map(({ label, view, path, Icon }) => {
         const active = pathname === path || ((view === 'Session History' || view === 'Projects') && pathname.startsWith(`${path}/`));
         return <a key={view} href={path} className={`sidebar-nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
-          <span className="sidebar-nav-icon" aria-hidden="true">{icon}</span><span>{label}</span>
+          <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.6} /></span><span>{label}</span>
         </a>;
       })}
     </nav>
@@ -70,7 +65,7 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
   return (
     <section className="sidebar-socials" aria-label="Socials">
       <button className="sidebar-socials-heading" type="button" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>
-        <span>Socials</span><span className="sidebar-socials-chevron" aria-hidden="true">{expanded ? '−' : '+'}</span>
+        <span className="sidebar-socials-label"><UserRound size={18} strokeWidth={1.6} aria-hidden="true" />Socials</span><span className="sidebar-socials-chevron" aria-hidden="true">{expanded ? '−' : '+'}</span>
       </button>
       {expanded && (
         <div className="sidebar-socials-content">
@@ -180,7 +175,7 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
-        <span><img className="brand-wordmark" src="/logos/panta-logo-kit/panta-wordmark.svg" alt="" /><small>Your work, over time.</small></span>
+        <img className="brand-lockup" src="/logos/panta-logo-kit/panta-nav-lockup.svg" alt="" />
       </a>
       <NavLinks pathname={pathname} onNavigate={onNavigate} />
       <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />

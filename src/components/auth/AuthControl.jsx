@@ -19,8 +19,9 @@ function GitHubMark() {
   );
 }
 
-export default function AuthControl({ loginLabel = 'Sign in with GitHub' }) {
-  const [status, setStatus] = useState('loading');
+// `signedOut` is for a page that has already checked the sign-in, so the button shows at once without a second check.
+export default function AuthControl({ loginLabel = 'Sign in with GitHub', signedOut = false }) {
+  const [status, setStatus] = useState(signedOut ? 'unauthenticated' : 'loading');
   const [user, setUser] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -39,22 +40,24 @@ export default function AuthControl({ loginLabel = 'Sign in with GitHub' }) {
       window.history.replaceState({}, '', nextUrl);
     }
 
-    fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' })
-      .then((response) => {
-        if (response.status === 401) return null;
-        if (!response.ok) throw new Error('Unable to check sign-in status.');
-        return response.json();
-      })
-      .then((result) => {
-        if (cancelled) return;
-        setUser(result?.authenticated ? result.user : null);
-        setStatus(result?.authenticated ? 'authenticated' : 'unauthenticated');
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setStatus('unauthenticated');
-        setMessage((current) => current || 'Sign-in status is unavailable. Start the app server and try again.');
-      });
+    if (!signedOut) {
+      fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' })
+        .then((response) => {
+          if (response.status === 401) return null;
+          if (!response.ok) throw new Error('Unable to check sign-in status.');
+          return response.json();
+        })
+        .then((result) => {
+          if (cancelled) return;
+          setUser(result?.authenticated ? result.user : null);
+          setStatus(result?.authenticated ? 'authenticated' : 'unauthenticated');
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setStatus('unauthenticated');
+          setMessage((current) => current || 'Sign-in status is unavailable. Start the app server and try again.');
+        });
+    }
 
     // Coming back with Back from GitHub restores this page as it was, still loading.
     const resetRedirecting = (event) => { if (event.persisted) setRedirecting(false); };

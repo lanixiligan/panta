@@ -1,13 +1,10 @@
 import React from 'react';
 import AuthControl from '../../components/auth/AuthControl.jsx';
-import useSlowWait from '../../components/auth/useSlowWait.js';
 
 // Commits land at uneven moments, so the dots on the brand line are spaced unevenly too.
 const FLOW_DOTS = [6, 22, 30, 52, 66, 78, 94];
 
 export default function AuthenticationPage({ checking, identityError, onRetryIdentity }) {
-  const slow = useSlowWait(checking);
-
   return (
     <main className="auth-screen">
       <div className="auth-background-canvas" aria-hidden="true" />
@@ -31,8 +28,8 @@ export default function AuthenticationPage({ checking, identityError, onRetryIde
         )}
         <div className="auth-actions">
           {checking
-            ? <p className="auth-screen-checking" role="status"><span className="dashboard-spinner" aria-hidden="true" />{slow ? 'Waking the server… this can take up to a minute' : 'Checking your GitHub session…'}</p>
-            : <AuthControl loginLabel="Continue with GitHub" />}
+            ? <p className="auth-screen-checking" role="status"><span className="dashboard-spinner" aria-hidden="true" />Waking the server… this can take up to a minute</p>
+            : <AuthControl loginLabel="Continue with GitHub" signedOut />}
         </div>
       </section>
     </main>

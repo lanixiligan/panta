@@ -21,6 +21,7 @@ import AuthenticationPage from './pages/Authentication/AuthenticationPage.jsx';
 import PreviewPage from './pages/Preview/PreviewPage.jsx';
 import SidebarNav from './components/navigation/SidebarNav.jsx';
 import Footer from './components/layout/Footer.jsx';
+import useSlowWait from './components/auth/useSlowWait.js';
 import { getSessionListItems, getWeeklySummary } from './sessions/sessionHelpers.js';
 import { dummyRepositories, getDummySessionById, getDummySessions } from './dummy-data/index.js';
 import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
@@ -91,6 +92,7 @@ const SHOW_EXAMPLES_KEY = 'panta.showExamples';
 const NO_EXAMPLES = [];
 // A goal edit is saved once it has stood this long, so quick successive edits send one request.
 const GOAL_SAVE_DELAY_MS = 600;
+const IDENTITY_CHECK_GRACE_MS = 800;
 
 // Examples are hidden until the viewer turns them on; storage can be unavailable, so it only ever falls back to hidden.
 function readShowExamples() {
@@ -842,9 +844,14 @@ export default function App() {
     ? (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId))
     : null;
   const detailReturnTo = detailSession ? window.history.state?.returnTo : null;
+  // An awake server answers the sign-in check almost at once (as on the way back from GitHub), so the page stays blank
+  // that long instead of flashing the sign-in screen; only a slower check, a waking server, shows it.
+  const identityCheckSlow = useSlowWait(identityStatus === 'loading', IDENTITY_CHECK_GRACE_MS);
 
   // The example-session preview is public, so visitors can see a recap before signing in.
   if (view === 'Preview') return <PreviewPage onNavigate={navigate} signedIn={identityStatus === 'authenticated'} />;
+
+  if (identityStatus === 'loading' && !identityCheckSlow) return null;
 
   if (identityStatus !== 'authenticated') {
     return (

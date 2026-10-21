@@ -1,0 +1,7 @@
+/* Panta logo: the waves keep the brand greens in both themes; the dot and lettering use the theme's ink. */
+.panta-logo-wave { fill: none; stroke-linecap: round; }
+.panta-logo-wave-1 { stroke: var(--brand-green); stroke-width: 9; }
+.panta-logo-wave-2 { stroke: var(--brand-green-mid); stroke-width: 7; opacity: .75; }
+.panta-logo-wave-3 { stroke: var(--brand-green-deep); stroke-width: 5; opacity: .55; }
+.panta-logo-ink { fill: var(--workspace-text); }
+.panta-logo-tagline { fill: var(--workspace-muted); }

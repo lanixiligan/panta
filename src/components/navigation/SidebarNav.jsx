@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, UserRound } from 'lucide-react';
 import AuthControl from '../auth/AuthControl.jsx';
+import { PantaLockup } from '../brand/PantaLogo.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { followRouteLink, routePaths } from '../../routing.js';
 import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
@@ -175,7 +176,7 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
-        <img className="brand-lockup" src="/logos/panta-logo-kit/panta-nav-lockup.svg" alt="" />
+        <PantaLockup className="brand-lockup" />
       </a>
       <NavLinks pathname={pathname} onNavigate={onNavigate} />
       <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />

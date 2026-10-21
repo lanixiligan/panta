@@ -1,5 +1,6 @@
 import React from 'react';
 import AuthControl from '../../components/auth/AuthControl.jsx';
+import { PantaWordmark } from '../../components/brand/PantaLogo.jsx';
 
 // Commits land at uneven moments, so the dots on the brand line are spaced unevenly too.
 const FLOW_DOTS = [6, 22, 30, 52, 66, 78, 94];
@@ -16,7 +17,7 @@ export default function AuthenticationPage({ checking, identityError, onRetryIde
       </header>
 
       <section className="auth-hero" aria-labelledby="auth-heading">
-        <h1 id="auth-heading"><img src="/logos/panta-logo-kit/panta-wordmark.svg" alt="Panta" /></h1>
+        <h1 id="auth-heading"><PantaWordmark className="auth-wordmark" /></h1>
         <p className="auth-tagline">Your work, over time</p>
         <p className="auth-subline">Pick a repository, set a goal, and get a recap of every commit from the session.</p>
 

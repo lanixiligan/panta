@@ -4,6 +4,7 @@
 @import './styles/shared.css';
 
 /* Shared components */
+@import './components/brand/PantaLogo.css';
 @import './components/navigation/SidebarNav.css';
 @import './components/navigation/Pager.css';
 @import './components/navigation/BackLink.css';

@@ -74,6 +74,11 @@
   --workspace-danger-bg: #1C1412;
   --workspace-danger-border: #563C38;
 
+  /* Brand: the logo's three greens, the same in both themes */
+  --brand-green: #34C77B;
+  --brand-green-mid: #27A35D;
+  --brand-green-deep: #1B7A47;
+
   /* Fonts: DM Sans for text, DM Mono for labels, figures, and code */
   --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;

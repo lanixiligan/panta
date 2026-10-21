@@ -18,7 +18,7 @@
 @keyframes auth-flow-dot { 0%, 22%, 100% { opacity: .3; } 8% { opacity: 1; } }
 
 .auth-hero h1 { margin: 0; color: var(--workspace-text); font-size: clamp(84px, calc(15vw / var(--ui-zoom)), 176px); font-weight: 600; letter-spacing: -.05em; line-height: .9; }
-.auth-hero h1 img { display: block; width: clamp(260px, calc(46vw / var(--ui-zoom)), 560px); height: auto; }
+.auth-wordmark { display: block; width: clamp(260px, calc(46vw / var(--ui-zoom)), 560px); height: auto; }
 .auth-tagline { margin: var(--space-0-5) 0 0; color: var(--workspace-text); font-size: clamp(19px, calc(2.4vw / var(--ui-zoom)), 28px); font-weight: 500; letter-spacing: -.01em; }
 
 .auth-subline { max-width: 640px; text-wrap: balance; margin: var(--space-3) 0 var(--space-10); color: var(--workspace-secondary); font-size: clamp(14px, calc(1.3vw / var(--ui-zoom)), 16px); line-height: 1.55; }

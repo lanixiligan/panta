@@ -1,7 +1,10 @@
 /* Panta's design tokens. Every colour, font, size, space, radius, shadow, and duration in the app comes from here;
    components never use raw values for these, except one-off display sizes and chart geometry.
-*/
+   Dark is Panta's signature look and the default; [data-theme="light"] overrides the colours only. The theme script in
+   index.html sets data-theme before the first paint. */
 :root {
+  color-scheme: dark;
+
   /* Surfaces, darkest to lightest */
   --workspace-bg: #07110C;
   --workspace-sidebar: #0B1510;
@@ -126,4 +129,68 @@
   /* Motion */
   --duration-fast: 120ms;
   --duration-base: 150ms;
+}
+
+/* Light: the same greens on pale green-tinted paper, with dark green ink. Every text pair meets WCAG AA. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --workspace-bg: #F3F7F4;
+  --workspace-sidebar: #EBF1EC;
+  --workspace-surface: #FFFFFF;
+  --workspace-raised: #E7EFE9;
+
+  --workspace-divider: #E2EAE4;
+  --workspace-border: #D2DFD6;
+  --workspace-border-strong: #B5C8BB;
+  --workspace-border-hover: #8FAB99;
+
+  --workspace-text: #0F2418;
+  --workspace-secondary: #3B5646;
+  --workspace-muted: #566E60;
+  --workspace-faint: #A9BBAF;
+
+  --workspace-accent: #239656;
+  --workspace-accent-soft: #1B7A47;
+  --workspace-focus: #1B7A47;
+
+  --workspace-accent-glow: #2396563D;
+  --workspace-accent-ring: #2396561F;
+  --workspace-accent-tint: #23965612;
+  --workspace-accent-line: #239656;
+  --workspace-focus-halo: #1B7A4733;
+  --workspace-glow-strong: #34C77B24;
+  --workspace-glow-faint: #34C77B0D;
+  --workspace-ghost: #1B7A470A;
+  --workspace-dots: #8FAB9933;
+  --workspace-underline: #1B7A4766;
+  --workspace-hover-overlay: #0F24180A;
+  --workspace-shadow: #0F24181F;
+
+  --workspace-action: #1B7A47;
+  --workspace-action-hover: #176A3E;
+  --workspace-action-border: #1B7A47;
+  --workspace-action-text: #FFFFFF;
+  --workspace-action-shade: #0000001F;
+  --workspace-action-shade-strong: #00000033;
+
+  --workspace-level-1: #D3EDDC;
+  --workspace-level-2: #7FCB9D;
+  --workspace-level-3: #27824D;
+  --workspace-level-4: #155A35;
+  --workspace-on-level: #0F2418;
+  --workspace-on-level-strong: #FFFFFF;
+  --workspace-additions: #1D7A3E;
+  --workspace-deletions: #A64535;
+
+  --workspace-type-0: #1B7A47;
+  --workspace-type-1: #2E8A87;
+  --workspace-type-2: #6E7F1F;
+  --workspace-type-3: #0B3D22;
+  --workspace-type-4: #5F7468;
+  --workspace-type-5: #3E9E66;
+
+  --workspace-danger: #A63B2C;
+  --workspace-danger-bg: #FBEEEB;
+  --workspace-danger-border: #EBC6BE;
 }

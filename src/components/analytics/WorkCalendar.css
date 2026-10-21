@@ -13,7 +13,8 @@
 .analytics-calendar { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-1); }
 .analytics-calendar-weekday { padding-bottom: var(--space-1); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); text-align: center; }
 .analytics-calendar-day { display: flex; min-height: 38px; align-items: flex-start; justify-content: flex-end; padding: var(--space-1) var(--space-2); border: 1px solid transparent; border-radius: var(--radius-md); background: var(--workspace-raised); color: var(--workspace-secondary); font: var(--text-2xs) var(--font-mono); cursor: default; transition: border-color var(--duration-fast) ease; }
-.analytics-calendar-day.level-3, .analytics-calendar-day.level-4 { color: var(--workspace-action-text); }
+.analytics-calendar-day.level-1, .analytics-calendar-day.level-2 { color: var(--workspace-on-level); }
+.analytics-calendar-day.level-3, .analytics-calendar-day.level-4 { color: var(--workspace-on-level-strong); }
 .analytics-calendar-day.is-today { border-color: var(--workspace-accent); }
 .analytics-calendar-day.is-future { background: transparent; border-color: var(--workspace-divider); color: var(--workspace-faint); }
 .analytics-calendar-day.is-hovered:not(.is-future) { border-color: var(--workspace-secondary); }

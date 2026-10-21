@@ -15,26 +15,26 @@
   --workspace-border-hover: #3D7A52;
 
   /* Text, most to least prominent. Faint is decorative only (separators, empty days), never for words. */
-  --workspace-text: #DDEBE2;
+  --workspace-text: #E0EDE4;
   --workspace-secondary: #9FBDAA;
   --workspace-muted: #7D9888;
   --workspace-faint: #4D6155;
 
   /* Green accents. The accent is for small marks only (live dot, ticks, active markers);
      links, hover text, and large highlighted areas use the softer green. */
-  --workspace-accent: #39FF88;
+  --workspace-accent: #34C77B;
   --workspace-accent-soft: #5FD394;
-  --workspace-focus: #39FF8899;
+  --workspace-focus: #34C77B;
 
   /* Translucent accent effects: glows, rings, tints, and the sign-in backdrop */
-  --workspace-accent-glow: #39FF8866;
-  --workspace-accent-ring: #39FF881F;
-  --workspace-accent-tint: #39FF880D;
-  --workspace-accent-line: #39FF88B3;
-  --workspace-focus-halo: #39FF8840;
-  --workspace-glow-strong: #39FF8817;
-  --workspace-glow-faint: #39FF8808;
-  --workspace-ghost: #39FF8806;
+  --workspace-accent-glow: #34C77B66;
+  --workspace-accent-ring: #34C77B1F;
+  --workspace-accent-tint: #34C77B0D;
+  --workspace-accent-line: #34C77BB3;
+  --workspace-focus-halo: #34C77B40;
+  --workspace-glow-strong: #34C77B17;
+  --workspace-glow-faint: #34C77B08;
+  --workspace-ghost: #34C77B07;
   --workspace-dots: #21402D33;
   --workspace-underline: #3D7A5266;
   --workspace-hover-overlay: #FFFFFF08;
@@ -59,7 +59,7 @@
   --workspace-deletions: #C58D81;
 
   /* File types on Session detail, largest share first */
-  --workspace-type-0: #39FF88;
+  --workspace-type-0: #34C77B;
   --workspace-type-1: #1F8F55;
   --workspace-type-2: #A8F0C4;
   --workspace-type-3: #2F5C43;

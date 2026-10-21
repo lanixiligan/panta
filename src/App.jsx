@@ -92,12 +92,12 @@ const NO_EXAMPLES = [];
 // A goal edit is saved once it has stood this long, so quick successive edits send one request.
 const GOAL_SAVE_DELAY_MS = 600;
 
-// Examples are shown until the viewer turns them off; storage can be unavailable, so it only ever falls back to shown.
+// Examples are hidden until the viewer turns them on; storage can be unavailable, so it only ever falls back to hidden.
 function readShowExamples() {
   try {
-    return window.localStorage.getItem(SHOW_EXAMPLES_KEY) !== 'off';
+    return window.localStorage.getItem(SHOW_EXAMPLES_KEY) === 'on';
   } catch {
-    return true;
+    return false;
   }
 }
 

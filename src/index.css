@@ -6,6 +6,7 @@
 /* Shared components */
 @import './components/navigation/SidebarNav.css';
 @import './components/navigation/Pager.css';
+@import './components/navigation/BackLink.css';
 @import './components/layout/Footer.css';
 @import './components/layout/ScrollArea.css';
 @import './components/auth/AuthControl.css';

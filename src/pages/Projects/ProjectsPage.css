@@ -120,7 +120,7 @@ button.project-detail-bar-slot { margin: 0; border: 0; background: none; font: i
   .workspace-main:has(.project-detail-page) { overflow: hidden; }
   .workspace-main:has(.project-detail-page) .app-main { display: flex; min-height: 0; flex: 1 1 auto; padding-bottom: 24px; }
   .project-detail-page { display: grid; width: 100%; min-height: 0; flex: 1 1 auto; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); align-items: stretch; gap: 22px clamp(24px, calc(2.6vw / var(--ui-zoom)), 40px); }
-  .project-detail-page > .back-button, .project-detail-heading { grid-column: 1 / -1; }
+  .project-detail-page > .back-link, .project-detail-heading { grid-column: 1 / -1; }
   .project-detail-summary { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
   .project-detail-summary::-webkit-scrollbar { display: none; }
   .project-detail-chart { min-height: 220px; flex: 1 1 auto; }

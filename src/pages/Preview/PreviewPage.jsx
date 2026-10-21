@@ -22,7 +22,7 @@ export default function PreviewPage({ onNavigate, signedIn }) {
         <SessionDetailPage
           session={session}
           backHref={signedIn ? routePaths.Overview : '/'}
-          backLabel={signedIn ? '← Overview' : '← Sign in'}
+          backLabel={signedIn ? 'Overview' : 'Sign in'}
           onBack={() => onNavigate('/')}
           onRetryActivity={() => {}}
         />

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { getSessionDurationMinutes } from '../../sessions/sessionHelpers.js';
 import { orderCommits } from '../../components/sessions/SessionCommitList.jsx';
 import EditableGoal from '../../components/sessions/EditableGoal.jsx';
-import { followRouteLink, routePaths } from '../../routing.js';
+import { routePaths } from '../../routing.js';
 import RepositoryName, { repositoryFullName } from '../../components/repository/RepositoryName.jsx';
 import ScrollArea from '../../components/layout/ScrollArea.jsx';
+import BackLink from '../../components/navigation/BackLink.jsx';
 
 const FILE_TYPE_LIMIT = 5;
 
@@ -306,7 +307,7 @@ function FilesSection({ files, selectedFile, onSelectFile }) {
   );
 }
 
-export default function SessionDetailPage({ session, onBack, onRetryActivity, onDelete, onUpdateGoal, goalError = '', onRetryGoal, backHref = routePaths['Session History'], backLabel = '← Session History' }) {
+export default function SessionDetailPage({ session, onBack, onRetryActivity, onDelete, onUpdateGoal, goalError = '', onRetryGoal, backHref = routePaths['Session History'], backLabel = 'Session History' }) {
   // The file filter lives in the URL (?file=), so a reload or a shared link keeps it.
   const [selectedFile, setSelectedFileState] = useState(() => new URLSearchParams(window.location.search).get('file'));
   function setSelectedFile(filename) {
@@ -329,7 +330,7 @@ export default function SessionDetailPage({ session, onBack, onRetryActivity, on
   return (
     <article className="session-detail-page">
       <div className="session-detail-topbar">
-        <a className="back-button" href={backHref} onClick={(event) => followRouteLink(event, () => onBack())}>{backLabel}</a>
+        <BackLink href={backHref} label={backLabel} onNavigate={() => onBack()} />
         {!isPlaceholder && onDelete && <DeleteSession onDelete={() => onDelete(session.id)} />}
       </div>
 
@@ -358,12 +359,6 @@ export default function SessionDetailPage({ session, onBack, onRetryActivity, on
           <CommitTimeline commits={commits} primaryBranch={branches[0]?.name} compareUrl={compareUrl} selectedFile={activeFile} onClearFile={() => setSelectedFile(null)} />
           {files.length > 0 && <FilesSection files={files} selectedFile={activeFile} onSelectFile={setSelectedFile} />}
         </div>
-      )}
-
-      {!isPlaceholder && (
-        <p className="session-history-boundary">
-          Session time is what you declared. GitHub activity is what GitHub recorded in that window across all branches; it is not a measure of coding time.
-        </p>
       )}
     </article>
   );

@@ -113,7 +113,6 @@
 .session-file-types .type-4 { background: #6fc493; }
 .session-file-types .type-5 { background: #5f796a; }
 
-.session-detail-page > .session-history-boundary { margin: 36px 0 0; }
 
 /* On screens big enough, the page fits the window and the commit and file lists scroll inside it. */
 @media (min-width: 1024px) and (min-height: 600px) {
@@ -122,7 +121,6 @@
   .workspace-main-fit .session-detail-section { display: flex; min-height: 0; flex-direction: column; }
   .workspace-main-fit .session-detail-section > :not(.session-detail-scroll) { flex: 0 0 auto; }
   .workspace-main-fit .session-detail-scroll > .scroll-area-content > * { min-height: 0; overflow-y: auto; padding-right: 18px; }
-  .workspace-main-fit .session-detail-page > .session-history-boundary { flex: 0 0 auto; margin-top: 24px; }
 }
 
 @media (max-width: 900px) {

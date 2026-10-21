@@ -10,6 +10,7 @@ import { findProject, getExampleProjects, getProjects } from './pages/Projects/p
 
 import SessionHistoryPage from './pages/SessionHistory/SessionHistoryPage.jsx';
 import SessionDetailPage from './pages/SessionHistory/SessionDetailPage.jsx';
+import BackLink from './components/navigation/BackLink.jsx';
 
 import SettingsPage from './pages/Settings/SettingsPage.jsx';
 
@@ -226,10 +227,11 @@ export default function App() {
     setPathname(window.location.pathname);
   }
 
-  // `fromHistory` marks the entry so Back returns to Session History with its filters and scroll position.
-  function openSession(sessionId, { fromHistory = false } = {}) {
+  // `returnTo` ({ label }) marks the entry with the list it was opened from (Session History or a repository), so Back
+  // names that page and returns to it with its filters and scroll position.
+  function openSession(sessionId, returnTo = null) {
     setCompletedSession(null);
-    navigate(sessionDetailPath(sessionId), fromHistory ? { returnToHistory: true } : {});
+    navigate(sessionDetailPath(sessionId), returnTo ? { returnTo: { ...returnTo, href: `${window.location.pathname}${window.location.search}` } } : {});
   }
 
   async function loadRepositories() {
@@ -839,6 +841,7 @@ export default function App() {
   const detailSession = view === 'Session Detail'
     ? (completedSession?.id === route.sessionId ? completedSession : realSessions.find((session) => session.id === route.sessionId) || getDummySessionById(route.sessionId))
     : null;
+  const detailReturnTo = detailSession ? window.history.state?.returnTo : null;
 
   // The example-session preview is public, so visitors can see a recap before signing in.
   if (view === 'Preview') return <PreviewPage onNavigate={navigate} signedIn={identityStatus === 'authenticated'} />;
@@ -922,7 +925,7 @@ export default function App() {
         )}
         {view === 'Session History' && (
           identityStatus === 'authenticated'
-            ? <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { fromHistory: true })} />
+            ? <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} />
             : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
         )}
         {view === 'Projects' && (
@@ -932,8 +935,8 @@ export default function App() {
         )}
         {view === 'Project Detail' && (
           routeProject
-            ? <ProjectDetailPage key={routeProject.key} project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={openSession} />
-            : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths.Projects)}>Back to Repositories</button></section>
+            ? <ProjectDetailPage key={routeProject.key} project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={(sessionId) => openSession(sessionId, { label: routeProject.name })} />
+            : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><BackLink href={routePaths.Projects} label="Repositories" onNavigate={navigate} /></section>
         )}
         {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} notice={sessionsNotice} onNavigate={navigate} />}
         {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
@@ -947,13 +950,15 @@ export default function App() {
                 onUpdateGoal={updateSessionGoal}
                 goalError={failedGoalSaves.includes(detailSession.id) ? goalSaveError : ''}
                 onRetryGoal={() => { void saveGoal(detailSession.id); }}
+                backHref={detailReturnTo?.href}
+                backLabel={detailReturnTo?.label}
                 onBack={() => {
                   setCompletedSession(null);
-                  if (window.history.state?.returnToHistory) window.history.back();
+                  if (detailReturnTo) window.history.back();
                   else navigate(routePaths['Session History']);
                 }}
               />
-            : sessionsNotice || <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><button className="subtle-action" type="button" onClick={() => navigate(routePaths['Session History'])}>Back to Session History</button></section>
+            : sessionsNotice || <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><BackLink href={routePaths['Session History']} label="Session History" onNavigate={navigate} /></section>
         )}
         {view === 'Not Found' && <NotFoundPage onGoHome={() => navigate(routePaths.Overview)} />}
         </main>

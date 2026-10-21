@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { formatLastWorked, formatProjectDuration, recentDailyMinutes } from './projectHistory.js';
 import { formatCount } from '../../sessions/sessionHelpers.js';
-import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
+import { readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
 import ScrollArea from '../../components/layout/ScrollArea.jsx';
+import BackLink from '../../components/navigation/BackLink.jsx';
 
 const CHART_DAYS = 30;
 
@@ -186,7 +187,7 @@ export default function ProjectDetailPage({ project, onBack, onSelectSession }) 
 
   return (
     <article className="session-detail-page project-detail-page">
-      <a className="back-button" href={routePaths.Projects} onClick={(event) => followRouteLink(event, () => onBack())}>← Repositories</a>
+      <BackLink href={routePaths.Projects} label="Repositories" onNavigate={() => onBack()} />
       <header className="project-detail-heading">
         <div className="project-detail-title">
           <h1><RepositoryName name={project.fullName} /></h1>

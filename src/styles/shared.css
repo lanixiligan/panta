@@ -92,6 +92,6 @@
   .date-range-presets button, .date-range-clear, .month-nav button, .project-segmented button, .project-day-filter,
   .app-render-error button, .account-trigger, .account-menu button, .account-menu a, .sidebar-nav-item, .sidebar-live-session, .back-link,
   .overview-next, .recent-session-row, .history-row, .project-session-row, .repository-select-row, .repository-history-session,
-  a.analytics-project-row, .session-file-list button, .filter-trigger, .history-month-toggle, .editable-goal-button):active:not(:disabled) { background: var(--workspace-pressed); }
+  a.analytics-project-row, .session-file-list button, .filter-trigger, .history-month-toggle, .editable-goal-button, .delete-dialog-close):active:not(:disabled) { background: var(--workspace-pressed); }
 :is(.finish-session-button, .cancel-session-button.danger, .session-detail-delete.danger, .settings-button.is-danger):active:not(:disabled) { border-color: var(--workspace-danger); background: var(--workspace-danger-bg); }
 :is(.auth-screen .github-sign-in, .preview-banner-action):active { transform: translateY(1px); }

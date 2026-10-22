@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Layers, Palette } from 'lucide-react';
+import { History, Layers, Palette } from 'lucide-react';
 import ThemeToggle from '../../components/theme/ThemeToggle.jsx';
+import DeleteDialog from './components/DeleteDialog.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { formatCount } from '../../sessions/sessionHelpers.js';
 
@@ -31,12 +32,8 @@ export default function SettingsPage({ identity, theme = 'system', onChangeTheme
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState('');
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [deletingHistory, setDeletingHistory] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
-  const [confirmingAccount, setConfirmingAccount] = useState(false);
-  const [deletingAccount, setDeletingAccount] = useState(false);
-  const [accountError, setAccountError] = useState('');
+  // Which delete dialog is open: 'history', 'account', or none.
+  const [deleteDialog, setDeleteDialog] = useState(null);
   const username = identity?.username || '';
   const displayName = identity?.displayName?.trim() || username;
   const profileUrl = identity?.profileUrl || `https://github.com/${encodeURIComponent(username)}`;
@@ -56,30 +53,11 @@ export default function SettingsPage({ identity, theme = 'system', onChangeTheme
   }
 
   async function deleteHistory() {
-    setDeletingHistory(true);
-    setDeleteError('');
-    try {
-      await onDeleteHistory();
-    } catch {
-      setDeleteError('Couldn’t delete your history. Try again.');
-    }
-    setDeletingHistory(false);
-    setConfirmingDelete(false);
+    await onDeleteHistory();
+    setDeleteDialog(null);
   }
 
-  // On success the app reloads to the sign-in page, so the pending label simply stays.
-  async function deleteAccount() {
-    setDeletingAccount(true);
-    setAccountError('');
-    try {
-      await onDeleteAccount();
-    } catch {
-      setAccountError('Couldn’t delete your account. Try again.');
-      setDeletingAccount(false);
-      setConfirmingAccount(false);
-    }
-  }
-
+  const sessionCountLabel = sessionsStatus === 'ready' ? formatCount(savedSessionCount, 'saved session') : '';
   const historyDetail = sessionsStatus === 'loading'
     ? 'Loading sessions…'
     : sessionsStatus === 'error'
@@ -142,29 +120,65 @@ export default function SettingsPage({ identity, theme = 'system', onChangeTheme
 
       <SettingsGroup id="data" title="Data" tone="danger">
         <SettingsRow label="Delete session history" detail={historyDetail}>
-          {confirmingDelete ? (
-            <div className="settings-confirm" role="group" aria-label="Confirm deleting session history">
-              <button className="settings-button" type="button" onClick={() => setConfirmingDelete(false)} disabled={deletingHistory}>Keep sessions</button>
-              <button className="settings-button is-danger is-solid" type="button" onClick={deleteHistory} disabled={deletingHistory}>{deletingHistory ? 'Deleting…' : 'Delete'}</button>
-            </div>
-          ) : (
-            <button className="settings-button is-danger" type="button" onClick={() => setConfirmingDelete(true)} disabled={sessionsStatus !== 'ready' || !savedSessionCount}>Delete history</button>
-          )}
+          <button className="settings-button is-danger" type="button" onClick={() => setDeleteDialog('history')} disabled={sessionsStatus !== 'ready' || !savedSessionCount}>Delete history</button>
         </SettingsRow>
-        {deleteError && <p className="settings-error" role="alert">{deleteError}</p>}
         <SettingsRow label="Delete account" detail="Deletes your sessions and disconnects GitHub. This can’t be undone.">
-          {confirmingAccount ? (
-            <div className="settings-confirm" role="group" aria-label="Confirm deleting your account">
-              <button className="settings-button" type="button" onClick={() => setConfirmingAccount(false)} disabled={deletingAccount}>Keep account</button>
-              <button className="settings-button is-danger is-solid" type="button" onClick={deleteAccount} disabled={deletingAccount}>{deletingAccount ? 'Deleting…' : 'Delete account'}</button>
-            </div>
-          ) : (
-            <button className="settings-button is-danger" type="button" onClick={() => setConfirmingAccount(true)}>Delete account</button>
-          )}
+          <button className="settings-button is-danger" type="button" onClick={() => setDeleteDialog('account')}>Delete account</button>
         </SettingsRow>
-        {accountError && <p className="settings-error" role="alert">{accountError}</p>}
         <p className="settings-note">Panta stores commit messages, times, and file and line stats. Never code.</p>
       </SettingsGroup>
+
+      {deleteDialog === 'history' && (
+        <DeleteDialog
+          title="Delete session history"
+          summary={(
+            <>
+              <span className="delete-dialog-summary-icon" aria-hidden="true"><History size={22} strokeWidth={1.6} /></span>
+              <strong>Session history</strong>
+              <span>{sessionCountLabel}</span>
+            </>
+          )}
+          startLabel="I want to delete my session history"
+          effects={[
+            'Permanently deletes every completed session saved in Panta, with its commits and file stats.',
+            hasActiveSession ? 'Keeps your running session.' : null,
+            'Keeps your account and GitHub connection. Nothing changes on GitHub.',
+          ].filter(Boolean)}
+          confirmText="delete session history"
+          confirmLabel="Delete session history"
+          errorMessage="Couldn’t delete your history. Try again."
+          onConfirm={deleteHistory}
+          onClose={() => setDeleteDialog(null)}
+        />
+      )}
+
+      {/* On success the app reloads to the sign-in page, so the dialog stays on its pending label. */}
+      {deleteDialog === 'account' && (
+        <DeleteDialog
+          title="Delete Panta account"
+          summary={(
+            <>
+              {identity?.avatarUrl
+                ? <img src={identity.avatarUrl} alt="" width="48" height="48" />
+                : <span className="delete-dialog-summary-icon" aria-hidden="true">{username.charAt(0).toUpperCase()}</span>}
+              <strong>{displayName}</strong>
+              <span translate="no">@{username}</span>
+              {sessionCountLabel && <span>{sessionCountLabel}</span>}
+            </>
+          )}
+          startLabel="I want to delete my Panta account"
+          effects={[
+            `Permanently deletes every session saved in Panta${hasActiveSession ? ', including the one running now' : ''}, with its commits and file stats.`,
+            'Revokes Panta’s access to your GitHub account and signs you out on every device.',
+            'Doesn’t remove the Panta GitHub App from your repositories or change anything on GitHub. Remove the app with Manage on GitHub.',
+          ]}
+          confirmText={username}
+          confirmLabel="Delete my Panta account"
+          errorMessage="Couldn’t delete your account. Try again."
+          onConfirm={onDeleteAccount}
+          onClose={() => setDeleteDialog(null)}
+        />
+      )}
     </div>
   );
 }

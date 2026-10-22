@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import MonthNav from '../calendar/MonthNav.jsx';
+import { addDays, monthDays, parseDay, sameDay, startOfDay, toDayString } from '../calendar/calendarDates.js';
 
 // Quick picks under the calendar; 'all' (no limit) is what Clear returns to.
 export const RANGE_PRESETS = [
@@ -8,33 +10,6 @@ export const RANGE_PRESETS = [
 ];
 const PRESET_SHORT_LABELS = { today: 'Today', week: 'Week', month: 'Month' };
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
-const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-function startOfDay(value) {
-  const date = new Date(value);
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function addDays(date, days) {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
-  return next;
-}
-
-export function toDayString(date) {
-  const pad = (value) => String(value).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-function parseDay(value) {
-  if (!value || !DAY_PATTERN.test(value)) return null;
-  const [year, month, day] = value.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  return Number.isFinite(date.getTime()) ? date : null;
-}
-
-const sameDay = (left, right) => Boolean(left && right) && left.getTime() === right.getTime();
 
 // A range is a preset ({ period }) or a custom span ({ period: 'custom', from, to } as YYYY-MM-DD).
 // URL form: ?period=week, or ?from=2026-10-07&to=2026-10-09 (?date= is accepted as a one-day span).
@@ -80,12 +55,6 @@ function rangeLabel(range) {
   const options = (date) => ({ month: 'short', day: 'numeric', ...(date.getFullYear() !== thisYear ? { year: 'numeric' } : {}) });
   const format = (date) => new Intl.DateTimeFormat(undefined, options(date)).format(date);
   return sameDay(from, to) ? format(from) : `${format(from)} – ${format(to)}`;
-}
-
-function monthDays(month) {
-  const first = new Date(month.getFullYear(), month.getMonth(), 1);
-  const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  return { leading: (first.getDay() + 6) % 7, days: Array.from({ length: count }, (_, index) => new Date(month.getFullYear(), month.getMonth(), index + 1)) };
 }
 
 export default function DateRangePicker({ value, onChange, activeDays = new Set(), labelId }) {
@@ -203,11 +172,7 @@ export default function DateRangePicker({ value, onChange, activeDays = new Set(
       {open && (
         <div className="filter-popover date-range-popover" role="dialog" aria-label="Choose dates">
           <div className="date-range-calendar">
-            <div className="date-range-month">
-              <button type="button" onClick={() => changeMonth(-1)} aria-label="Previous month">‹</button>
-              <span aria-live="polite">{new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(month)}</span>
-              <button type="button" onClick={() => changeMonth(1)} disabled={!canGoForward} aria-label="Next month">›</button>
-            </div>
+            <MonthNav className="date-range-month" month={month} onChange={changeMonth} canGoForward={canGoForward} />
             <div className="date-range-grid" ref={gridRef} role="group" aria-label="Dates" onKeyDown={onGridKeyDown} onMouseLeave={() => setHovered(null)}>
               <div className="date-range-row" aria-hidden="true">
                 {WEEKDAYS.map((weekday) => <span key={weekday} className="date-range-weekday">{weekday}</span>)}

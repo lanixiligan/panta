@@ -1,11 +1,7 @@
 .date-range-popover { width: 276px; }
 
 .date-range-calendar { padding: var(--space-3); }
-.date-range-month { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); color: var(--workspace-text); font-size: var(--text-sm); font-weight: 500; }
-.date-range-month button { display: grid; width: 26px; height: 26px; place-items: center; padding: 0; border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--workspace-secondary); font-size: var(--text-lg); line-height: 1; cursor: pointer; }
-.date-range-month button:hover:not(:disabled) { border-color: var(--workspace-border); color: var(--workspace-text); }
-.date-range-month button:disabled { opacity: .3; cursor: default; }
-.date-range-month button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 1px; }
+.date-range-month { justify-content: space-between; margin-bottom: var(--space-2); }
 
 .date-range-row, .date-range-days { display: grid; grid-template-columns: repeat(7, 1fr); }
 .date-range-weekday { padding: var(--space-1) 0 var(--space-1-5); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); text-align: center; }

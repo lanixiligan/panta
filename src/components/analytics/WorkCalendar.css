@@ -4,12 +4,6 @@
 .analytics-heatmap-cell.level-3, .analytics-calendar-day.level-3 { background: var(--workspace-level-3); }
 .analytics-heatmap-cell.level-4, .analytics-calendar-day.level-4 { background: var(--workspace-level-4); }
 .analytics-calendar-month { color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); }
-.analytics-calendar-nav { display: flex; align-items: center; gap: var(--space-1); }
-.analytics-calendar-nav span { min-width: 112px; color: var(--workspace-text); font: var(--text-xs) var(--font-mono); text-align: center; }
-.analytics-calendar-nav button { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--workspace-border); border-radius: var(--radius-md); background: var(--workspace-sidebar); color: var(--workspace-secondary); font-size: var(--text-lg); line-height: 1; cursor: pointer; }
-.analytics-calendar-nav button:hover:not(:disabled) { border-color: var(--workspace-border-hover); color: var(--workspace-accent-soft); }
-.analytics-calendar-nav button:disabled { opacity: .35; cursor: default; }
-.analytics-calendar-nav button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
 .analytics-calendar { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-1); }
 .analytics-calendar-weekday { padding-bottom: var(--space-1); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); text-align: center; }
 .analytics-calendar-day { display: flex; min-height: 38px; align-items: flex-start; justify-content: flex-end; padding: var(--space-1) var(--space-2); border: 1px solid transparent; border-radius: var(--radius-md); background: var(--workspace-raised); color: var(--workspace-secondary); font: var(--text-2xs) var(--font-mono); cursor: default; transition: border-color var(--duration-fast) ease; }

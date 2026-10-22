@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { calculateSessionAnalytics } from '../../analytics/sessionAnalytics.js';
 import { followRouteLink, projectDetailPath, readSearchParam, updateSearchParams } from '../../routing.js';
-import DateRangePicker, { readRange, rangeBounds, toDayString, writeRange } from '../../components/filters/DateRangePicker.jsx';
+import DateRangePicker, { readRange, rangeBounds, writeRange } from '../../components/filters/DateRangePicker.jsx';
+import { toDayString } from '../../components/calendar/calendarDates.js';
 import WorkCalendar from '../../components/analytics/WorkCalendar.jsx';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
 import { formatCount } from '../../sessions/sessionHelpers.js';

@@ -53,7 +53,7 @@
 /* Projects */
 .analytics-project-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 .analytics-project-row { display: grid; grid-template-columns: minmax(0, 1fr) 64px; grid-template-areas: "name duration" "track track"; align-items: center; gap: var(--space-1-5) var(--space-3); margin: 0 calc(var(--space-2) * -1); padding: var(--space-2); border-radius: var(--radius-md); color: inherit; text-decoration: none; }
-a.analytics-project-row:hover { background: var(--workspace-raised); }
+a.analytics-project-row:hover { background: var(--workspace-hover); }
 a.analytics-project-row:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
 .analytics-project-name { display: flex; min-width: 0; align-items: baseline; gap: var(--space-2-5); grid-area: name; }
 .analytics-project-name strong { overflow: hidden; color: var(--workspace-text); font: 500 var(--text-sm) var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }

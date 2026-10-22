@@ -5,5 +5,5 @@
 .editable-goal:hover .editable-goal-button { color: var(--workspace-secondary); }
 .editable-goal-button:hover { border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-accent-soft); }
 .editable-goal-button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
-.editable-goal-input { display: block; width: 100%; box-sizing: border-box; padding: var(--space-0-5) var(--space-2); border: 1px solid var(--workspace-action-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-sidebar); box-shadow: var(--shadow-focus); color: var(--workspace-text); font: inherit; letter-spacing: inherit; }
+.editable-goal-input { display: block; width: 100%; box-sizing: border-box; padding: var(--space-0-5) var(--space-2); border: 1px solid var(--workspace-action-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-field); box-shadow: var(--shadow-focus); color: var(--workspace-text); font: inherit; letter-spacing: inherit; }
 .editable-goal-input::placeholder { color: var(--workspace-muted); }

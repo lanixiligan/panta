@@ -76,7 +76,7 @@
 .session-timeline a:hover .session-timeline-sha { color: var(--workspace-accent-soft); text-decoration-color: currentColor; }
 .session-timeline-meta .session-timeline-branch { padding: 0 var(--space-1); border: 1px solid var(--workspace-border); border-radius: var(--radius-sm); color: var(--workspace-text); }
 .session-timeline-lines { padding-top: 1px; font: var(--text-xs) var(--font-mono); white-space: nowrap; }
-.session-timeline a:hover { background: var(--workspace-surface); }
+.session-timeline a:hover { background: var(--workspace-hover-soft); }
 .session-timeline a:hover .session-timeline-message { color: var(--workspace-text); }
 /* The commit under the cursor (or keyboard focus) lights up its dot on the rail. */
 .session-timeline li > :hover .session-timeline-dot, .session-timeline a:focus-visible .session-timeline-dot { background: var(--workspace-accent); box-shadow: 0 0 0 3px var(--workspace-accent-ring), 0 0 12px 2px var(--workspace-accent-glow); transform: scale(1.15); }
@@ -86,7 +86,7 @@
 .session-file-list { margin: 0; padding: 0; list-style: none; }
 .session-file-list li + li { border-top: 1px solid var(--workspace-divider); }
 .session-file-list button { display: grid; width: 100%; grid-template-columns: minmax(0, 1fr) auto auto 40px; align-items: center; gap: var(--space-2-5); padding: var(--space-2) var(--space-1-5); border: 0; border-radius: var(--radius-sm); background: none; color: inherit; font: var(--text-xs) var(--font-mono); text-align: left; cursor: pointer; }
-.session-file-list button:hover { background: var(--workspace-surface); }
+.session-file-list button:hover { background: var(--workspace-hover-soft); }
 .session-file-list button.selected { background: var(--workspace-raised); box-shadow: inset 2px 0 0 var(--workspace-accent); }
 .session-file-list button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
 .session-file-path { overflow: hidden; color: var(--workspace-text); text-overflow: ellipsis; white-space: nowrap; }

@@ -12,7 +12,7 @@
         try { choice = localStorage.getItem('panta.theme'); } catch (error) {}
         var light = choice === 'light' || (choice !== 'dark' && window.matchMedia('(prefers-color-scheme: light)').matches);
         document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', light ? '#F3F7F4' : '#07110C');
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', light ? '#D4EDDE' : '#07110C');
       })();
     </script>
     <meta name="description" content="Panta — your work, over time." />

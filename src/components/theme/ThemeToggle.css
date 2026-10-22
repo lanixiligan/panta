@@ -1,5 +1,5 @@
 /* Theme toggle: light, dark, system as a small segmented control. The radio inputs stay in the page for keyboard use. */
-.theme-toggle { display: inline-flex; flex: 0 0 auto; gap: var(--space-0-5); margin: 0; padding: var(--space-0-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-md); background: var(--workspace-sidebar); }
+.theme-toggle { display: inline-flex; flex: 0 0 auto; gap: var(--space-0-5); margin: 0; padding: var(--space-0-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-md); background: var(--workspace-field); }
 .theme-toggle-option { position: relative; display: grid; width: 24px; height: 24px; place-items: center; border-radius: var(--radius-sm); color: var(--workspace-muted); cursor: pointer; transition: color var(--duration-base) ease, background var(--duration-base) ease; }
 .theme-toggle-option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 .theme-toggle-option:hover { color: var(--workspace-text); }

@@ -25,6 +25,13 @@ h1, h2, h3 { text-wrap: balance; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 a { color: inherit; }
+/* Switching theme fades the colours instead of snapping. theme.js sets .theme-fading on <html> for the length of the fade. */
+@media (prefers-reduced-motion: no-preference) {
+  :root.theme-fading, :root.theme-fading *, :root.theme-fading *::before, :root.theme-fading *::after {
+    transition: background-color var(--duration-theme) ease, border-color var(--duration-theme) ease, color var(--duration-theme) ease,
+      fill var(--duration-theme) ease, stroke var(--duration-theme) ease, box-shadow var(--duration-theme) ease;
+  }
+}
 /* Every focusable element gets the green ring by default; components may restyle it but never remove it.
    :where() keeps this at zero specificity, so a component's own focus rule always wins. */
 :where(a[href], button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }

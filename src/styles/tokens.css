@@ -12,10 +12,17 @@
   --workspace-raised: #15291D;
   --workspace-pressed: #1A3324;
 
+  /* Interactive fills: row and card hover, the active sidebar item, and the Session Workspace button */
+  --workspace-hover: var(--workspace-raised);
+  --workspace-hover-soft: var(--workspace-surface);
+  --workspace-nav-active: var(--workspace-raised);
+  --workspace-cta-fill: var(--workspace-sidebar);
+  --workspace-field: var(--workspace-sidebar);
+
   /* Lines. Control borders (inputs, selects, filters) keep 3:1 against their surface. */
-  --workspace-divider: #183022;
-  --workspace-border: #21402D;
-  --workspace-border-strong: #2F5D40;
+  --workspace-divider: #1F3C2C;
+  --workspace-border: #2B523B;
+  --workspace-border-strong: #33664A;
   --workspace-border-hover: #3D7A52;
   --workspace-control-border: #3D7A52;
   --workspace-control-border-hover: #5A9A70;
@@ -137,42 +144,50 @@
   /* Motion */
   --duration-fast: 120ms;
   --duration-base: 150ms;
+  --duration-theme: 400ms;
+  --ease-smooth: cubic-bezier(.4, 0, .2, 1);
 }
 
 /* Light: the same greens on pale green-tinted paper, with dark green ink. Every text pair meets WCAG AA. */
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --workspace-bg: #F3F7F4;
-  --workspace-sidebar: #EBF1EC;
-  --workspace-surface: #FFFFFF;
-  --workspace-raised: #E7EFE9;
-  --workspace-pressed: #DFE9E2;
+  --workspace-bg: #D4EDDE;
+  --workspace-sidebar: #A9D5BA;
+  --workspace-surface: #F3FBF6;
+  --workspace-raised: #C9E7D4;
+  --workspace-pressed: #B7DCC5;
 
-  --workspace-divider: #E2EAE4;
-  --workspace-border: #D2DFD6;
-  --workspace-border-strong: #B5C8BB;
-  --workspace-border-hover: #8FAB99;
-  --workspace-control-border: #788F82;
-  --workspace-control-border-hover: #5E7568;
+  --workspace-hover: #BDE3CB;
+  --workspace-hover-soft: #C4E6D0;
+  --workspace-nav-active: #82C49D;
+  --workspace-cta-fill: #E1F4E8;
+  --workspace-field: #EAF7EF;
+
+  --workspace-divider: #A6D0B5;
+  --workspace-border: #86BE9C;
+  --workspace-border-strong: #62A97F;
+  --workspace-border-hover: #4A9569;
+  --workspace-control-border: #4F6E5E;
+  --workspace-control-border-hover: #3C5A4B;
 
   --workspace-text: #0F2418;
-  --workspace-secondary: #3B5646;
-  --workspace-muted: #566E60;
-  --workspace-faint: #A9BBAF;
+  --workspace-secondary: #2B4637;
+  --workspace-muted: #38503F;
+  --workspace-faint: #7FA78F;
 
-  --workspace-accent: #239656;
-  --workspace-accent-soft: #1B7A47;
-  --workspace-focus: #1B7A47;
+  --workspace-accent: #187F47;
+  --workspace-accent-soft: #0F6036;
+  --workspace-focus: #0F6036;
 
-  --workspace-accent-glow: #2396563D;
-  --workspace-accent-ring: #2396561F;
-  --workspace-accent-tint: #23965612;
-  --workspace-accent-line: #239656;
-  --workspace-focus-halo: #1B7A4733;
-  --workspace-glow-strong: #34C77B24;
-  --workspace-glow-faint: #34C77B0D;
-  --workspace-ghost: #1B7A470A;
+  --workspace-accent-glow: #34C77B66;
+  --workspace-accent-ring: #34C77B40;
+  --workspace-accent-tint: #34C77B22;
+  --workspace-accent-line: #34C77B;
+  --workspace-focus-halo: #34C77B55;
+  --workspace-glow-strong: #34C77B3D;
+  --workspace-glow-faint: #34C77B18;
+  --workspace-ghost: #34C77B14;
   --workspace-dots: #8FAB9933;
   --workspace-underline: #1B7A4766;
   --workspace-hover-overlay: #0F24180A;
@@ -185,10 +200,10 @@
   --workspace-action-shade: #0000001F;
   --workspace-action-shade-strong: #00000033;
 
-  --workspace-level-1: #D3EDDC;
-  --workspace-level-2: #7FCB9D;
-  --workspace-level-3: #27824D;
-  --workspace-level-4: #155A35;
+  --workspace-level-1: #A1D8B5;
+  --workspace-level-2: #58B97F;
+  --workspace-level-3: #23804B;
+  --workspace-level-4: #11592F;
   --workspace-on-level: #0F2418;
   --workspace-on-level-strong: #FFFFFF;
   --workspace-additions: #1D7A3E;

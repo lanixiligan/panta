@@ -5,7 +5,7 @@
 .dashboard-greeting p, .page-intro p { margin: 0; color: var(--workspace-secondary); }
 .active-session-card, .dashboard-section, .session-empty-state, .dashboard-access-state { border: 1px solid var(--workspace-border); background: var(--workspace-surface); }
 /* Primary button: a dark face with a green border. */
-.session-workspace-button { cursor: pointer; border: 1px solid var(--workspace-border-hover); background: var(--workspace-sidebar); color: var(--workspace-accent-soft); font-size: var(--text-sm); font-weight: 600; border-radius: var(--radius-md); min-height: var(--control-md); padding: 0 var(--space-5); transition: color var(--duration-base) ease, border-color var(--duration-base) ease; }
+.session-workspace-button { cursor: pointer; border: 1px solid var(--workspace-border-hover); background: var(--workspace-field); color: var(--workspace-accent-soft); font-size: var(--text-sm); font-weight: 600; border-radius: var(--radius-md); min-height: var(--control-md); padding: 0 var(--space-5); transition: color var(--duration-base) ease, border-color var(--duration-base) ease; }
 .session-workspace-button:disabled { cursor: not-allowed; border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-muted); box-shadow: none; }
 .dashboard-spinner { display: inline-block; width: 11px; height: 11px; margin-right: var(--space-1-5); vertical-align: -2px; border: 1px solid var(--workspace-faint); border-top-color: var(--workspace-accent-soft); border-radius: 50%; animation: spin .8s linear infinite; }
 .dashboard-error { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: var(--space-2-5); padding: var(--space-2-5) var(--space-3); border: 1px solid var(--workspace-danger-border); border-radius: var(--radius-md); background: var(--workspace-danger-bg); color: var(--workspace-danger); font-size: var(--text-xs); }
@@ -89,7 +89,7 @@
 /* Pressed: buttons and clickable rows darken while held. Solid green buttons dip by a pixel instead. */
 :is(.session-workspace-button, .subtle-action, .settings-button, .continue-session-button, .cancel-session-button,
   .session-detail-delete, .session-detail-refresh, .not-found-action, .repository-browser-state-link, .sidebar-workspace-link, .sidebar-auth .github-sign-in,
-  .date-range-presets button, .date-range-clear, .date-range-month button, .analytics-calendar-nav button, .project-segmented button, .project-day-filter,
+  .date-range-presets button, .date-range-clear, .month-nav button, .project-segmented button, .project-day-filter,
   .app-render-error button, .account-trigger, .account-menu button, .account-menu a, .sidebar-nav-item, .sidebar-live-session, .back-link,
   .overview-next, .recent-session-row, .history-row, .project-session-row, .repository-select-row, .repository-history-session,
   a.analytics-project-row, .session-file-list button, .filter-trigger, .history-month-toggle, .editable-goal-button):active:not(:disabled) { background: var(--workspace-pressed); }

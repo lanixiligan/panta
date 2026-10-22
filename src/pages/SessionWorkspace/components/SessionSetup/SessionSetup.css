@@ -8,7 +8,7 @@
 .repository-browser-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-xl); font-weight: 500; letter-spacing: -.02em; }
 .repository-browser-filters { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(104px, .75fr) minmax(136px, 1fr) minmax(156px, 1.1fr); gap: var(--space-2-5); padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--workspace-divider); }
 .repository-browser-filters label, .repository-browser-filter { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1-5); color: var(--workspace-muted); font: var(--text-xs) var(--font-sans); }
-.repository-browser-filters input, .repository-browser-filters select { width: 100%; min-width: 0; height: var(--control-md); padding: 0 var(--space-3); border: 1px solid var(--workspace-control-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-sidebar); color: var(--workspace-text); font: var(--text-sm) var(--font-sans); letter-spacing: 0; text-transform: none; }
+.repository-browser-filters input, .repository-browser-filters select { width: 100%; min-width: 0; height: var(--control-md); padding: 0 var(--space-3); border: 1px solid var(--workspace-control-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-field); color: var(--workspace-text); font: var(--text-sm) var(--font-sans); letter-spacing: 0; text-transform: none; }
 .repository-browser-filters select { font-size: var(--text-xs); }
 .repository-browser-filters input:hover, .dashboard-field input:hover { border-color: var(--workspace-control-border-hover); }
 .repository-browser-filters input::placeholder { color: var(--workspace-muted); }
@@ -17,7 +17,7 @@
 .repository-select-list { display: flex; flex-direction: column; padding: var(--space-1-5) 0; }
 .repository-select-row { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: var(--space-4); width: 100%; min-width: 0; padding: var(--space-3-5) var(--space-6); border: 0; border-top: 1px solid var(--workspace-divider); background: transparent; color: inherit; text-align: left; cursor: pointer; transition: background var(--duration-base) ease; }
 .repository-select-row:first-child { border-top: 0; }
-.repository-select-row:hover { background: var(--workspace-raised); }
+.repository-select-row:hover { background: var(--workspace-hover); }
 .repository-select-row:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
 .repository-select-row.selected { background: var(--workspace-accent-tint); box-shadow: inset 3px 0 0 var(--workspace-accent); }
 .repository-select-indicator { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--workspace-border); border-radius: 50%; color: var(--workspace-action-text); font-size: var(--text-2xs); font-weight: 700; }
@@ -63,7 +63,7 @@
 .session-goal-form { display: flex; flex-direction: column; gap: var(--space-3-5); margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--workspace-divider); }
 .dashboard-field { display: flex; min-width: 0; flex-direction: column; gap: var(--space-2-5); }
 .session-goal-form .dashboard-field > span { display: flex; align-items: baseline; gap: var(--space-1-5); color: var(--workspace-text); font-size: var(--text-lg); font-weight: 500; }
-.dashboard-field input, .dashboard-field select { width: 100%; min-width: 0; height: var(--control-lg); padding: 0 var(--space-3-5); border: 1px solid var(--workspace-control-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-sidebar); color: var(--workspace-text); font-size: var(--text-md); }
+.dashboard-field input, .dashboard-field select { width: 100%; min-width: 0; height: var(--control-lg); padding: 0 var(--space-3-5); border: 1px solid var(--workspace-control-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-field); color: var(--workspace-text); font-size: var(--text-md); }
 .dashboard-field input::placeholder { color: var(--workspace-muted); }
 .dashboard-field input:focus, .dashboard-field select:focus { border-color: var(--workspace-action-border); box-shadow: var(--shadow-focus); }
 .session-goal-hint { margin: 0; color: var(--workspace-muted); font-size: var(--text-xs); line-height: 1.55; }
@@ -77,7 +77,7 @@
 .repository-history-list li + li { border-top: 1px solid var(--workspace-divider); }
 .repository-history-filler { display: flex; align-items: center; padding: 0 var(--space-4); color: var(--workspace-muted); font-size: var(--text-sm); }
 .repository-history-session { display: flex; height: 100%; box-sizing: border-box; flex-direction: column; justify-content: center; gap: var(--space-1); padding: 0 var(--space-4); color: inherit; text-decoration: none; }
-.repository-history-session:hover { background: var(--workspace-raised); }
+.repository-history-session:hover { background: var(--workspace-hover); }
 .repository-history-session:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
 .repository-history-session strong, .repository-history-session span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .repository-history-session strong { color: var(--workspace-text); font-size: var(--text-md); font-weight: 500; line-height: 1.4; }

@@ -5,7 +5,7 @@ import { PantaWordmark } from '../../components/brand/PantaLogo.jsx';
 // Commits land at uneven moments, so the dots on the brand line are spaced unevenly too.
 const FLOW_DOTS = [6, 22, 30, 52, 66, 78, 94];
 
-export default function AuthenticationPage({ checking, identityError, onRetryIdentity }) {
+export default function AuthenticationPage({ identityError, onRetryIdentity }) {
   return (
     <main className="auth-screen">
       <div className="auth-background-canvas" aria-hidden="true" />
@@ -28,9 +28,7 @@ export default function AuthenticationPage({ checking, identityError, onRetryIde
           </div>
         )}
         <div className="auth-actions">
-          {checking
-            ? <p className="auth-screen-checking" role="status"><span className="dashboard-spinner" aria-hidden="true" />Waking the server… this can take up to a minute</p>
-            : <AuthControl loginLabel="Continue with GitHub" signedOut />}
+          <AuthControl loginLabel="Continue with GitHub" signedOut />
         </div>
       </section>
     </main>

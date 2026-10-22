@@ -86,7 +86,7 @@ Each page is described in full in [docs/features.md](docs/features.md).
 | `/settings` | Settings |
 | `/preview` | Public example-session preview (no sign-in needed) |
 
-Any other path renders the Not Found view. Signed-out users see the authentication page regardless of the route, except `/preview`, which shows a handcrafted example session in the Session detail layout so visitors can see a recap before signing in. Nothing links to it yet; it will become a read-only demo once the designs are final.
+Any other path renders the Not Found view. When the sign-in check takes longer than a moment (usually the API waking up), a waking screen shows until the server answers, then fades into sign-in or the app. Signed-out users see the authentication page regardless of the route, except `/preview`, which shows a handcrafted example session in the Session detail layout so visitors can see a recap before signing in. Nothing links to it yet; it will become a read-only demo once the designs are final.
 
 Routing is implemented in `src/routing.js` and `src/App.jsx` with the History API; there is no router library.
 
@@ -303,6 +303,7 @@ panta/
         ├── Analytics/AnalyticsPage.jsx (+ .css)
         ├── Settings/SettingsPage.jsx (+ .css)
         ├── Authentication/AuthenticationPage.jsx (+ .css)
+        ├── Waking/WakingPage.jsx (+ .css)                # Shown while the API wakes up
         ├── NotFoundPage.jsx
         └── NotFoundPage.css
 ```

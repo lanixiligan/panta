@@ -153,7 +153,7 @@ export default function App() {
   useEffect(() => watchSystemTheme(setPrefersLight), []);
   useEffect(() => { applyTheme(resolveTheme(themeChoice, prefersLight)); }, [themeChoice, prefersLight]);
   const allDummySessions = useMemo(() => getDummySessions(), []);
-  // The sidebar's "Show example data" setting hides every example session, project, and repository at once.
+  // Settings' "Show example data" option hides every example session, project, and repository at once.
   const visibleDummySessions = showExamples ? allDummySessions : NO_EXAMPLES;
   const analyticsSessions = useMemo(() => [...realSessions, ...visibleDummySessions], [realSessions, visibleDummySessions]);
   const sessionItems = getSessionListItems(analyticsSessions)
@@ -898,8 +898,6 @@ export default function App() {
           mutuals={mutuals}
           mutualsLoading={mutualsLoading}
           mutualsError={mutualsError}
-          showExamples={showExamples}
-          onToggleExamples={toggleExamples}
           theme={themeChoice}
           onChangeTheme={changeTheme}
         />
@@ -967,7 +965,7 @@ export default function App() {
               : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><BackLink href={routePaths.Projects} label="Repositories" onNavigate={navigate} /></section>
           )}
           {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} notice={sessionsNotice} onNavigate={navigate} />}
-          {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
+          {view === 'Settings' && <SettingsPage identity={identity} showExamples={showExamples} onToggleExamples={toggleExamples} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
           {view === 'Session Detail' && (
             detailSession
               ? <SessionDetailPage

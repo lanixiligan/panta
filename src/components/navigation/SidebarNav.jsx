@@ -200,7 +200,7 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onBeforeLogout,
   );
 }
 
-export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError, showExamples, onToggleExamples, theme, onChangeTheme }) {
+export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError, theme, onChangeTheme }) {
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
@@ -212,12 +212,6 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
         <SessionWorkspaceLink session={activeSession} now={now} pathname={pathname} onNavigate={onNavigate} />
       </div>
       <div className="sidebar-preferences">
-        {onToggleExamples && (
-          <label className="sidebar-examples-toggle">
-            <input type="checkbox" checked={showExamples} onChange={(event) => onToggleExamples(event.target.checked)} />
-            Show example data
-          </label>
-        )}
         <ThemeToggle value={theme} onChange={onChangeTheme} />
       </div>
       <div className="sidebar-bottom">

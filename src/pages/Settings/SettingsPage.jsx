@@ -24,7 +24,7 @@ function SettingsRow({ label, detail, children }) {
   );
 }
 
-export default function SettingsPage({ identity, onLogout, hasActiveSession = false, savedSessionCount = 0, sessionsStatus = 'ready', onDeleteHistory, onDeleteAccount, onBeforeLogout }) {
+export default function SettingsPage({ identity, showExamples = false, onToggleExamples, onLogout, hasActiveSession = false, savedSessionCount = 0, sessionsStatus = 'ready', onDeleteHistory, onDeleteAccount, onBeforeLogout }) {
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState('');
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
@@ -125,6 +125,12 @@ export default function SettingsPage({ identity, onLogout, hasActiveSession = fa
         </SettingsRow>
         <SettingsRow label="Repository access" detail="Choose which repositories Panta can read.">
           <a className="settings-button" href="/api/auth/github/install" target="_blank" rel="noreferrer">Manage on GitHub <span aria-hidden="true">↗</span></a>
+        </SettingsRow>
+      </SettingsGroup>
+
+      <SettingsGroup id="preferences" title="Preferences">
+        <SettingsRow label="Show example data">
+          <input className="settings-checkbox" type="checkbox" aria-label="Show example data" checked={showExamples} onChange={(event) => onToggleExamples?.(event.target.checked)} />
         </SettingsRow>
       </SettingsGroup>
 

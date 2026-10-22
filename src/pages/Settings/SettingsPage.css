@@ -51,16 +51,3 @@
   .settings-account { grid-template-columns: auto minmax(0, 1fr); }
   .settings-account-actions { grid-column: 1 / -1; justify-content: flex-start; }
 }
-/* Settings fits the window like Overview, but scrolls on windows too short to hold all three cards. */
-@media (max-height: 760px) {
-  .workspace-main-fit:has(.settings-page) { overflow: auto; }
-}
-
-/* Fitted to the window: every section, row, and the footer must fit without scrolling, so density tightens up. */
-@media (min-width: 1024px) and (min-height: 600px) {
-  .workspace-main-fit .settings-page { gap: var(--space-4); }
-  .workspace-main-fit .settings-group h2 { margin-bottom: var(--space-2); }
-  .workspace-main-fit .settings-row { min-height: 52px; padding: var(--space-3) var(--space-5); }
-  .workspace-main-fit .settings-account { padding: var(--space-3-5) var(--space-5); }
-  .workspace-main-fit .settings-note { padding: var(--space-3) var(--space-5); }
-}

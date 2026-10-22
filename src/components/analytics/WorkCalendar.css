@@ -19,7 +19,7 @@
 .analytics-calendar-day.is-future { background: transparent; border-color: var(--workspace-divider); color: var(--workspace-muted); }
 .analytics-calendar-day.is-hovered:not(.is-future) { border-color: var(--workspace-secondary); }
 .analytics-calendar-day:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
-.analytics-calendar-tooltip { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: var(--space-0-5); min-width: 120px; max-width: 220px; padding: var(--space-2) var(--space-2-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-lg); background: var(--workspace-raised); box-shadow: var(--shadow-tooltip); pointer-events: none; transform: translate(-50%, -100%); }
+.analytics-calendar-tooltip { position: absolute; z-index: 2; display: flex; flex-direction: column; gap: var(--space-0-5); min-width: 120px; max-width: 220px; padding: var(--space-2) var(--space-2-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-lg); background: var(--workspace-raised); box-shadow: var(--shadow-tooltip); pointer-events: none; transform: translate(var(--tooltip-x, -50%), var(--tooltip-y, -100%)); }
 .analytics-calendar-tooltip span { color: var(--workspace-secondary); font-size: var(--text-2xs); }
 .analytics-calendar-tooltip strong { color: var(--workspace-text); font: 400 var(--text-sm) var(--font-mono); }
 .analytics-calendar-tooltip small { overflow: hidden; color: var(--workspace-secondary); font-size: var(--text-2xs); text-overflow: ellipsis; white-space: nowrap; }

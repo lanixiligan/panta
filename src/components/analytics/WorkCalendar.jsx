@@ -87,10 +87,16 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
   const canGoBack = new Date(year, monthIndex, 1) > new Date(earliest.getFullYear(), earliest.getMonth(), 1);
   const canGoForward = new Date(year, monthIndex, 1) < new Date(today.getFullYear(), today.getMonth(), 1);
   const active = hovered === null ? null : days[hovered.index];
-  // The tooltip sits above the hovered or focused day.
+  // The tooltip sits above the hovered or focused day, or below it in the first two weeks so it doesn't cover the heading.
+  // Near the left and right edges it lines up with the day's outer edge instead of centring, so it stays inside the card.
   const showDay = (event, index) => {
     const cell = event.currentTarget;
-    setHovered({ index, left: cell.offsetLeft + cell.offsetWidth / 2, top: cell.offsetTop });
+    const column = (leadingBlanks + index) % 7;
+    const below = leadingBlanks + index < 14;
+    const align = column < 2 ? 'start' : column > 4 ? 'end' : 'center';
+    const left = cell.offsetLeft + { start: 0, center: cell.offsetWidth / 2, end: cell.offsetWidth }[align];
+    const top = below ? cell.offsetTop + cell.offsetHeight + 6 : cell.offsetTop - 6;
+    setHovered({ index, left, top, x: { start: '0%', center: '-50%', end: '-100%' }[align], y: below ? '0%' : '-100%' });
   };
   const changeMonth = (offset) => { setHovered(null); setMonth(new Date(year, monthIndex + offset, 1)); };
 
@@ -141,7 +147,7 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
           <div
             className="analytics-calendar-tooltip"
             aria-hidden="true"
-            style={{ left: hovered.left, top: hovered.top - 6 }}
+            style={{ left: hovered.left, top: hovered.top, '--tooltip-x': hovered.x, '--tooltip-y': hovered.y }}
           >
             <span>{formatDate(active.date, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
             <strong>{active.sessionCount ? formatDuration(active.durationMs) : 'No sessions'}</strong>

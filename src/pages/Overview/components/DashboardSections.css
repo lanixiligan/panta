@@ -40,6 +40,8 @@
   .dashboard-grid { grid-template-columns: 1fr; }
   .weekly-strip { flex-direction: column; align-items: stretch; gap: var(--space-3-5); }
   .weekly-strip-heading { flex: 0 0 auto; flex-direction: row; align-items: baseline; justify-content: space-between; }
+  .weekly-strip-heading h2 { flex: 0 0 auto; }
+  .weekly-strip-heading .dashboard-section-meta { text-align: right; }
 }
 /* Fitted to the window: nothing scrolls. The two cards keep their natural height and shrink only on short windows, where recent sessions shows as many whole rows as fit. */
 @media (min-width: 1024px) and (min-height: 600px) {

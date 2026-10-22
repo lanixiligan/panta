@@ -33,7 +33,7 @@
 .analytics-bar-track i { display: block; width: 100%; max-width: 30px; min-height: 3px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: var(--workspace-level-3); transition: background-color var(--duration-fast) ease; }
 .analytics-bar:hover .analytics-bar-track, .analytics-bar:focus-visible .analytics-bar-track { background: var(--workspace-hover-overlay); }
 .analytics-bar.is-future .analytics-bar-track { border-bottom-style: dashed; border-bottom-color: var(--workspace-divider); background: transparent; }
-.analytics-bar.is-future .analytics-bar-label { color: var(--workspace-faint); }
+.analytics-bar.is-future .analytics-bar-label { color: var(--workspace-muted); }
 .analytics-bar:focus-visible .analytics-bar-track { border-radius: var(--radius-sm); box-shadow: 0 0 0 2px var(--workspace-focus); }
 .analytics-bar:hover .analytics-bar-track i, .analytics-bar:focus-visible .analytics-bar-track i { background: var(--workspace-level-4); }
 .analytics-bar-label { height: 12px; overflow: visible; color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); text-align: center; white-space: nowrap; }

@@ -10,7 +10,8 @@
 .session-history-workspace { min-width: 0; }
 .session-history-toolbar { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: var(--space-2-5); margin-bottom: var(--space-6); }
 .session-history-toolbar label, .session-history-filter { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1-5); color: var(--workspace-muted); font-size: var(--text-2xs); }
-.session-history-toolbar input, .session-history-toolbar select { width: 100%; min-width: 0; height: 38px; padding: 0 var(--space-2-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-sidebar); color: var(--workspace-text); font-family: inherit; font-size: var(--text-sm); }
+.session-history-toolbar input, .session-history-toolbar select { width: 100%; min-width: 0; height: 38px; padding: 0 var(--space-2-5); border: 1px solid var(--workspace-control-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-sidebar); color: var(--workspace-text); font-family: inherit; font-size: var(--text-sm); }
+.session-history-toolbar input:hover { border-color: var(--workspace-control-border-hover); }
 .session-history-toolbar input::placeholder { color: var(--workspace-muted); }
 .session-history-toolbar input:focus, .session-history-toolbar select:focus { border-color: var(--workspace-action-border); box-shadow: var(--shadow-focus); }
 .session-history-empty { padding: var(--space-8) 0; border-bottom: 1px solid var(--workspace-divider); }

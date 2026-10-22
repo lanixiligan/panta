@@ -12,11 +12,13 @@
   --workspace-raised: #15291D;
   --workspace-pressed: #1A3324;
 
-  /* Lines */
+  /* Lines. Control borders (inputs, selects, filters) keep 3:1 against their surface. */
   --workspace-divider: #183022;
   --workspace-border: #21402D;
   --workspace-border-strong: #2F5D40;
   --workspace-border-hover: #3D7A52;
+  --workspace-control-border: #3D7A52;
+  --workspace-control-border-hover: #5A9A70;
 
   /* Text, most to least prominent. Faint is decorative only (separators, empty days), never for words. */
   --workspace-text: #E0EDE4;
@@ -55,20 +57,20 @@
   /* Data: calendar and chart shades (low to high), the text on them, and line changes */
   --workspace-level-1: #1D4A30;
   --workspace-level-2: #23703F;
-  --workspace-level-3: #2E9455;
+  --workspace-level-3: #33A05E;
   --workspace-level-4: #45C47A;
-  --workspace-on-level: #9FBDAA;
+  --workspace-on-level: #E0EDE4;
   --workspace-on-level-strong: #04230F;
   --workspace-additions: #82C895;
   --workspace-deletions: #C58D81;
 
-  /* File types on Session detail, largest share first */
+  /* File types on Session detail, largest share first; each keeps 3:1 against the surface */
   --workspace-type-0: #34C77B;
-  --workspace-type-1: #1F8F55;
-  --workspace-type-2: #A8F0C4;
-  --workspace-type-3: #2F5C43;
-  --workspace-type-4: #6FC493;
-  --workspace-type-5: #5F796A;
+  --workspace-type-1: #4FB6B0;
+  --workspace-type-2: #B9C96B;
+  --workspace-type-3: #A8F0C4;
+  --workspace-type-4: #7F9688;
+  --workspace-type-5: #1F8F55;
 
   /* Errors and destructive actions */
   --workspace-danger: #E0A397;
@@ -151,6 +153,8 @@
   --workspace-border: #D2DFD6;
   --workspace-border-strong: #B5C8BB;
   --workspace-border-hover: #8FAB99;
+  --workspace-control-border: #788F82;
+  --workspace-control-border-hover: #5E7568;
 
   --workspace-text: #0F2418;
   --workspace-secondary: #3B5646;

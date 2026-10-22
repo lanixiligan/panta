@@ -14,7 +14,11 @@ export default function ScrollArea({ children, watch, className = '' }) {
     if (!element) return undefined;
     const update = () => {
       const { scrollTop, scrollHeight, clientHeight } = element;
-      if (scrollHeight <= clientHeight + 1) { setThumb(null); return; }
+      // A list that scrolls but holds nothing focusable (commits without links) takes focus itself, so the keyboard can scroll it.
+      const scrolls = scrollHeight > clientHeight + 1;
+      if (scrolls && !element.querySelector('a[href], button, input, [tabindex]')) element.setAttribute('tabindex', '0');
+      else if (element.getAttribute('tabindex') === '0') element.removeAttribute('tabindex');
+      if (!scrolls) { setThumb(null); return; }
       const height = Math.max(32, (clientHeight / scrollHeight) * clientHeight);
       setThumb({ height, top: (scrollTop / (scrollHeight - clientHeight)) * (clientHeight - height) });
     };

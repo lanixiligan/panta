@@ -145,6 +145,7 @@
   --duration-fast: 120ms;
   --duration-base: 150ms;
   --duration-theme: 400ms;
+  --duration-fade: 450ms;
   --ease-smooth: cubic-bezier(.4, 0, .2, 1);
 }
 

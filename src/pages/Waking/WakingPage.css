@@ -1,0 +1,31 @@
+/* Waking: the Panta mark flowing above one title and one line, on the sign-in page's backdrop so the hand-off is seamless. */
+.waking-screen { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: var(--space-6) var(--space-4); background: radial-gradient(ellipse 55% 45% at 50% 46%, var(--workspace-glow-strong) 0%, var(--workspace-glow-faint) 45%, transparent 75%), var(--workspace-bg); color: var(--workspace-text); opacity: 1; transition: opacity var(--duration-fade) var(--ease-smooth); }
+.waking-screen.is-leaving { opacity: 0; pointer-events: none; }
+
+.waking-content { display: flex; max-width: 420px; flex-direction: column; align-items: center; gap: var(--space-5); text-align: center; }
+.waking-mark { width: 150px; height: 105px; overflow: hidden; }
+
+/* The waves keep the brand greens in both themes, as in the logo. */
+.waking-wave { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.waking-w1 { stroke: var(--brand-green); }
+.waking-w2 { stroke: var(--brand-green-mid); opacity: .75; }
+.waking-w3 { stroke: var(--brand-green-deep); opacity: .55; }
+
+/* Each wave slides left by exactly one period, so the loop is seamless. */
+.waking-flow { animation: waking-flow linear infinite; }
+@keyframes waking-flow { to { transform: translateX(calc(var(--waking-period) * -1px)); } }
+
+/* The dot rides the top wave: the same period, with sine-shaped easing. */
+.waking-dot { fill: var(--workspace-text); animation: waking-bob 2.1s infinite; }
+@keyframes waking-bob {
+  0% { transform: translateY(0); animation-timing-function: cubic-bezier(.61, 1, .88, 1); }
+  25% { transform: translateY(-12px); animation-timing-function: cubic-bezier(.12, 0, .39, 0); }
+  50% { transform: translateY(0); animation-timing-function: cubic-bezier(.61, 1, .88, 1); }
+  75% { transform: translateY(12px); animation-timing-function: cubic-bezier(.12, 0, .39, 0); }
+  100% { transform: translateY(0); }
+}
+
+.waking-title { margin: 0; font-size: var(--text-2xl); font-weight: 600; letter-spacing: -.02em; }
+/* Room for two lines, so a longer message doesn't shift the mark. */
+.waking-message { min-height: 3em; margin: calc(var(--space-2-5) * -1) 0 0; color: var(--workspace-secondary); font: var(--text-sm) / 1.5 var(--font-mono); text-wrap: balance; animation: waking-message-in 500ms ease; }
+@keyframes waking-message-in { from { opacity: 0; transform: translateY(4px); } }

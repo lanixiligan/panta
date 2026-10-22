@@ -36,6 +36,10 @@ Values that were never recorded are shown as unavailable rather than zero. Analy
 
 A collapsible sidebar section listing your GitHub mutuals (people you follow who also follow you), grouped as online or offline based on recent Panta presence.
 
+## Theme
+
+Panta has a dark theme (its signature look) and a light one built from the same greens. A light / dark / system toggle sits beside **Show example data** at the foot of the sidebar (in the header on phones). **System** follows the operating system's setting, live; a chosen theme is remembered in the browser. The sign-in and preview pages use the remembered or system theme.
+
 ## Settings
 
 Settings is a narrow column of three cards. **Account** shows your avatar, name, and username with a link to your GitHub profile, and **Sign out**, which ends the login but keeps your saved sessions in Panta; a running session is paused and resumes after the next sign-in (it asks first only when a session is running). **GitHub** shows the connection status and links to the GitHub App installation page to manage repository access. **Data** has **Delete session history**, which, after a confirmation, removes your real sessions from Panta; example data is unaffected. **Delete account**, also after a confirmation, deletes all your stored sessions, revokes Panta’s GitHub authorization, signs you out everywhere, and returns you to sign-in. The GitHub App installation stays; remove it with **Manage on GitHub**. If the revoke fails, sign-in shows a notice to revoke Panta in your GitHub settings. A note states that Panta stores commit messages, times, and file and line stats, never code. Signing out never revokes the authorization.

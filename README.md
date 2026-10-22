@@ -107,7 +107,7 @@ flowchart LR
   subgraph Browser["Browser"]
     App["React app<br/>App.jsx · pages · routing.js"]
     ApiClient["src/api/*.js<br/>auth · github · sessions · presence"]
-    Local[("localStorage<br/>example-data toggle,<br/>legacy history until imported")]
+    Local[("localStorage<br/>example-data and theme toggles,<br/>legacy history until imported")]
     App --> ApiClient
     App <--> Local
   end
@@ -204,6 +204,7 @@ Sessions are stored in Postgres, keyed by the numeric GitHub user ID, so your hi
 | Completed coding sessions | Postgres | Until deleted from Session detail or Settings |
 | Presence | Server memory | 90-second online window; cleared on restart |
 | Repositories and commits | GitHub, fetched on demand | — |
+| Example-data and theme choices | Browser `localStorage` (`panta.showExamples`, `panta.theme`) | Until cleared; per browser |
 
 Before session storage, completed sessions were kept in each browser's `localStorage` (`panta.sessions.<username>`). The first time a browser loads Panta signed in, it imports that history and removes the local copy. Each account imports once; a browser that finds the account already imported moves its copy to `panta.sessions.backup.<username>` instead of deleting it.
 
@@ -253,6 +254,7 @@ panta/
     ├── main.jsx              # Entry point and render error boundary
     ├── App.jsx               # Application state, routing, and page composition
     ├── routing.js            # Route table and path helpers
+    ├── theme.js              # Light, dark, or system theme: read, save, apply
     ├── index.css             # Ordered stylesheet import manifest
     ├── analytics/
     │   └── sessionAnalytics.js   # Totals and breakdowns for Analytics and Repositories
@@ -262,13 +264,15 @@ panta/
     │   ├── presence.js
     │   └── sessions.js
     ├── styles/
-    │   ├── tokens.css        # Color tokens
+    │   ├── tokens.css        # Design tokens: colours for both themes, type, spacing, radii
     │   ├── base.css          # Fonts, element defaults, app frame
     │   └── shared.css        # Styles shared across pages
     ├── components/
     │   ├── auth/AuthControl.jsx (+ .css)
+    │   ├── brand/PantaLogo.jsx (+ .css)              # Theme-aware logo lockup and wordmark
     │   ├── layout/Footer.jsx (+ .css)
     │   ├── navigation/SidebarNav.jsx (+ .css)        # Navigation, socials, account menu
+    │   ├── theme/ThemeToggle.jsx (+ .css)            # Light / dark / system toggle
     │   └── sessions/
     │       └── SessionCommitList.jsx (+ .css)
     ├── dummy-data/           # Example-only data (source: 'placeholder')
@@ -308,6 +312,8 @@ panta/
 ### Styles
 
 Styles are plain CSS. Each component, page, and Session Workspace phase has its own stylesheet next to its JSX, and `src/styles/` holds the global layers. Components do not import CSS themselves: `src/index.css` imports every stylesheet in a fixed order (tokens, base, shared, components, then pages) so the cascade order stays explicit. Add new stylesheets to that list.
+
+Every colour, font, type size, space, radius, shadow, and duration comes from `src/styles/tokens.css`. Dark is Panta's signature look and the default; a light palette built from the same greens overrides the colours under `[data-theme="light"]`. The theme follows the system unless a viewer picks one in the sidebar. An inline script in `index.html` sets `data-theme` before the first paint, so the page never flashes the wrong theme, and `src/theme.js` applies later changes. Text and links meet WCAG AA in both themes.
 
 ## Getting Started
 

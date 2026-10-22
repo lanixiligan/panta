@@ -44,7 +44,9 @@ Pages live in feature folders under `src/pages/<Feature>/`, with page-only compo
 
 ### Styles
 
-Plain CSS. Each component and page has a same-named `.css` next to its `.jsx`, but **components never import CSS**. `src/index.css` is an ordered `@import` manifest (tokens, base, shared, components, then pages). Every new stylesheet must be added there in the right cascade position. Color tokens live in `src/styles/tokens.css`. Components use those tokens, never raw hex values (translucent glows and shadows excepted).
+Plain CSS. Each component and page has a same-named `.css` next to its `.jsx`, but **components never import CSS**. `src/index.css` is an ordered `@import` manifest (tokens, base, shared, components, then pages). Every new stylesheet must be added there in the right cascade position. All design tokens live in `src/styles/tokens.css`: colours (`--workspace-*`, `--brand-*`), fonts (`--font-sans`, `--font-mono`), type (`--text-*`), spacing (`--space-*`), radii (`--radius-*`), control heights (`--control-*`), shadows, and durations. Components use tokens, never raw hex values or off-scale sizes (one-off display sizes and chart geometry excepted).
+
+Dark is the default theme; `:root[data-theme="light"]` overrides the colours only, so every new colour token needs a light value too, checked for WCAG AA (4.5:1 for text, 3:1 for marks and control borders). The inline script in `index.html` applies the saved theme (`panta.theme`) or the system's before the first paint and mirrors the rules in `src/theme.js`; keep them in step. `App.jsx` owns the theme choice and passes it to the sidebar's `ThemeToggle`.
 
 On large screens `base.css` scales the whole interface with CSS `zoom` (`--ui-zoom`: 1.125 from 1500px wide, 1.25 from 1800px). Zoom also scales viewport units, so write them as `calc(100vh / var(--ui-zoom))`, never bare `vh`, `dvh`, or `vw`. Media queries still see the real window size.
 
@@ -70,7 +72,7 @@ The UI is deliberately minimal and easy on the eyes. Only necessary details belo
 - Prefer removing a duplicate panel over adding one. Propose new panels, sections, or features before building them.
 - Stay within the `--workspace-*` tokens in `src/styles/tokens.css` and the DM Sans and DM Mono fonts. Propose any new color first. Don't add animated or WebGL backgrounds.
 - Navigation uses `<a href>` with `followRouteLink`, never a `<button>`. Destructive actions need a confirmation step.
-- Interactive elements need a visible `:focus-visible` style, and decorative elements need `aria-hidden="true"`. Motion must respect `prefers-reduced-motion` (the global rule is in `base.css`).
+- Interactive elements need a visible `:focus-visible` style (`base.css` gives every focusable element the default ring; restyle it, never remove it) and a pressed state (the shared `:active` list in `shared.css`), and decorative elements need `aria-hidden="true"`. Motion must respect `prefers-reduced-motion` (the global rule is in `base.css`).
 - Keep filters, toggles, and ranges in the URL with `readSearchParam` and `updateSearchParams` from `routing.js`.
 - In UI copy, use `…` not `...`, and curly quotes and apostrophes.
 

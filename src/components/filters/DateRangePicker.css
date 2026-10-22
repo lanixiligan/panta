@@ -4,8 +4,11 @@
 .date-range-month { justify-content: space-between; margin-bottom: var(--space-2); }
 
 .date-range-row, .date-range-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+/* Hairline grid: the container shows through the 1px gaps between day cells. */
+.date-range-days { gap: 1px; overflow: hidden; border: 1px solid var(--workspace-divider); border-radius: var(--radius-md); background: var(--workspace-divider); }
+.date-range-days > span { background: var(--workspace-surface); }
 .date-range-weekday { padding: var(--space-1) 0 var(--space-1-5); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); text-align: center; }
-.date-range-day { position: relative; height: 32px; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); cursor: pointer; }
+.date-range-day { position: relative; height: 32px; padding: 0; border: 0; border-radius: 0; background: var(--workspace-surface); color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); cursor: pointer; }
 .date-range-day:hover:not(:disabled) { color: var(--workspace-text); }
 .date-range-day:hover:not(:disabled):not(.in-span) { border-radius: var(--radius-md); background: var(--workspace-raised); }
 .date-range-day.has-sessions { color: var(--workspace-text); }
@@ -27,7 +30,7 @@
 .date-range-presets button:focus-visible, .date-range-clear:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 1px; }
 
 @media (max-width: 680px) {
-  .date-range-popover { width: auto; }
+  .date-range-popover { overflow-y: auto; }
   .date-range-presets button, .date-range-clear { padding: var(--space-2) var(--space-3); }
   .date-range-day { height: 40px; }
 }

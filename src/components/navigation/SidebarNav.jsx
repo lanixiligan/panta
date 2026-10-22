@@ -14,6 +14,9 @@ const items = [
   { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, Icon: ChartNoAxesCombined },
 ];
 
+// Matches the breakpoint in SidebarNav.css where the links become the phone's bottom tab bar.
+const phoneQuery = '(max-width: 680px)';
+
 function NavLinks({ pathname, onNavigate }) {
   const navRef = useRef(null);
   const [box, setBox] = useState(null);
@@ -47,7 +50,7 @@ function NavLinks({ pathname, onNavigate }) {
       {items.map(({ label, view, path, Icon }) => {
         const active = view === activeView;
         return <a key={view} href={path} className={`sidebar-nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
-          <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.6} /></span><span>{label}</span>
+          <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.6} /></span><span className="sidebar-nav-label">{label}</span>
         </a>;
       })}
     </nav>
@@ -89,11 +92,29 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
   const [offlineExpanded, setOfflineExpanded] = useState(false);
   const onlineMutuals = mutuals.filter((user) => user.presence === 'online');
   const offlineMutuals = mutuals.filter((user) => user.presence !== 'online');
+  const rootRef = useRef(null);
+
+  // On a phone the list floats above the tab bar, so a tap elsewhere or Escape closes it like a menu.
+  useEffect(() => {
+    if (!expanded || !window.matchMedia(phoneQuery).matches) return undefined;
+    function closeOutside(event) {
+      if (!rootRef.current?.contains(event.target)) setExpanded(false);
+    }
+    function closeOnEscape(event) {
+      if (event.key === 'Escape') setExpanded(false);
+    }
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [expanded]);
 
   return (
-    <section className="sidebar-socials" aria-label="Socials">
+    <section ref={rootRef} className="sidebar-socials" aria-label="Socials">
       <button className="sidebar-socials-heading" type="button" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>
-        <span className="sidebar-socials-label"><UserRound size={18} strokeWidth={1.6} aria-hidden="true" />Socials</span><span className="sidebar-socials-chevron" aria-hidden="true">{expanded ? '−' : '+'}</span>
+        <span className="sidebar-socials-label"><UserRound size={18} strokeWidth={1.6} aria-hidden="true" /><span className="sidebar-nav-label">Socials</span></span><span className="sidebar-socials-chevron" aria-hidden="true">{expanded ? '−' : '+'}</span>
       </button>
       {expanded && (
         <div className="sidebar-socials-content">
@@ -205,8 +226,11 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
         <PantaLockup className="brand-lockup" />
       </a>
-      <NavLinks pathname={pathname} onNavigate={onNavigate} />
-      <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
+      {/* Invisible to the sidebar's layout; on a phone it is the bottom tab bar. */}
+      <div className="sidebar-tabbar">
+        <NavLinks pathname={pathname} onNavigate={onNavigate} />
+        <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
+      </div>
       <div className="sidebar-workspace">
         <SessionWorkspaceLink session={activeSession} now={now} pathname={pathname} onNavigate={onNavigate} />
       </div>

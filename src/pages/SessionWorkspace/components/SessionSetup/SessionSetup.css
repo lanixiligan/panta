@@ -113,7 +113,9 @@
   .session-workspace-selection { padding: var(--space-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); }
 }
 @media (max-width: 520px) {
-  .repository-browser-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: var(--space-3-5) var(--space-4); }
+  /* Search takes the first row; Type, Language, and Sort share the second. */
+  .repository-browser-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); padding: var(--space-3-5) var(--space-4); }
+  .repository-browser-filters .filter-trigger { gap: var(--space-1-5); padding: 0 var(--space-2); }
   .repository-select-row { gap: var(--space-3); padding: var(--space-3-5) var(--space-4); }
   .repository-browser-error { align-items: flex-start; margin: var(--space-3-5) var(--space-4); }
   .session-workspace-selection { padding: var(--space-4); }

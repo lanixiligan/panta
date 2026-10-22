@@ -2,6 +2,8 @@
 
 The full detail for each page. The [README](../README.md) has the short version.
 
+On windows 680px wide and narrower, the sidebar becomes a top bar (logo, account, and the Session Workspace button) and a tab bar fixed to the foot of the screen with icons for Session History, Repositories, Overview (the circle in the middle), Analytics, and Socials.
+
 ## Overview
 
 A one-screen dashboard that never scrolls on windows 1024×600 and larger. Under the greeting, one line shows the next step: the running session (with its timer), or **Continue where you left off**, which opens the Session Workspace with the repository of your latest real session already selected (`?repo=<id>`). Below it, **This week** shows the current Monday-to-Sunday totals in one row (sessions, session time, commits, repositories), followed by the five most recent sessions and **When you work**, the current month's calendar from Analytics, where a day with sessions opens Session History for that day. Like the rest of the dashboard they include example sessions while example data is shown, and say so. Smaller windows stack the cards and scroll.
@@ -34,7 +36,7 @@ Values that were never recorded are shown as unavailable rather than zero. Analy
 
 ## Socials
 
-A collapsible sidebar section listing your GitHub mutuals (people you follow who also follow you), grouped as online or offline based on recent Panta presence.
+A collapsible sidebar section listing your GitHub mutuals (people you follow who also follow you), grouped as online or offline based on recent Panta presence. On a phone it is the last icon in the bottom tab bar and opens as a panel above it; a tap elsewhere or Escape closes it.
 
 ## Theme
 

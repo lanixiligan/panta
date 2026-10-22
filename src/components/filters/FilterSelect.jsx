@@ -5,6 +5,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 export default function FilterSelect({ value, options, onChange, labelId, icon }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  const [title, setTitle] = useState('');
   const rootRef = useRef(null);
   const triggerRef = useRef(null);
   const listRef = useRef(null);
@@ -14,6 +15,8 @@ export default function FilterSelect({ value, options, onChange, labelId, icon }
 
   function openList() {
     setActive(selectedIndex);
+    // The phone's centred panel is titled with the control's own label ("Repository", "Sort").
+    setTitle(labelId ? document.getElementById(labelId)?.textContent ?? '' : '');
     setOpen(true);
   }
 
@@ -89,32 +92,43 @@ export default function FilterSelect({ value, options, onChange, labelId, icon }
       </button>
 
       {open && (
-        <ul
-          ref={listRef}
-          className="filter-popover filter-options"
-          role="listbox"
-          tabIndex={-1}
-          aria-labelledby={labelId}
-          aria-activedescendant={`${id}-option-${active}`}
-          onKeyDown={onListKeyDown}
-        >
-          {options.map(([optionValue, label], index) => (
-            <li
-              key={optionValue}
-              id={`${id}-option-${index}`}
-              data-index={index}
-              role="option"
-              aria-selected={index === selectedIndex}
-              className={[index === active && 'is-active', index === selectedIndex && 'is-selected'].filter(Boolean).join(' ')}
-              title={label}
-              onMouseEnter={() => setActive(index)}
-              onClick={() => pick(index)}
+        <>
+          <div className="filter-backdrop" aria-hidden="true" />
+          <div className="filter-popover">
+            <div className="filter-sheet-header">
+              <strong>{title}</strong>
+              <button className="filter-close" type="button" aria-label="Close" onClick={() => close()}>
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+              </button>
+            </div>
+            <ul
+              ref={listRef}
+              className="filter-options"
+              role="listbox"
+              tabIndex={-1}
+              aria-labelledby={labelId}
+              aria-activedescendant={`${id}-option-${active}`}
+              onKeyDown={onListKeyDown}
             >
-              <span>{label}</span>
-              {index === selectedIndex && <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-            </li>
-          ))}
-        </ul>
+              {options.map(([optionValue, label], index) => (
+                <li
+                  key={optionValue}
+                  id={`${id}-option-${index}`}
+                  data-index={index}
+                  role="option"
+                  aria-selected={index === selectedIndex}
+                  className={[index === active && 'is-active', index === selectedIndex && 'is-selected'].filter(Boolean).join(' ')}
+                  title={label}
+                  onMouseEnter={() => setActive(index)}
+                  onClick={() => pick(index)}
+                >
+                  <span>{label}</span>
+                  {index === selectedIndex && <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
       )}
     </div>
   );

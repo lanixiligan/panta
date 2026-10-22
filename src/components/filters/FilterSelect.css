@@ -20,9 +20,19 @@
 .filter-options li > svg { flex: 0 0 auto; }
 .filter-options:focus-visible li.is-active { box-shadow: inset 0 0 0 1px var(--workspace-focus); }
 
+/* The backdrop and the header with its close button exist for the phone's centred panel only. */
+.filter-backdrop, .filter-sheet-header { display: none; }
+.filter-sheet-header strong { color: var(--workspace-text); font-size: var(--text-md); font-weight: 500; }
+.filter-close { display: grid; width: var(--control-md); height: var(--control-md); margin-right: calc(var(--space-2) * -1); place-items: center; border: 0; border-radius: var(--radius-md); background: transparent; color: var(--workspace-secondary); cursor: pointer; }
+.filter-close:hover { color: var(--workspace-text); }
+
 @media (max-width: 680px) {
   .filter-trigger { height: var(--control-lg); }
-  .filter-popover { position: fixed; top: auto; right: 12px; bottom: 12px; left: 12px; min-width: 0; }
-  .filter-options { max-height: calc(60vh / var(--ui-zoom)); }
+  /* The backdrop swallows touches and the page behind it can't scroll, so only the panel and its close button respond. */
+  .filter-backdrop { position: fixed; z-index: 29; inset: 0; display: block; background: var(--workspace-scrim); touch-action: none; }
+  body:has(.filter-backdrop) { overflow: hidden; }
+  .filter-popover { position: fixed; top: 50%; right: auto; bottom: auto; left: 50%; width: min(360px, calc(100vw - var(--space-8))); min-width: 0; max-height: calc(100dvh - var(--space-8)); transform: translate(-50%, -50%); }
+  .filter-sheet-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-1) var(--space-4) 0; border-bottom: 1px solid var(--workspace-divider); }
+  .filter-options { max-height: min(50dvh, 360px); }
   .filter-options li { padding: var(--space-3); }
 }

@@ -170,7 +170,15 @@ export default function DateRangePicker({ value, onChange, activeDays = new Set(
       </button>
 
       {open && (
+        <>
+        <div className="filter-backdrop" aria-hidden="true" />
         <div className="filter-popover date-range-popover" role="dialog" aria-label="Choose dates">
+          <div className="filter-sheet-header">
+            <strong>Dates</strong>
+            <button className="filter-close" type="button" aria-label="Close" onClick={() => close()}>
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+            </button>
+          </div>
           <div className="date-range-calendar">
             <MonthNav className="date-range-month" month={month} onChange={changeMonth} canGoForward={canGoForward} />
             <div className="date-range-grid" ref={gridRef} role="group" aria-label="Dates" onKeyDown={onGridKeyDown} onMouseLeave={() => setHovered(null)}>
@@ -203,6 +211,7 @@ export default function DateRangePicker({ value, onChange, activeDays = new Set(
                     </button>
                   );
                 })}
+                {Array.from({ length: (7 - ((leading + days.length) % 7)) % 7 }, (_, index) => <span key={`tail-${index}`} aria-hidden="true" />)}
               </div>
             </div>
             <p className="date-range-hint" aria-live="polite">{anchor ? 'Choose an end date' : 'Choose a start date'}</p>
@@ -218,6 +227,7 @@ export default function DateRangePicker({ value, onChange, activeDays = new Set(
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );

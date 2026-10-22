@@ -1,9 +1,6 @@
 @media (max-width: 760px) {
   .session-history-search { grid-column: 1 / -1; }
 }
-@media (max-width: 520px) {
-  .session-history-search { grid-column: auto; }
-}
 .session-history-page { gap: var(--space-5); }
 .session-history-page .page-intro { margin-bottom: 0; }
 .session-history-page .page-intro h1 { margin-bottom: var(--space-2); }
@@ -24,7 +21,9 @@
   .session-history-toolbar label, .session-history-filter { gap: var(--space-1); }
   .session-history-toolbar input, .session-history-toolbar select { height: var(--control-lg); }
   .session-history-page { gap: var(--space-4); }
-  .session-history-toolbar { grid-template-columns: 1fr; gap: var(--space-2); margin-bottom: var(--space-5); }
+  /* Search takes the first row; Repository, Dates, and Sort share the second. */
+  .session-history-toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin-bottom: var(--space-5); }
+  .session-history-toolbar .filter-trigger { gap: var(--space-1-5); padding: 0 var(--space-2); }
 }
 .session-history-title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-5); }
 .session-history-title-row h1 { margin-top: var(--space-2-5); }

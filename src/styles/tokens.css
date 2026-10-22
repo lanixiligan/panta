@@ -52,6 +52,7 @@
   --workspace-underline: #3D7A5266;
   --workspace-hover-overlay: #FFFFFF08;
   --workspace-shadow: #00000066;
+  --workspace-scrim: #00000080;
 
   /* Primary buttons */
   --workspace-action: #2A9D5C;
@@ -193,6 +194,7 @@
   --workspace-underline: #1B7A4766;
   --workspace-hover-overlay: #0F24180A;
   --workspace-shadow: #0F24181F;
+  --workspace-scrim: #0F241866;
 
   --workspace-action: #1B7A47;
   --workspace-action-hover: #176A3E;

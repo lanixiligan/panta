@@ -64,7 +64,8 @@ a { color: inherit; }
 }
 @media (max-width: 680px) {
   .app-shell-dark.workspace-shell { display: block; }
-  .workspace-main { display: block; min-height: calc(calc(100vh / var(--ui-zoom)) - 91px); overflow: visible; height: auto; }
+  /* The bottom padding keeps the footer clear of the floating tab bar (60px tall, 12px above the edge). */
+  .workspace-main { display: block; min-height: calc(calc(100vh / var(--ui-zoom)) - 91px); padding-bottom: calc(60px + var(--space-6) + env(safe-area-inset-bottom, 0px)); overflow: visible; height: auto; }
   .workspace-main .app-main { min-height: 0; padding: var(--space-7) var(--space-5) var(--space-10); }
 }
 @media (max-width: 420px) {

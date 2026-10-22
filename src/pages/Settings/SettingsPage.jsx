@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Layers, Palette } from 'lucide-react';
+import ThemeToggle from '../../components/theme/ThemeToggle.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { formatCount } from '../../sessions/sessionHelpers.js';
 
@@ -12,9 +14,10 @@ function SettingsGroup({ id, title, tone, children }) {
   );
 }
 
-function SettingsRow({ label, detail, children }) {
+function SettingsRow({ icon: Icon, label, detail, children }) {
   return (
-    <div className="settings-row">
+    <div className={`settings-row${Icon ? ' has-icon' : ''}`}>
+      {Icon && <Icon className="settings-row-icon" size={18} strokeWidth={1.6} aria-hidden="true" />}
       <div className="settings-row-copy">
         <strong>{label}</strong>
         {detail && <span>{detail}</span>}
@@ -24,7 +27,7 @@ function SettingsRow({ label, detail, children }) {
   );
 }
 
-export default function SettingsPage({ identity, showExamples = false, onToggleExamples, onLogout, hasActiveSession = false, savedSessionCount = 0, sessionsStatus = 'ready', onDeleteHistory, onDeleteAccount, onBeforeLogout }) {
+export default function SettingsPage({ identity, theme = 'system', onChangeTheme, showExamples = false, onToggleExamples, onLogout, hasActiveSession = false, savedSessionCount = 0, sessionsStatus = 'ready', onDeleteHistory, onDeleteAccount, onBeforeLogout }) {
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState('');
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
@@ -129,7 +132,10 @@ export default function SettingsPage({ identity, showExamples = false, onToggleE
       </SettingsGroup>
 
       <SettingsGroup id="preferences" title="Preferences">
-        <SettingsRow label="Show example data">
+        <SettingsRow icon={Palette} label="Appearance" detail="Choose your theme">
+          <ThemeToggle value={theme} onChange={onChangeTheme} size="lg" />
+        </SettingsRow>
+        <SettingsRow icon={Layers} label="Show example data">
           <input className="settings-checkbox" type="checkbox" aria-label="Show example data" checked={showExamples} onChange={(event) => onToggleExamples?.(event.target.checked)} />
         </SettingsRow>
       </SettingsGroup>

@@ -898,8 +898,6 @@ export default function App() {
           mutuals={mutuals}
           mutualsLoading={mutualsLoading}
           mutualsError={mutualsError}
-          theme={themeChoice}
-          onChangeTheme={changeTheme}
         />
         <div className={`workspace-main${['Overview', 'Settings', 'Session Detail'].includes(view) ? ' workspace-main-fit' : ''}`}>
           <main className="app-main" id="main-content" tabIndex={-1}>
@@ -965,7 +963,7 @@ export default function App() {
               : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><BackLink href={routePaths.Projects} label="Repositories" onNavigate={navigate} /></section>
           )}
           {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} notice={sessionsNotice} onNavigate={navigate} />}
-          {view === 'Settings' && <SettingsPage identity={identity} showExamples={showExamples} onToggleExamples={toggleExamples} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
+          {view === 'Settings' && <SettingsPage identity={identity} theme={themeChoice} onChangeTheme={changeTheme} showExamples={showExamples} onToggleExamples={toggleExamples} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
           {view === 'Session Detail' && (
             detailSession
               ? <SessionDetailPage

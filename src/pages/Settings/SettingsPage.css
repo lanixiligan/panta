@@ -7,6 +7,8 @@
 .settings-group.is-danger .settings-card { border-color: var(--workspace-danger-border); }
 
 .settings-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-5); min-height: 64px; padding: var(--space-3-5) var(--space-5); }
+.settings-row.has-icon { grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3-5); }
+.settings-row-icon { color: var(--workspace-secondary); }
 .settings-row + .settings-row { border-top: 1px solid var(--workspace-divider); }
 .settings-row-copy { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1); }
 .settings-row-copy strong { color: var(--workspace-text); font-size: var(--text-md); font-weight: 500; }
@@ -44,6 +46,8 @@
 @media (max-width: 560px) {
   .settings-row { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
   .settings-row-control { justify-content: flex-start; }
+  .settings-row.has-icon { grid-template-columns: auto minmax(0, 1fr); }
+  .settings-row.has-icon .settings-row-control { grid-column: 2; }
   .settings-account { grid-template-columns: auto minmax(0, 1fr); }
   .settings-account-actions { grid-column: 1 / -1; justify-content: flex-start; }
 }

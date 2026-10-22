@@ -23,15 +23,13 @@
 .sidebar-live-session strong { max-width: 100%; overflow: hidden; color: var(--workspace-text); font-size: var(--text-sm); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
 .live-session-time { color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); font-variant-numeric: tabular-nums; }
 .sidebar-bottom { position: relative; margin-top: auto; border-top: 1px solid var(--workspace-border); }
-/* Session Workspace: the main action, pinned above the example-data setting and the account. */
+/* Session Workspace: the main action, pinned above the account. */
 .sidebar-workspace { margin-top: auto; padding-bottom: var(--space-3); }
 .sidebar-workspace-link { display: flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: var(--control-md); padding: 0 var(--space-3); border: 1px solid var(--workspace-border-hover); border-radius: var(--radius-md); background: var(--workspace-cta-fill); color: var(--workspace-accent-soft); font-size: var(--text-sm); font-weight: 600; text-decoration: none; transition: color var(--duration-base) ease, border-color var(--duration-base) ease; }
 .sidebar-workspace-link:hover { border-color: var(--workspace-level-4); color: var(--workspace-text); }
 .sidebar-workspace-link[aria-current="page"] { border-color: var(--workspace-level-4); color: var(--workspace-text); }
 .sidebar-workspace-link:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
 .sidebar-live-session[aria-current="page"] { border-color: var(--workspace-border-hover); }
-/* Preferences: the theme toggle, just above the account. */
-.sidebar-preferences { display: flex; align-items: center; justify-content: space-between; gap: var(--space-1); margin: 0 0 var(--space-2-5); }
 .sidebar-workspace ~ .sidebar-bottom { margin-top: 0; }
 .sidebar-account { position: relative; }
 .account-trigger { display: flex; align-items: center; width: 100%; padding: var(--space-1) var(--space-2); border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--workspace-text); text-align: left; cursor: pointer; min-height: 47px; gap: var(--space-2); }
@@ -68,8 +66,7 @@
   .sidebar-nav-icon { width: auto; }
   .sidebar-bottom { grid-column: 2; grid-row: 1; align-self: center; margin: 0; padding: 0; border: 0; }
   .sidebar-workspace { grid-column: 1 / -1; grid-row: 3; margin: var(--space-2-5) 0 0; padding: 0; }
-  .sidebar-preferences { grid-column: 1 / -1; grid-row: 4; margin: var(--space-1-5) 0 0; }
-    .account-trigger { width: auto; padding: var(--space-0-5) var(--space-1); }
+  .account-trigger { width: auto; padding: var(--space-0-5) var(--space-1); }
   .account-copy { max-width: 112px; }
   .account-copy small, .account-caret { display: none; }
   .account-menu { top: calc(100% + 7px); right: 0; bottom: auto; left: auto; width: 210px; }

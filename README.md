@@ -314,7 +314,7 @@ panta/
 
 Styles are plain CSS. Each component, page, and Session Workspace phase has its own stylesheet next to its JSX, and `src/styles/` holds the global layers. Components do not import CSS themselves: `src/index.css` imports every stylesheet in a fixed order (tokens, base, shared, components, then pages) so the cascade order stays explicit. Add new stylesheets to that list.
 
-Every colour, font, type size, space, radius, shadow, and duration comes from `src/styles/tokens.css`. Dark is Panta's signature look and the default; a light palette built from the same greens overrides the colours under `[data-theme="light"]`. The theme follows the system unless a viewer picks one in the sidebar. An inline script in `index.html` sets `data-theme` before the first paint, so the page never flashes the wrong theme, and `src/theme.js` applies later changes. Text and links meet WCAG AA in both themes.
+Every colour, font, type size, space, radius, shadow, and duration comes from `src/styles/tokens.css`. Dark is Panta's signature look and the default; a light palette built from the same greens overrides the colours under `[data-theme="light"]`. The theme follows the system unless a viewer picks one in Settings. An inline script in `index.html` sets `data-theme` before the first paint, so the page never flashes the wrong theme, and `src/theme.js` applies later changes. Text and links meet WCAG AA in both themes.
 
 ## Getting Started
 

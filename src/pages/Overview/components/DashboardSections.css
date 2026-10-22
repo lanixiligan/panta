@@ -1,4 +1,4 @@
-.dashboard-home .dashboard-section { border-radius: var(--radius-lg); }
+.dashboard-home .dashboard-section { border-radius: var(--radius-xl); }
 .dashboard-home .dashboard-section-heading { align-items: baseline; margin-bottom: var(--space-3); }
 .dashboard-home .dashboard-section-heading h2 { margin: 0; }
 /* The work calendar comes from Analytics; on Overview its frame and heading match the other cards. */

@@ -23,7 +23,7 @@
 
 .auth-subline { max-width: 640px; text-wrap: balance; margin: var(--space-3) 0 var(--space-10); color: var(--workspace-secondary); font-size: clamp(14px, calc(1.3vw / var(--ui-zoom)), 16px); line-height: 1.55; }
 .auth-screen .auth-control { display: flex; flex-direction: column; align-items: center; }
-.auth-screen .github-sign-in { min-height: 44px; justify-content: center; gap: var(--space-2); padding: 0 0 0 var(--space-5); overflow: hidden; border: 1px solid var(--workspace-action-border); border-radius: var(--radius-md); background: var(--workspace-action); color: var(--workspace-action-text); font-size: var(--text-md); font-weight: 600; transition: background var(--duration-base) ease, border-color var(--duration-base) ease; }
+.auth-screen .github-sign-in { min-height: var(--control-lg); justify-content: center; gap: var(--space-2); padding: 0 0 0 var(--space-5); overflow: hidden; border: 1px solid var(--workspace-action-border); border-radius: var(--radius-md); background: var(--workspace-action); color: var(--workspace-action-text); font-size: var(--text-md); font-weight: 600; transition: background var(--duration-base) ease, border-color var(--duration-base) ease; }
 .auth-screen .github-sign-in:hover { border-color: var(--workspace-action-border); background: var(--workspace-action-hover); }
 /* The arrow sits in its own darker segment at the end of the button. */
 .auth-screen .github-sign-in::after { display: grid; align-self: stretch; width: 40px; margin-left: var(--space-2); place-items: center; border-left: 1px solid var(--workspace-action-shade-strong); background: var(--workspace-action-shade); content: '→'; font-size: var(--text-lg); transition: background var(--duration-base) ease; }
@@ -39,5 +39,5 @@
 @media (max-width: 560px) {
   .auth-screen { padding: var(--space-5) var(--space-4); }
   .auth-subline { margin-bottom: var(--space-8); }
-  .auth-screen .github-sign-in { min-height: 46px; }
+  .auth-screen .github-sign-in { min-height: var(--control-lg); }
 }

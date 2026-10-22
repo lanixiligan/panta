@@ -8,7 +8,7 @@
 
 .session-workspace-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-6); padding-bottom: var(--space-5); border-bottom: 1px solid var(--workspace-divider); }
 .session-workspace-header .page-intro { margin: 0; }
-.session-workspace-header .page-intro h1 { margin: 0 0 var(--space-1-5); font-size: clamp(26px, calc(2.6vw / var(--ui-zoom)), 32px); }
+.session-workspace-header .page-intro h1 { margin: 0 0 var(--space-1-5); font-size: var(--text-display); }
 
 /* Lifecycle track: done → current → upcoming */
 .session-phase-track { display: flex; flex: 0 0 auto; align-items: center; margin: 0; padding: 0; list-style: none; }
@@ -23,7 +23,7 @@
 .session-phase-track li[data-state='current'] .session-phase-marker { border-color: var(--workspace-accent); background: var(--workspace-accent); box-shadow: 0 0 0 3px var(--workspace-accent-ring); }
 
 /* Shared primary action inside the workspace */
-.session-workspace-page .session-workspace-button { width: 100%; min-height: 44px; font-size: var(--text-md); }
+.session-workspace-page .session-workspace-button { width: 100%; min-height: var(--control-lg); font-size: var(--text-md); }
 
 @media (max-width: 760px) {
   .session-workspace-header { align-items: flex-start; flex-direction: column; gap: var(--space-4); }

@@ -21,7 +21,7 @@
 .sidebar-bottom { position: relative; margin-top: auto; border-top: 1px solid var(--workspace-border); }
 /* Session Workspace: the main action, pinned above the example-data setting and the account. */
 .sidebar-workspace { margin-top: auto; padding-bottom: var(--space-3); }
-.sidebar-workspace-link { display: flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 40px; padding: 0 var(--space-3); border: 1px solid var(--workspace-border-hover); border-radius: var(--radius-md); background: var(--workspace-sidebar); color: var(--workspace-accent-soft); font-size: var(--text-sm); font-weight: 600; text-decoration: none; transition: color var(--duration-base) ease, border-color var(--duration-base) ease; }
+.sidebar-workspace-link { display: flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: var(--control-md); padding: 0 var(--space-3); border: 1px solid var(--workspace-border-hover); border-radius: var(--radius-md); background: var(--workspace-sidebar); color: var(--workspace-accent-soft); font-size: var(--text-sm); font-weight: 600; text-decoration: none; transition: color var(--duration-base) ease, border-color var(--duration-base) ease; }
 .sidebar-workspace-link:hover { border-color: var(--workspace-level-4); color: var(--workspace-text); }
 .sidebar-workspace-link[aria-current="page"] { border-color: var(--workspace-level-4); color: var(--workspace-text); }
 .sidebar-workspace-link:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
@@ -75,7 +75,7 @@
   .account-copy { max-width: 112px; }
   .account-copy small, .account-caret { display: none; }
   .account-menu { top: calc(100% + 7px); right: 0; bottom: auto; left: auto; width: 210px; }
-  .sidebar-auth .github-sign-in { width: auto; min-height: 32px; padding: 0 var(--space-2); font-size: var(--text-2xs); }
+  .sidebar-auth .github-sign-in { width: auto; min-height: var(--control-sm); padding: 0 var(--space-2); font-size: var(--text-2xs); }
   .sidebar-auth .auth-checking { display: none; }
 }
 @media (max-width: 420px) {

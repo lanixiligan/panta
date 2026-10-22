@@ -1,59 +1,53 @@
 /* Settings: a narrow column of titled cards, each holding label-and-control rows. */
-.settings-page { display: flex; width: 100%; max-width: 720px; flex-direction: column; gap: 28px; margin: 0 auto; }
+.settings-page { display: flex; width: 100%; max-width: 720px; flex-direction: column; gap: var(--space-7); margin: 0 auto; }
 .settings-page .page-intro { margin-bottom: 0; }
 
-.settings-group h2 { margin: 0 0 10px; color: var(--workspace-secondary); font-size: 13px; font-weight: 500; }
-.settings-card { border: 1px solid var(--workspace-border); border-radius: 8px; background: var(--workspace-surface); }
+.settings-group h2 { margin: 0 0 var(--space-2-5); color: var(--workspace-secondary); font-size: var(--text-sm); font-weight: 500; }
+.settings-card { border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); }
 .settings-group.is-danger .settings-card { border-color: var(--workspace-danger-border); }
 
-.settings-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 20px; min-height: 64px; padding: 14px 20px; }
+.settings-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-5); min-height: 64px; padding: var(--space-3-5) var(--space-5); }
+.settings-row.has-icon { grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3-5); }
+.settings-row-icon { color: var(--workspace-secondary); }
 .settings-row + .settings-row { border-top: 1px solid var(--workspace-divider); }
-.settings-row-copy { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
-.settings-row-copy strong { color: var(--workspace-text); font-size: 14px; font-weight: 500; }
-.settings-row-copy span { color: var(--workspace-muted); font-size: 12px; }
+.settings-row-copy { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1); }
+.settings-row-copy strong { color: var(--workspace-text); font-size: var(--text-md); font-weight: 500; }
+.settings-row-copy span { color: var(--workspace-muted); font-size: var(--text-xs); }
 .settings-row-control { display: flex; justify-content: flex-end; }
 
-.settings-account { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 18px 20px; }
+.settings-account { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3-5); padding: var(--space-5); }
 .settings-avatar { width: 48px; height: 48px; border: 1px solid var(--workspace-border); border-radius: 50%; object-fit: cover; }
-.settings-avatar-fallback { display: grid; place-items: center; background: var(--workspace-raised); color: var(--workspace-text); font-size: 18px; }
-.settings-account-copy { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
-.settings-account-copy strong { overflow: hidden; color: var(--workspace-text); font-size: 16px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
-.settings-account-copy span { overflow: hidden; color: var(--workspace-muted); font: 12px 'DM Mono', monospace; text-overflow: ellipsis; white-space: nowrap; }
-.settings-account-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.settings-avatar-fallback { display: grid; place-items: center; background: var(--workspace-raised); color: var(--workspace-text); font-size: var(--text-xl); }
+.settings-account-copy { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1); }
+.settings-account-copy strong { overflow: hidden; color: var(--workspace-text); font-size: var(--text-lg); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.settings-account-copy span { overflow: hidden; color: var(--workspace-muted); font: var(--text-xs) var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
+.settings-account-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2); }
 
-.settings-status { display: inline-flex; align-items: center; gap: 8px; color: var(--workspace-secondary); font-size: 13px; }
+.settings-status { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--workspace-secondary); font-size: var(--text-sm); }
 .settings-status i { width: 7px; height: 7px; border-radius: 50%; background: var(--workspace-accent); }
 
+.settings-checkbox { width: 18px; height: 18px; margin: 0; accent-color: var(--workspace-accent); cursor: pointer; }
+.settings-checkbox:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
+
 /* One button style for every control; danger tints it, solid fills it for the confirm step. */
-.settings-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 14px; border: 1px solid var(--workspace-border-strong); border-radius: 6px; background: transparent; color: var(--workspace-secondary); font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; cursor: pointer; transition: border-color .15s ease, background .15s ease, color .15s ease; }
+.settings-button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-1-5); min-height: var(--control-sm); padding: 0 var(--space-3-5); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-md); background: transparent; color: var(--workspace-secondary); font-size: var(--text-sm); font-weight: 500; text-decoration: none; white-space: nowrap; cursor: pointer; transition: border-color var(--duration-base) ease, background var(--duration-base) ease, color var(--duration-base) ease; }
 .settings-button:hover:not(:disabled) { border-color: var(--workspace-border-hover); background: var(--workspace-raised); color: var(--workspace-text); }
 .settings-button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
 .settings-button:disabled { opacity: .5; cursor: not-allowed; }
 .settings-button.is-danger { border-color: var(--workspace-danger-border); color: var(--workspace-danger); }
 .settings-button.is-danger:hover:not(:disabled) { border-color: var(--workspace-danger); background: var(--workspace-danger-bg); color: var(--workspace-danger); }
 .settings-button.is-danger.is-solid { background: var(--workspace-danger-bg); }
-.settings-confirm { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
-.settings-confirm > span { color: var(--workspace-secondary); font-size: 12px; }
-.settings-note { margin: 0; padding: 14px 20px; border-top: 1px solid var(--workspace-divider); color: var(--workspace-secondary); font-size: 12px; }
-.settings-error { margin: 0; padding: 0 20px 14px; color: var(--workspace-danger); font-size: 12px; }
+.settings-confirm { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+.settings-confirm > span { color: var(--workspace-secondary); font-size: var(--text-xs); }
+.settings-note { margin: 0; padding: var(--space-3-5) var(--space-5); border-top: 1px solid var(--workspace-divider); color: var(--workspace-secondary); font-size: var(--text-xs); }
+.settings-error { margin: 0; padding: 0 var(--space-5) var(--space-3-5); color: var(--workspace-danger); font-size: var(--text-xs); }
 
 
 @media (max-width: 560px) {
-  .settings-row { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .settings-row { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
   .settings-row-control { justify-content: flex-start; }
+  .settings-row.has-icon { grid-template-columns: auto minmax(0, 1fr); }
+  .settings-row.has-icon .settings-row-control { grid-column: 2; }
   .settings-account { grid-template-columns: auto minmax(0, 1fr); }
   .settings-account-actions { grid-column: 1 / -1; justify-content: flex-start; }
-}
-/* Settings fits the window like Overview, but scrolls on windows too short to hold all three cards. */
-@media (max-height: 760px) {
-  .workspace-main-fit:has(.settings-page) { overflow: auto; }
-}
-
-/* Fitted to the window: every section, row, and the footer must fit without scrolling, so density tightens up. */
-@media (min-width: 1024px) and (min-height: 600px) {
-  .workspace-main-fit .settings-page { gap: 16px; }
-  .workspace-main-fit .settings-group h2 { margin-bottom: 7px; }
-  .workspace-main-fit .settings-row { min-height: 52px; padding: 11px 20px; }
-  .workspace-main-fit .settings-account { padding: 14px 20px; }
-  .workspace-main-fit .settings-note { padding: 11px 20px; }
 }

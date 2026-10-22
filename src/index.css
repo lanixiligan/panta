@@ -4,7 +4,9 @@
 @import './styles/shared.css';
 
 /* Shared components */
+@import './components/brand/PantaLogo.css';
 @import './components/navigation/SidebarNav.css';
+@import './components/theme/ThemeToggle.css';
 @import './components/navigation/Pager.css';
 @import './components/navigation/BackLink.css';
 @import './components/layout/Footer.css';
@@ -12,6 +14,7 @@
 @import './components/auth/AuthControl.css';
 @import './components/sessions/SessionCommitList.css';
 @import './components/sessions/EditableGoal.css';
+@import './components/calendar/MonthNav.css';
 @import './components/filters/FilterSelect.css';
 @import './components/filters/DateRangePicker.css';
 @import './components/analytics/WorkCalendar.css';
@@ -39,5 +42,6 @@
 @import './pages/Settings/SettingsPage.css';
 @import './pages/Authentication/AuthenticationPage.css';
 /* @import './pages/Authentication/components/SessionGlimpse.css'; — not on the sign-in page yet */
+@import './pages/Waking/WakingPage.css';
 @import './pages/Preview/PreviewPage.css';
 @import './pages/NotFoundPage.css';

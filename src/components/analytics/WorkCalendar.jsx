@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
 import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
 import { formatCount, getSessionDurationMs } from '../../sessions/sessionHelpers.js';
+import MonthNav from '../calendar/MonthNav.jsx';
+import { monthDays, toDayString } from '../calendar/calendarDates.js';
 
 // "When you work": a month calendar shaded by session time, used on Analytics and Overview.
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -22,14 +24,8 @@ function formatDate(value, options = { month: 'short', day: 'numeric' }) {
 
 // The Session History link for one local day (?from=YYYY-MM-DD&to=YYYY-MM-DD).
 function historyDayHref(date) {
-  const pad = (value) => String(value).padStart(2, '0');
-  const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const day = toDayString(date);
   return `${routePaths['Session History']}?from=${day}&to=${day}`;
-}
-
-function localDayKey(value) {
-  const date = new Date(value);
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
 
 // Session time per local day, credited to the day each session started.
@@ -40,7 +36,7 @@ function dailySessionTotals(sessions) {
     const endedAt = Date.parse(session.endedAt);
     const durationMs = getSessionDurationMs(session);
     if (session.status !== 'completed' || !Number.isFinite(startedAt) || !Number.isFinite(endedAt) || endedAt < startedAt || durationMs === null) return;
-    const key = localDayKey(startedAt);
+    const key = toDayString(new Date(startedAt));
     const day = days.get(key) || { durationMs: 0, sessionCount: 0, repositories: new Set() };
     day.durationMs += durationMs;
     day.sessionCount += 1;
@@ -73,12 +69,8 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
 
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-  const leadingBlanks = (month.getDay() + 6) % 7;
-  const days = Array.from({ length: daysInMonth }, (_, index) => {
-    const date = new Date(year, monthIndex, index + 1);
-    return { date, ...(totals.get(localDayKey(date)) || { durationMs: 0, sessionCount: 0, repositories: new Set() }) };
-  });
+  const { leading: leadingBlanks, days: dates } = monthDays(month);
+  const days = dates.map((date) => ({ date, ...(totals.get(toDayString(date)) || { durationMs: 0, sessionCount: 0, repositories: new Set() }) }));
   const max = Math.max(0, ...days.map((day) => day.durationMs));
   const level = (value) => (!value || !max ? 0 : Math.min(4, Math.ceil((value / max) * 4)));
   const monthTotal = days.reduce((sum, day) => sum + day.durationMs, 0);
@@ -87,10 +79,16 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
   const canGoBack = new Date(year, monthIndex, 1) > new Date(earliest.getFullYear(), earliest.getMonth(), 1);
   const canGoForward = new Date(year, monthIndex, 1) < new Date(today.getFullYear(), today.getMonth(), 1);
   const active = hovered === null ? null : days[hovered.index];
-  // The tooltip sits above the hovered or focused day.
+  // The tooltip sits above the hovered or focused day, or below it in the first two weeks so it doesn't cover the heading.
+  // Near the left and right edges it lines up with the day's outer edge instead of centring, so it stays inside the card.
   const showDay = (event, index) => {
     const cell = event.currentTarget;
-    setHovered({ index, left: cell.offsetLeft + cell.offsetWidth / 2, top: cell.offsetTop });
+    const column = (leadingBlanks + index) % 7;
+    const below = leadingBlanks + index < 14;
+    const align = column < 2 ? 'start' : column > 4 ? 'end' : 'center';
+    const left = cell.offsetLeft + { start: 0, center: cell.offsetWidth / 2, end: cell.offsetWidth }[align];
+    const top = below ? cell.offsetTop + cell.offsetHeight + 6 : cell.offsetTop - 6;
+    setHovered({ index, left, top, x: { start: '0%', center: '-50%', end: '-100%' }[align], y: below ? '0%' : '-100%' });
   };
   const changeMonth = (offset) => { setHovered(null); setMonth(new Date(year, monthIndex + offset, 1)); };
 
@@ -99,11 +97,7 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
       <div className="analytics-section-heading">
         <h2 id="analytics-rhythm-heading">When you work</h2>
         {browsable ? (
-          <div className="analytics-calendar-nav">
-            <button type="button" onClick={() => changeMonth(-1)} disabled={!canGoBack} aria-label="Previous month">‹</button>
-            <span aria-live="polite">{formatDate(month, { month: 'long', year: 'numeric' })}</span>
-            <button type="button" onClick={() => changeMonth(1)} disabled={!canGoForward} aria-label="Next month">›</button>
-          </div>
+          <MonthNav month={month} onChange={changeMonth} canGoBack={canGoBack} canGoForward={canGoForward} />
         ) : (
           <span className="analytics-calendar-month">{formatDate(month, { month: 'long', year: 'numeric' })}</span>
         )}
@@ -117,7 +111,7 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
         {WEEKDAYS.map((weekday) => <span className="analytics-calendar-weekday" key={weekday} aria-hidden="true">{weekday}</span>)}
         {Array.from({ length: leadingBlanks }, (_, index) => <span key={`blank-${index}`} aria-hidden="true" />)}
         {days.map((day, index) => {
-          const isToday = localDayKey(day.date) === localDayKey(today);
+          const isToday = toDayString(day.date) === toDayString(today);
           const isFuture = day.date > today;
           const label = `${formatDate(day.date, { weekday: 'long', month: 'long', day: 'numeric' })}: ${day.sessionCount ? `${formatDuration(day.durationMs)}, ${formatCount(day.sessionCount, 'session')}` : 'no sessions'}`;
           const cellProps = {
@@ -141,7 +135,7 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
           <div
             className="analytics-calendar-tooltip"
             aria-hidden="true"
-            style={{ left: hovered.left, top: hovered.top - 6 }}
+            style={{ left: hovered.left, top: hovered.top, '--tooltip-x': hovered.x, '--tooltip-y': hovered.y }}
           >
             <span>{formatDate(active.date, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
             <strong>{active.sessionCount ? formatDuration(active.durationMs) : 'No sessions'}</strong>

@@ -86,7 +86,7 @@ Each page is described in full in [docs/features.md](docs/features.md).
 | `/settings` | Settings |
 | `/preview` | Public example-session preview (no sign-in needed) |
 
-Any other path renders the Not Found view. Signed-out users see the authentication page regardless of the route, except `/preview`, which shows a handcrafted example session in the Session detail layout so visitors can see a recap before signing in. Nothing links to it yet; it will become a read-only demo once the designs are final.
+Any other path renders the Not Found view. When the sign-in check takes longer than a moment (usually the API waking up), a waking screen shows until the server answers, then fades into sign-in or the app. Signed-out users see the authentication page regardless of the route, except `/preview`, which shows a handcrafted example session in the Session detail layout so visitors can see a recap before signing in. Nothing links to it yet; it will become a read-only demo once the designs are final.
 
 Routing is implemented in `src/routing.js` and `src/App.jsx` with the History API; there is no router library.
 
@@ -107,7 +107,7 @@ flowchart LR
   subgraph Browser["Browser"]
     App["React app<br/>App.jsx · pages · routing.js"]
     ApiClient["src/api/*.js<br/>auth · github · sessions · presence"]
-    Local[("localStorage<br/>example-data toggle,<br/>legacy history until imported")]
+    Local[("localStorage<br/>example-data and theme toggles,<br/>legacy history until imported")]
     App --> ApiClient
     App <--> Local
   end
@@ -204,6 +204,7 @@ Sessions are stored in Postgres, keyed by the numeric GitHub user ID, so your hi
 | Completed coding sessions | Postgres | Until deleted from Session detail or Settings |
 | Presence | Server memory | 90-second online window; cleared on restart |
 | Repositories and commits | GitHub, fetched on demand | — |
+| Example-data and theme choices | Browser `localStorage` (`panta.showExamples`, `panta.theme`) | Until cleared; per browser |
 
 Before session storage, completed sessions were kept in each browser's `localStorage` (`panta.sessions.<username>`). The first time a browser loads Panta signed in, it imports that history and removes the local copy. Each account imports once; a browser that finds the account already imported moves its copy to `panta.sessions.backup.<username>` instead of deleting it.
 
@@ -225,7 +226,7 @@ The server keeps only these fields when it writes, so anything else a browser se
 
 `src/dummy-data/` contains illustrative example data marked as examples (`source: 'placeholder'`): 25 example repositories, five handcrafted example sessions, and about 150 generated ones (`generatedSessions.js`). The generated sessions are deterministic, never overlap, and are placed over the last 120 days relative to today, so recent-period views always have data. They include sessions with no commits and sessions whose GitHub activity was never recorded. Their commits and activity totals are made up and were never retrieved from GitHub. They keep Overview, Session History, Analytics, and Repositories populated during development and are labeled as examples wherever they appear. Example repositories built from example sessions are kept separate from real ones, so they never affect the repository history shown when starting a session. They are not a mock of the GitHub API.
 
-**Show example data** in the sidebar hides or shows all of it at once: example sessions and example repositories, including those in the session workspace. The choice is remembered in the browser (`localStorage`, `panta.showExamples`) and defaults to hidden. Direct links to an example session or repository still open while examples are hidden.
+**Show example data** in Settings (Preferences) hides or shows all of it at once: example sessions and example repositories, including those in the session workspace. The choice is remembered in the browser (`localStorage`, `panta.showExamples`) and defaults to hidden. Direct links to an example session or repository still open while examples are hidden.
 
 The folder holds only example data; `index.js` exposes it as `getDummySessions()` and `getDummySessionById()`. The session list and weekly summary helpers live in `src/sessions/sessionHelpers.js` and the analytics calculation in `src/analytics/sessionAnalytics.js`; both work on real and example sessions alike.
 
@@ -253,6 +254,7 @@ panta/
     ├── main.jsx              # Entry point and render error boundary
     ├── App.jsx               # Application state, routing, and page composition
     ├── routing.js            # Route table and path helpers
+    ├── theme.js              # Light, dark, or system theme: read, save, apply
     ├── index.css             # Ordered stylesheet import manifest
     ├── analytics/
     │   └── sessionAnalytics.js   # Totals and breakdowns for Analytics and Repositories
@@ -262,13 +264,15 @@ panta/
     │   ├── presence.js
     │   └── sessions.js
     ├── styles/
-    │   ├── tokens.css        # Color tokens
+    │   ├── tokens.css        # Design tokens: colours for both themes, type, spacing, radii
     │   ├── base.css          # Fonts, element defaults, app frame
     │   └── shared.css        # Styles shared across pages
     ├── components/
     │   ├── auth/AuthControl.jsx (+ .css)
+    │   ├── brand/PantaLogo.jsx (+ .css)              # Theme-aware logo lockup and wordmark
     │   ├── layout/Footer.jsx (+ .css)
     │   ├── navigation/SidebarNav.jsx (+ .css)        # Navigation, socials, account menu
+    │   ├── theme/ThemeToggle.jsx (+ .css)            # Light / dark / system toggle
     │   └── sessions/
     │       └── SessionCommitList.jsx (+ .css)
     ├── dummy-data/           # Example-only data (source: 'placeholder')
@@ -299,6 +303,7 @@ panta/
         ├── Analytics/AnalyticsPage.jsx (+ .css)
         ├── Settings/SettingsPage.jsx (+ .css)
         ├── Authentication/AuthenticationPage.jsx (+ .css)
+        ├── Waking/WakingPage.jsx (+ .css)                # Shown while the API wakes up
         ├── NotFoundPage.jsx
         └── NotFoundPage.css
 ```
@@ -308,6 +313,8 @@ panta/
 ### Styles
 
 Styles are plain CSS. Each component, page, and Session Workspace phase has its own stylesheet next to its JSX, and `src/styles/` holds the global layers. Components do not import CSS themselves: `src/index.css` imports every stylesheet in a fixed order (tokens, base, shared, components, then pages) so the cascade order stays explicit. Add new stylesheets to that list.
+
+Every colour, font, type size, space, radius, shadow, and duration comes from `src/styles/tokens.css`. Dark is Panta's signature look and the default; a light palette built from the same greens overrides the colours under `[data-theme="light"]`. The theme follows the system unless a viewer picks one in Settings. An inline script in `index.html` sets `data-theme` before the first paint, so the page never flashes the wrong theme, and `src/theme.js` applies later changes. Text and links meet WCAG AA in both themes.
 
 ## Getting Started
 

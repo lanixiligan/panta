@@ -3,7 +3,8 @@
 .scroll-area-content { display: flex; min-width: 0; min-height: 0; flex: 1 1 auto; flex-direction: column; }
 .scroll-area-content > * { scrollbar-width: none; }
 .scroll-area-content > *::-webkit-scrollbar { display: none; }
-.scroll-area-track { position: absolute; top: 4px; right: 0; bottom: 4px; width: 8px; border-radius: 4px; background: var(--workspace-divider); }
-.scroll-area-thumb { width: 100%; border-radius: 4px; background: var(--workspace-border-hover); cursor: grab; touch-action: none; }
+.scroll-area-track { position: absolute; top: 4px; right: 0; bottom: 4px; width: 8px; border-radius: var(--radius-sm); background: var(--workspace-divider); }
+.scroll-area-thumb { width: 100%; border-radius: var(--radius-sm); background: var(--workspace-border-hover); cursor: grab; touch-action: none; }
 .scroll-area-thumb:hover { background: var(--workspace-muted); }
 .scroll-area-thumb:active { cursor: grabbing; }
+.scroll-area-content > :focus-visible { border-radius: var(--radius-md); outline: 2px solid var(--workspace-focus); outline-offset: 2px; }

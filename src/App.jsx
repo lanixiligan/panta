@@ -18,6 +18,7 @@ import SessionWorkspacePage from './pages/SessionWorkspace/SessionWorkspacePage.
 import AnalyticsPage from './pages/Analytics/AnalyticsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import AuthenticationPage from './pages/Authentication/AuthenticationPage.jsx';
+import WakingPage, { useWakingFade } from './pages/Waking/WakingPage.jsx';
 import PreviewPage from './pages/Preview/PreviewPage.jsx';
 import SidebarNav from './components/navigation/SidebarNav.jsx';
 import Footer from './components/layout/Footer.jsx';
@@ -26,6 +27,7 @@ import { getSessionListItems, getWeeklySummary } from './sessions/sessionHelpers
 import { dummyRepositories, getDummySessionById, getDummySessions } from './dummy-data/index.js';
 import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
 import { getGitHubMutuals, sendPresenceHeartbeat } from './api/presence.js';
+import { applyTheme, readThemeChoice, resolveTheme, saveThemeChoice, systemPrefersLight, watchSystemTheme } from './theme.js';
 
 // Completed sessions this browser saved before sessions were stored in Panta. They are read only to import them once.
 function legacySessionsKey(username) {
@@ -145,8 +147,13 @@ export default function App() {
   // Goal edits not yet saved, by session ID: { goal, timer }.
   const goalSaves = useRef(new Map());
   const [showExamples, setShowExamples] = useState(readShowExamples);
+  const [themeChoice, setThemeChoice] = useState(readThemeChoice);
+  const [prefersLight, setPrefersLight] = useState(systemPrefersLight);
+  // The theme follows the viewer's choice, or the system's setting, live, while the choice is "system".
+  useEffect(() => watchSystemTheme(setPrefersLight), []);
+  useEffect(() => { applyTheme(resolveTheme(themeChoice, prefersLight)); }, [themeChoice, prefersLight]);
   const allDummySessions = useMemo(() => getDummySessions(), []);
-  // The sidebar's "Show example data" setting hides every example session, project, and repository at once.
+  // Settings' "Show example data" option hides every example session, project, and repository at once.
   const visibleDummySessions = showExamples ? allDummySessions : NO_EXAMPLES;
   const analyticsSessions = useMemo(() => [...realSessions, ...visibleDummySessions], [realSessions, visibleDummySessions]);
   const sessionItems = getSessionListItems(analyticsSessions)
@@ -567,6 +574,11 @@ export default function App() {
     }
   }
 
+  function changeTheme(choice) {
+    setThemeChoice(choice);
+    saveThemeChoice(choice);
+  }
+
   // Discarding deletes the session only while it's still running. A 404 means it already ended in another tab or browser;
   // if it was finished there, it stays finished and appears in the list.
   async function cancelSession() {
@@ -845,132 +857,139 @@ export default function App() {
     : null;
   const detailReturnTo = detailSession ? window.history.state?.returnTo : null;
   // An awake server answers the sign-in check almost at once (as on the way back from GitHub), so the page stays blank
-  // that long instead of flashing the sign-in screen; only a slower check, a waking server, shows it.
+  // that long instead of flashing a screen; only a slower check, a waking server, shows the waking screen.
   const identityCheckSlow = useSlowWait(identityStatus === 'loading', IDENTITY_CHECK_GRACE_MS);
+  const showWaking = identityStatus === 'loading' && identityCheckSlow;
+  const wakingLeaving = useWakingFade(showWaking);
+  // Always the second child, so the same waking screen fades out over whichever screen replaces it.
+  const waking = (showWaking || wakingLeaving) && <WakingPage leaving={!showWaking} />;
 
   // The example-session preview is public, so visitors can see a recap before signing in.
   if (view === 'Preview') return <PreviewPage onNavigate={navigate} signedIn={identityStatus === 'authenticated'} />;
 
-  if (identityStatus === 'loading' && !identityCheckSlow) return null;
+  if (identityStatus === 'loading') return <>{null}{waking}</>;
 
   if (identityStatus !== 'authenticated') {
     return (
-      <AuthenticationPage
-        checking={identityStatus === 'loading'}
-        identityError={identityStatus === 'error' ? identityError : ''}
-        onRetryIdentity={loadWorkspace}
-      />
+      <>
+        <AuthenticationPage
+          identityError={identityStatus === 'error' ? identityError : ''}
+          onRetryIdentity={loadWorkspace}
+        />
+        {waking}
+      </>
     );
   }
 
   return (
-    <div className="app-shell app-shell-dark workspace-shell">
-      <a className="skip-link" href="#main-content">Skip to content</a>
-      <SidebarNav
-        identity={identity}
-        identityStatus={identityStatus}
-        view={view}
-        pathname={pathname}
-        onNavigate={navigate}
-        activeSession={displayedActiveSession}
-        now={now}
-        onBeforeLogout={flushGoalSaves}
-        onLogout={handleLogout}
-        mutuals={mutuals}
-        mutualsLoading={mutualsLoading}
-        mutualsError={mutualsError}
-        showExamples={showExamples}
-        onToggleExamples={toggleExamples}
-      />
-      <div className={`workspace-main${['Overview', 'Settings', 'Session Detail'].includes(view) ? ' workspace-main-fit' : ''}`}>
-        <main className="app-main" id="main-content" tabIndex={-1}>
-        {view === 'Overview' && (
-          <OverviewPage
-            {...identityProps}
-            activeSession={displayedActiveSession}
-            now={now}
-            onNavigateToStart={() => navigate(routePaths['Session Workspace'])}
-            lastSession={lastRealSession}
-            onViewSessions={() => navigate(routePaths['Session History'])}
-            recentSessions={sessionItems.slice(0, 5)}
-            calendarSessions={analyticsSessions}
-            onNavigate={navigate}
-            weeklySummary={weeklySummary}
-            notice={sessionsNotice}
-            onSelectSession={openSession}
-          />
-        )}
-        {view === 'Session Workspace' && (
-          <SessionWorkspacePage
-            repositories={repositories}
-            // Setup waits for the sessions too, so a running session is resumed before another can be started.
-            loading={repositoriesLoading || sessionsStatus === 'loading'}
-            error={repositoriesError}
-            onRetry={() => identity && loadRepositories()}
-            onStart={startSession}
-            starting={isStartingSession}
-            startError={startError}
-            sessionsError={sessionsError}
-            onRetrySessions={retrySessions}
-            activeSession={displayedActiveSession}
-            completedSession={completedSession}
-            now={now}
-            isEndingSession={isEndingSession}
-            sessionEndingAt={sessionEndingAt}
-            activeSessionError={activeSessionError}
-            onFinish={finishSession}
-            onCancel={cancelSession}
-            onUpdateGoal={updateActiveGoal}
-            onViewCompletedSession={(sessionId) => navigate(sessionDetailPath(sessionId))}
-            onStartAnother={() => setCompletedSession(null)}
-            onRetryActivity={retrySessionActivity}
-            projects={projects}
-            exampleRepositories={exampleRepositories}
-            exampleProjects={exampleProjects}
-            onNavigate={navigate}
-          />
-        )}
-        {view === 'Session History' && (
-          identityStatus === 'authenticated'
-            ? <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} />
-            : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
-        )}
-        {view === 'Projects' && (
-          identityStatus === 'authenticated'
-            ? <ProjectsPage projects={projects} exampleProjects={exampleProjects} notice={sessionsNotice} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
-            : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
-        )}
-        {view === 'Project Detail' && (
-          routeProject
-            ? <ProjectDetailPage key={routeProject.key} project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={(sessionId) => openSession(sessionId, { label: routeProject.name })} />
-            : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><BackLink href={routePaths.Projects} label="Repositories" onNavigate={navigate} /></section>
-        )}
-        {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} notice={sessionsNotice} onNavigate={navigate} />}
-        {view === 'Settings' && <SettingsPage identity={identity} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
-        {view === 'Session Detail' && (
-          detailSession
-            ? <SessionDetailPage
-                key={route.sessionId}
-                session={detailSession}
-                onRetryActivity={retrySessionActivity}
-                onDelete={deleteSession}
-                onUpdateGoal={updateSessionGoal}
-                goalError={failedGoalSaves.includes(detailSession.id) ? goalSaveError : ''}
-                onRetryGoal={() => { void saveGoal(detailSession.id); }}
-                backHref={detailReturnTo?.href}
-                backLabel={detailReturnTo?.label}
-                onBack={() => {
-                  setCompletedSession(null);
-                  if (detailReturnTo) window.history.back();
-                  else navigate(routePaths['Session History']);
-                }}
-              />
-            : sessionsNotice || <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><BackLink href={routePaths['Session History']} label="Session History" onNavigate={navigate} /></section>
-        )}
-        {view === 'Not Found' && <NotFoundPage onGoHome={() => navigate(routePaths.Overview)} />}
-        </main>
-        <Footer />
+    <>
+      <div className="app-shell app-shell-dark workspace-shell">
+        <a className="skip-link" href="#main-content">Skip to content</a>
+        <SidebarNav
+          identity={identity}
+          identityStatus={identityStatus}
+          view={view}
+          pathname={pathname}
+          onNavigate={navigate}
+          activeSession={displayedActiveSession}
+          now={now}
+          onBeforeLogout={flushGoalSaves}
+          onLogout={handleLogout}
+          mutuals={mutuals}
+          mutualsLoading={mutualsLoading}
+          mutualsError={mutualsError}
+        />
+        <div className={`workspace-main${['Overview', 'Session Detail'].includes(view) ? ' workspace-main-fit' : ''}`}>
+          <main className="app-main" id="main-content" tabIndex={-1}>
+          {view === 'Overview' && (
+            <OverviewPage
+              {...identityProps}
+              activeSession={displayedActiveSession}
+              now={now}
+              onNavigateToStart={() => navigate(routePaths['Session Workspace'])}
+              lastSession={lastRealSession}
+              onViewSessions={() => navigate(routePaths['Session History'])}
+              recentSessions={sessionItems.slice(0, 5)}
+              calendarSessions={analyticsSessions}
+              onNavigate={navigate}
+              weeklySummary={weeklySummary}
+              notice={sessionsNotice}
+              onSelectSession={openSession}
+            />
+          )}
+          {view === 'Session Workspace' && (
+            <SessionWorkspacePage
+              repositories={repositories}
+              // Setup waits for the sessions too, so a running session is resumed before another can be started.
+              loading={repositoriesLoading || sessionsStatus === 'loading'}
+              error={repositoriesError}
+              onRetry={() => identity && loadRepositories()}
+              onStart={startSession}
+              starting={isStartingSession}
+              startError={startError}
+              sessionsError={sessionsError}
+              onRetrySessions={retrySessions}
+              activeSession={displayedActiveSession}
+              completedSession={completedSession}
+              now={now}
+              isEndingSession={isEndingSession}
+              sessionEndingAt={sessionEndingAt}
+              activeSessionError={activeSessionError}
+              onFinish={finishSession}
+              onCancel={cancelSession}
+              onUpdateGoal={updateActiveGoal}
+              onViewCompletedSession={(sessionId) => navigate(sessionDetailPath(sessionId))}
+              onStartAnother={() => setCompletedSession(null)}
+              onRetryActivity={retrySessionActivity}
+              projects={projects}
+              exampleRepositories={exampleRepositories}
+              exampleProjects={exampleProjects}
+              onNavigate={navigate}
+            />
+          )}
+          {view === 'Session History' && (
+            identityStatus === 'authenticated'
+              ? <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} />
+              : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
+          )}
+          {view === 'Projects' && (
+            identityStatus === 'authenticated'
+              ? <ProjectsPage projects={projects} exampleProjects={exampleProjects} notice={sessionsNotice} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
+              : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
+          )}
+          {view === 'Project Detail' && (
+            routeProject
+              ? <ProjectDetailPage key={routeProject.key} project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={(sessionId) => openSession(sessionId, { label: routeProject.name })} />
+              : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><BackLink href={routePaths.Projects} label="Repositories" onNavigate={navigate} /></section>
+          )}
+          {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} notice={sessionsNotice} onNavigate={navigate} />}
+          {view === 'Settings' && <SettingsPage identity={identity} theme={themeChoice} onChangeTheme={changeTheme} showExamples={showExamples} onToggleExamples={toggleExamples} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}
+          {view === 'Session Detail' && (
+            detailSession
+              ? <SessionDetailPage
+                  key={route.sessionId}
+                  session={detailSession}
+                  onRetryActivity={retrySessionActivity}
+                  onDelete={deleteSession}
+                  onUpdateGoal={updateSessionGoal}
+                  goalError={failedGoalSaves.includes(detailSession.id) ? goalSaveError : ''}
+                  onRetryGoal={() => { void saveGoal(detailSession.id); }}
+                  backHref={detailReturnTo?.href}
+                  backLabel={detailReturnTo?.label}
+                  onBack={() => {
+                    setCompletedSession(null);
+                    if (detailReturnTo) window.history.back();
+                    else navigate(routePaths['Session History']);
+                  }}
+                />
+              : sessionsNotice || <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><BackLink href={routePaths['Session History']} label="Session History" onNavigate={navigate} /></section>
+          )}
+          {view === 'Not Found' && <NotFoundPage onGoHome={() => navigate(routePaths.Overview)} />}
+          </main>
+          <Footer />
+        </div>
       </div>
-    </div>
+      {waking}
+    </>
   );
 }

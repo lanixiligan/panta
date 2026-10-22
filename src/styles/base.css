@@ -4,8 +4,7 @@
 @media (min-width: 1500px) and (min-height: 760px) { :root { --ui-zoom: 1.125; } }
 @media (min-width: 1800px) and (min-height: 860px) { :root { --ui-zoom: 1.25; } }
 :root {
-  color-scheme: dark;
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   color: var(--workspace-text);
   background: var(--workspace-bg);
   font-synthesis: none;
@@ -17,62 +16,73 @@ body { margin: 0; min-width: 320px; min-height: calc(100vh / var(--ui-zoom)); ba
 button, input { font: inherit; }
 a, button, input, select, label, [tabindex] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 h1, h2, h3 { text-wrap: balance; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .app-main:focus { outline: none; } /* focused only by the skip link, never interactive */
-.skip-link { position: absolute; z-index: 100; top: 12px; left: 12px; padding: 8px 14px; border-radius: 6px; background: var(--workspace-accent); color: var(--workspace-action-text); font-size: 13px; font-weight: 600; text-decoration: none; transform: translateY(-200%); }
+.skip-link { position: absolute; z-index: 100; top: 12px; left: 12px; padding: var(--space-2) var(--space-3-5); border-radius: var(--radius-md); background: var(--workspace-action); color: var(--workspace-action-text); font-size: var(--text-sm); font-weight: 600; text-decoration: none; transform: translateY(-200%); }
 .skip-link:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; transform: none; }
 /* Motion is decorative everywhere in Panta, so reduced-motion users get none of it. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 a { color: inherit; }
-.app-shell { max-width: 960px; margin: 0 auto; padding: 38px 28px 24px; }
+/* Switching theme fades the colours instead of snapping. theme.js sets .theme-fading on <html> for the length of the fade. */
+@media (prefers-reduced-motion: no-preference) {
+  :root.theme-fading, :root.theme-fading *, :root.theme-fading *::before, :root.theme-fading *::after {
+    transition: background-color var(--duration-theme) ease, border-color var(--duration-theme) ease, color var(--duration-theme) ease,
+      fill var(--duration-theme) ease, stroke var(--duration-theme) ease, box-shadow var(--duration-theme) ease;
+  }
+}
+/* Every focusable element gets the green ring by default; components may restyle it but never remove it.
+   :where() keeps this at zero specificity, so a component's own focus rule always wins. */
+:where(a[href], button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
+.app-shell { max-width: 960px; margin: 0 auto; padding: var(--space-10) var(--space-7) var(--space-6); }
 @media (max-width: 620px) {
-  .app-shell { padding: 23px 16px 20px; }
+  .app-shell { padding: var(--space-6) var(--space-4) var(--space-5); }
 }
 .app-shell-dark {
   max-width: none;
   min-height: calc(100vh / var(--ui-zoom));
   margin: 0;
-  padding: 0 36px;
+  padding: 0 var(--space-10);
   background: var(--workspace-bg);
   color: var(--workspace-text);
 }
-.app-main { min-height: calc(calc(100vh / var(--ui-zoom)) - 146px); padding: 38px 0 50px; }
+.app-main { min-height: calc(calc(100vh / var(--ui-zoom)) - 146px); padding: var(--space-10) 0 var(--space-12); }
 @media (max-width: 760px) {
-  .app-shell-dark { padding: 0 22px; }
+  .app-shell-dark { padding: 0 var(--space-6); }
 }
 @media (max-width: 520px) {
-  .app-shell-dark { padding: 0 15px; }
-  .app-main { min-height: calc(calc(100vh / var(--ui-zoom)) - 145px); padding: 25px 0 35px; }
+  .app-shell-dark { padding: 0 var(--space-4); }
+  .app-main { min-height: calc(calc(100vh / var(--ui-zoom)) - 145px); padding: var(--space-6) 0 var(--space-8); }
 }
 .app-shell-dark.workspace-shell { display: flex; max-width: none; min-height: calc(100vh / var(--ui-zoom)); margin: 0; padding: 0; background: var(--workspace-bg); color: var(--workspace-text); }
 .workspace-main { display: flex; min-width: 0; flex: 1; flex-direction: column; height: calc(100vh / var(--ui-zoom)); overflow: auto; height: calc(100dvh / var(--ui-zoom)); }
-.workspace-main .app-main { width: 100%; max-width: 1600px; min-height: 100%; flex: 0 0 auto; margin: 0 auto; padding: 43px clamp(24px, calc(5vw / var(--ui-zoom)), 68px) 55px; }
+.workspace-main .app-main { width: 100%; max-width: 1600px; min-height: 100%; flex: 0 0 auto; margin: 0 auto; padding: var(--space-10) clamp(var(--space-6), calc(5vw / var(--ui-zoom)), var(--space-16)) var(--space-14); }
 .workspace-main .section-kicker { color: var(--workspace-secondary); }
 @media (max-width: 900px) {
-  .workspace-main .app-main { padding-right: 30px; padding-left: 30px; }
+  .workspace-main .app-main { padding-right: var(--space-8); padding-left: var(--space-8); }
 }
 @media (max-width: 680px) {
   .app-shell-dark.workspace-shell { display: block; }
   .workspace-main { display: block; min-height: calc(calc(100vh / var(--ui-zoom)) - 91px); overflow: visible; height: auto; }
-  .workspace-main .app-main { min-height: 0; padding: 29px 20px 38px; }
+  .workspace-main .app-main { min-height: 0; padding: var(--space-7) var(--space-5) var(--space-10); }
 }
 @media (max-width: 420px) {
-  .workspace-main .app-main { padding-right: 15px; padding-left: 15px; }
+  .workspace-main .app-main { padding-right: var(--space-4); padding-left: var(--space-4); }
 }
-.workspace-main .app-main { padding-top: 40px; padding-bottom: 46px; }
+.workspace-main .app-main { padding-top: var(--space-10); padding-bottom: var(--space-12); }
 @media (max-width: 680px) {
-  .workspace-main .app-main { padding-top: 25px; }
+  .workspace-main .app-main { padding-top: var(--space-6); }
 }
 @media (max-width: 420px) {
-  .workspace-main .app-main { padding-top: 21px; }
+  .workspace-main .app-main { padding-top: var(--space-5); }
 }
-.app-render-error { display: flex; min-height: calc(100vh / var(--ui-zoom)); flex-direction: column; align-items: flex-start; justify-content: center; padding: 30px; background: var(--workspace-bg); color: var(--workspace-text); }
-.app-render-error h1 { margin: 9px 0 7px; font-size: 22px; font-weight: 500; }
-.app-render-error p { max-width: 420px; margin: 0 0 18px; color: var(--workspace-secondary); font-size: 13px; line-height: 1.6; }
-.app-render-error button { min-height: 36px; padding: 0 12px; border: 1px solid var(--workspace-border-strong); border-radius: 6px; background: var(--workspace-raised); color: var(--workspace-text); cursor: pointer; }
+.app-render-error { display: flex; min-height: calc(100vh / var(--ui-zoom)); flex-direction: column; align-items: flex-start; justify-content: center; padding: var(--space-8); background: var(--workspace-bg); color: var(--workspace-text); }
+.app-render-error h1 { margin: var(--space-2) 0 var(--space-2); font-size: var(--text-2xl); font-weight: 500; }
+.app-render-error p { max-width: 420px; margin: 0 0 var(--space-5); color: var(--workspace-secondary); font-size: var(--text-sm); line-height: 1.6; }
+.app-render-error button { min-height: var(--control-md); padding: 0 var(--space-3); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-md); background: var(--workspace-raised); color: var(--workspace-text); cursor: pointer; }
 .app-render-error button:hover { border-color: var(--workspace-border-hover); }
-/* Pages that fit the window instead of scrolling (Overview, Settings). Smaller screens scroll as usual. */
+/* Pages that fit the window instead of scrolling (Overview, Session Detail). Smaller screens scroll as usual. */
 @media (min-width: 1024px) and (min-height: 600px) {
   .workspace-main-fit { overflow: hidden; }
   .workspace-main-fit .app-main { display: flex; min-height: 0; flex: 1 1 auto; flex-direction: column; }

@@ -1,17 +1,17 @@
 /* A cropped example session under the sign-in hero; the bottom fades into the page. */
-.auth-glimpse { position: relative; z-index: 1; display: block; width: min(100%, 680px); margin-top: clamp(40px, calc(7vh / var(--ui-zoom)), 72px); padding: 18px 18px 0; overflow: hidden; border: 1px solid var(--workspace-border); border-bottom: 0; border-radius: 10px 10px 0 0; background: var(--workspace-surface); color: inherit; text-align: left; text-decoration: none; -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent); mask-image: linear-gradient(to bottom, #000 45%, transparent); transition: border-color .15s ease; }
+.auth-glimpse { position: relative; z-index: 1; display: block; width: min(100%, 680px); margin-top: clamp(40px, calc(7vh / var(--ui-zoom)), 72px); padding: var(--space-5) 0; overflow: hidden; border: 1px solid var(--workspace-border); border-bottom: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: var(--workspace-surface); color: inherit; text-align: left; text-decoration: none; -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent); mask-image: linear-gradient(to bottom, #000 45%, transparent); transition: border-color var(--duration-base) ease; }
 .auth-glimpse:hover { border-color: var(--workspace-border-hover); }
 .auth-glimpse:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 4px; }
-.auth-glimpse-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 0 8px 14px; border-bottom: 1px solid var(--workspace-divider); }
-.auth-glimpse-title { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
-.auth-glimpse-title strong { overflow: hidden; color: var(--workspace-text); font-size: 15px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.auth-glimpse-title span { color: var(--workspace-muted); font: 12px 'DM Mono', monospace; }
-.auth-glimpse-stats { display: flex; flex: 0 0 auto; gap: 16px; color: var(--workspace-secondary); font: 12px 'DM Mono', monospace; white-space: nowrap; }
-.auth-glimpse-timeline { padding-top: 8px; }
-.auth-glimpse:hover .session-timeline-dot { box-shadow: 0 0 0 3px #39ff8833; }
+.auth-glimpse-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4); padding: 0 var(--space-2) var(--space-3-5); border-bottom: 1px solid var(--workspace-divider); }
+.auth-glimpse-title { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1); }
+.auth-glimpse-title strong { overflow: hidden; color: var(--workspace-text); font-size: var(--text-lg); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.auth-glimpse-title span { color: var(--workspace-muted); font: var(--text-xs) var(--font-mono); }
+.auth-glimpse-stats { display: flex; flex: 0 0 auto; gap: var(--space-4); color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); white-space: nowrap; }
+.auth-glimpse-timeline { padding-top: var(--space-2); }
+.auth-glimpse:hover .session-timeline-dot { box-shadow: 0 0 0 3px var(--workspace-accent-ring); }
 
 @media (max-width: 560px) {
-  .auth-glimpse { padding: 14px 10px 0; }
+  .auth-glimpse { padding: var(--space-3-5) var(--space-2-5) 0; }
   .auth-glimpse-header { flex-direction: column; align-items: flex-start; }
   .auth-glimpse-stats span:nth-child(3) { display: none; }
 }

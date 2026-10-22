@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { calculateSessionAnalytics } from '../../analytics/sessionAnalytics.js';
 import { followRouteLink, projectDetailPath, readSearchParam, updateSearchParams } from '../../routing.js';
-import DateRangePicker, { readRange, rangeBounds, toDayString, writeRange } from '../../components/filters/DateRangePicker.jsx';
+import DateRangePicker, { readRange, rangeBounds, writeRange } from '../../components/filters/DateRangePicker.jsx';
+import { toDayString } from '../../components/calendar/calendarDates.js';
 import WorkCalendar from '../../components/analytics/WorkCalendar.jsx';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
 import { formatCount } from '../../sessions/sessionHelpers.js';
@@ -59,7 +60,9 @@ function axisLabel(bucket, index, buckets, unit) {
     return !previous || previous.start.getMonth() !== bucket.start.getMonth() ? formatDate(bucket.start, { month: 'short' }) : '';
   }
   if (buckets.length <= 10) return formatDate(bucket.start, { weekday: 'short' });
-  return index % 7 === 0 || index === buckets.length - 1 ? formatDate(bucket.start) : '';
+  // Every seventh day and the last one; a weekly label too close to the last would overlap it.
+  const last = buckets.length - 1;
+  return index === last || (index % 7 === 0 && last - index >= 3) ? formatDate(bucket.start) : '';
 }
 
 function SessionTimeChart({ timeline }) {

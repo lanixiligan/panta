@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, UserRound } from 'lucide-react';
 import AuthControl from '../auth/AuthControl.jsx';
+import { PantaLockup } from '../brand/PantaLogo.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
 import { followRouteLink, routePaths } from '../../routing.js';
 import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
@@ -14,10 +15,37 @@ const items = [
 ];
 
 function NavLinks({ pathname, onNavigate }) {
+  const navRef = useRef(null);
+  const [box, setBox] = useState(null);
+  const [ready, setReady] = useState(false);
+  const activeView = items.find(({ view, path }) => pathname === path || ((view === 'Session History' || view === 'Projects') && pathname.startsWith(`${path}/`)))?.view;
+
+  // One indicator glides to the active link; it is measured so the same code serves the sidebar and the phone's row.
+  useLayoutEffect(() => {
+    const nav = navRef.current;
+    const measure = () => {
+      const link = nav?.querySelector('.sidebar-nav-item.active');
+      setBox(link ? { x: link.offsetLeft, y: link.offsetTop, w: link.offsetWidth, h: link.offsetHeight } : null);
+    };
+    measure();
+    if (!nav || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(measure);
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [activeView]);
+
+  // The first placement waits one frame, so the page load itself stays still.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  const indicatorStyle = box ? { transform: `translate(${box.x}px, ${box.y}px)`, width: box.w, height: box.h } : undefined;
   return (
-    <nav className="sidebar-nav" aria-label="Main navigation">
+    <nav ref={navRef} className={`sidebar-nav${ready ? ' is-ready' : ''}`} aria-label="Main navigation">
+      <span className={`sidebar-nav-indicator${box ? ' is-visible' : ''}`} style={indicatorStyle} aria-hidden="true" />
       {items.map(({ label, view, path, Icon }) => {
-        const active = pathname === path || ((view === 'Session History' || view === 'Projects') && pathname.startsWith(`${path}/`));
+        const active = view === activeView;
         return <a key={view} href={path} className={`sidebar-nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
           <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.6} /></span><span>{label}</span>
         </a>;
@@ -171,23 +199,17 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onBeforeLogout,
   );
 }
 
-export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError, showExamples, onToggleExamples }) {
+export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError }) {
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
-        <img className="brand-lockup" src="/logos/panta-logo-kit/panta-nav-lockup.svg" alt="" />
+        <PantaLockup className="brand-lockup" />
       </a>
       <NavLinks pathname={pathname} onNavigate={onNavigate} />
       <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
       <div className="sidebar-workspace">
         <SessionWorkspaceLink session={activeSession} now={now} pathname={pathname} onNavigate={onNavigate} />
       </div>
-      {onToggleExamples && (
-        <label className="sidebar-examples-toggle">
-          <input type="checkbox" checked={showExamples} onChange={(event) => onToggleExamples(event.target.checked)} />
-          Show example data
-        </label>
-      )}
       <div className="sidebar-bottom">
         {identityStatus === 'authenticated' && identity ? (
           <UserProfileMenu identity={identity} view={view} pathname={pathname} onNavigate={onNavigate} onBeforeLogout={onBeforeLogout} onLogout={onLogout} />

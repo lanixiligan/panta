@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import DateRangePicker, { readRange, rangeBounds, toDayString, writeRange } from '../../components/filters/DateRangePicker.jsx';
+import DateRangePicker, { readRange, rangeBounds, writeRange } from '../../components/filters/DateRangePicker.jsx';
+import { toDayString } from '../../components/calendar/calendarDates.js';
 import FilterSelect from '../../components/filters/FilterSelect.jsx';
 import Pager from '../../components/navigation/Pager.jsx';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';

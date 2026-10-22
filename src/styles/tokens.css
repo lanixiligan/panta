@@ -1,46 +1,223 @@
-/* Panta's palette. Every colour in the app comes from here; components never use raw hex values,
-   except translucent glows and shadows built from these colours. */
+/* Panta's design tokens. Every colour, font, size, space, radius, shadow, and duration in the app comes from here;
+   components never use raw values for these, except one-off display sizes and chart geometry.
+   Dark is Panta's signature look and the default; [data-theme="light"] overrides the colours only. The theme script in
+   index.html sets data-theme before the first paint. */
 :root {
+  color-scheme: dark;
+
   /* Surfaces, darkest to lightest */
   --workspace-bg: #07110C;
   --workspace-sidebar: #0B1510;
   --workspace-surface: #101F16;
   --workspace-raised: #15291D;
+  --workspace-pressed: #1A3324;
 
-  /* Lines */
-  --workspace-divider: #183022;
-  --workspace-border: #21402D;
-  --workspace-border-strong: #2F5D40;
+  /* Interactive fills: row and card hover, the active sidebar item, and the Session Workspace button */
+  --workspace-hover: var(--workspace-raised);
+  --workspace-hover-soft: var(--workspace-surface);
+  --workspace-nav-active: var(--workspace-raised);
+  --workspace-cta-fill: var(--workspace-sidebar);
+  --workspace-field: var(--workspace-sidebar);
+
+  /* Lines. Control borders (inputs, selects, filters) keep 3:1 against their surface. */
+  --workspace-divider: #1F3C2C;
+  --workspace-border: #2B523B;
+  --workspace-border-strong: #33664A;
   --workspace-border-hover: #3D7A52;
+  --workspace-control-border: #3D7A52;
+  --workspace-control-border-hover: #5A9A70;
 
   /* Text, most to least prominent. Faint is decorative only (separators, empty days), never for words. */
-  --workspace-text: #DDEBE2;
+  --workspace-text: #E0EDE4;
   --workspace-secondary: #9FBDAA;
   --workspace-muted: #7D9888;
   --workspace-faint: #4D6155;
 
-  /* Green accents. The neon accent is for small marks only (live dot, ticks, active markers);
+  /* Green accents. The accent is for small marks only (live dot, ticks, active markers);
      links, hover text, and large highlighted areas use the softer green. */
-  --workspace-accent: #39FF88;
+  --workspace-accent: #34C77B;
   --workspace-accent-soft: #5FD394;
-  --workspace-focus: #39FF8899;
+  --workspace-focus: #34C77B;
+
+  /* Translucent accent effects: glows, rings, tints, and the sign-in backdrop */
+  --workspace-accent-glow: #34C77B66;
+  --workspace-accent-ring: #34C77B1F;
+  --workspace-accent-tint: #34C77B0D;
+  --workspace-accent-line: #34C77BB3;
+  --workspace-focus-halo: #34C77B40;
+  --workspace-glow-strong: #34C77B17;
+  --workspace-glow-faint: #34C77B08;
+  --workspace-ghost: #34C77B07;
+  --workspace-dots: #21402D33;
+  --workspace-underline: #3D7A5266;
+  --workspace-hover-overlay: #FFFFFF08;
+  --workspace-shadow: #00000066;
 
   /* Primary buttons */
   --workspace-action: #2A9D5C;
   --workspace-action-hover: #31AD67;
   --workspace-action-border: #33B26A;
   --workspace-action-text: #04230F;
+  --workspace-action-shade: #04230F1A;
+  --workspace-action-shade-strong: #04230F29;
 
-  /* Data: calendar and chart shades (low to high), and line changes */
+  /* Data: calendar and chart shades (low to high), the text on them, and line changes */
   --workspace-level-1: #1D4A30;
   --workspace-level-2: #23703F;
-  --workspace-level-3: #2E9455;
+  --workspace-level-3: #33A05E;
   --workspace-level-4: #45C47A;
+  --workspace-on-level: #E0EDE4;
+  --workspace-on-level-strong: #04230F;
   --workspace-additions: #82C895;
   --workspace-deletions: #C58D81;
+
+  /* File types on Session detail, largest share first; each keeps 3:1 against the surface */
+  --workspace-type-0: #34C77B;
+  --workspace-type-1: #4FB6B0;
+  --workspace-type-2: #B9C96B;
+  --workspace-type-3: #A8F0C4;
+  --workspace-type-4: #7F9688;
+  --workspace-type-5: #1F8F55;
 
   /* Errors and destructive actions */
   --workspace-danger: #E0A397;
   --workspace-danger-bg: #1C1412;
   --workspace-danger-border: #563C38;
+
+  /* Brand: the logo's three greens, the same in both themes */
+  --brand-green: #34C77B;
+  --brand-green-mid: #27A35D;
+  --brand-green-deep: #1B7A47;
+
+  /* Fonts: DM Sans for text, DM Mono for labels, figures, and code */
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
+  --text-display: clamp(26px, calc(2.8vw / var(--ui-zoom)), 34px);
+
+  /* Spacing: 2px steps up to 16, then 4px and 8px steps */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+
+  /* Radii: tiny marks, badges, controls, small surfaces, cards */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-pill: 999px;
+
+  /* Control heights: compact, default, and touch or primary */
+  --control-sm: 32px;
+  --control-md: 38px;
+  --control-lg: 44px;
+
+  /* Shadows */
+  --shadow-menu: 0 9px 24px var(--workspace-shadow);
+  --shadow-popover: 0 18px 40px var(--workspace-shadow);
+  --shadow-tooltip: 0 6px 20px var(--workspace-shadow);
+  --shadow-focus: 0 0 0 3px var(--workspace-focus-halo);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 150ms;
+  --duration-theme: 400ms;
+  --duration-fade: 450ms;
+  --ease-smooth: cubic-bezier(.4, 0, .2, 1);
+}
+
+/* Light: the same greens on pale green-tinted paper, with dark green ink. Every text pair meets WCAG AA. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --workspace-bg: #D4EDDE;
+  --workspace-sidebar: #A9D5BA;
+  --workspace-surface: #F3FBF6;
+  --workspace-raised: #C9E7D4;
+  --workspace-pressed: #B7DCC5;
+
+  --workspace-hover: #BDE3CB;
+  --workspace-hover-soft: #C4E6D0;
+  --workspace-nav-active: #82C49D;
+  --workspace-cta-fill: #E1F4E8;
+  --workspace-field: #EAF7EF;
+
+  --workspace-divider: #A6D0B5;
+  --workspace-border: #86BE9C;
+  --workspace-border-strong: #62A97F;
+  --workspace-border-hover: #4A9569;
+  --workspace-control-border: #4F6E5E;
+  --workspace-control-border-hover: #3C5A4B;
+
+  --workspace-text: #0F2418;
+  --workspace-secondary: #2B4637;
+  --workspace-muted: #38503F;
+  --workspace-faint: #7FA78F;
+
+  --workspace-accent: #187F47;
+  --workspace-accent-soft: #0F6036;
+  --workspace-focus: #0F6036;
+
+  --workspace-accent-glow: #34C77B66;
+  --workspace-accent-ring: #34C77B40;
+  --workspace-accent-tint: #34C77B22;
+  --workspace-accent-line: #34C77B;
+  --workspace-focus-halo: #34C77B55;
+  --workspace-glow-strong: #34C77B3D;
+  --workspace-glow-faint: #34C77B18;
+  --workspace-ghost: #34C77B14;
+  --workspace-dots: #8FAB9933;
+  --workspace-underline: #1B7A4766;
+  --workspace-hover-overlay: #0F24180A;
+  --workspace-shadow: #0F24181F;
+
+  --workspace-action: #1B7A47;
+  --workspace-action-hover: #176A3E;
+  --workspace-action-border: #1B7A47;
+  --workspace-action-text: #FFFFFF;
+  --workspace-action-shade: #0000001F;
+  --workspace-action-shade-strong: #00000033;
+
+  --workspace-level-1: #A1D8B5;
+  --workspace-level-2: #58B97F;
+  --workspace-level-3: #23804B;
+  --workspace-level-4: #11592F;
+  --workspace-on-level: #0F2418;
+  --workspace-on-level-strong: #FFFFFF;
+  --workspace-additions: #1D7A3E;
+  --workspace-deletions: #A64535;
+
+  --workspace-type-0: #1B7A47;
+  --workspace-type-1: #2E8A87;
+  --workspace-type-2: #6E7F1F;
+  --workspace-type-3: #0B3D22;
+  --workspace-type-4: #5F7468;
+  --workspace-type-5: #3E9E66;
+
+  --workspace-danger: #A63B2C;
+  --workspace-danger-bg: #FBEEEB;
+  --workspace-danger-border: #EBC6BE;
 }

@@ -3,10 +3,9 @@ import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from
 import RepositoryName, { repositoryFullName } from '../repository/RepositoryName.jsx';
 import { formatCount, getSessionDurationMs } from '../../sessions/sessionHelpers.js';
 import MonthNav from '../calendar/MonthNav.jsx';
-import { monthDays, toDayString } from '../calendar/calendarDates.js';
+import { WEEKDAYS, monthDays, toDayString } from '../calendar/calendarDates.js';
 
 // "When you work": a month calendar shaded by session time, used on Analytics and Overview.
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function formatDuration(milliseconds) {
   if (!Number.isFinite(milliseconds) || milliseconds < 60_000) return '<1m';
@@ -69,7 +68,7 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
 
   const year = month.getFullYear();
   const monthIndex = month.getMonth();
-  const { leading: leadingBlanks, days: dates } = monthDays(month);
+  const { leading: leadingBlanks, days: dates, before, after } = monthDays(month);
   const days = dates.map((date) => ({ date, ...(totals.get(toDayString(date)) || { durationMs: 0, sessionCount: 0, repositories: new Set() }) }));
   const max = Math.max(0, ...days.map((day) => day.durationMs));
   const level = (value) => (!value || !max ? 0 : Math.min(4, Math.ceil((value / max) * 4)));
@@ -109,7 +108,7 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
       </p>
       <div className="analytics-calendar" role="group" aria-label={`Session time per day, ${formatDate(month, { month: 'long', year: 'numeric' })}`} onMouseLeave={() => setHovered(null)}>
         {WEEKDAYS.map((weekday) => <span className="analytics-calendar-weekday" key={weekday} aria-hidden="true">{weekday}</span>)}
-        {Array.from({ length: leadingBlanks }, (_, index) => <span key={`blank-${index}`} aria-hidden="true" />)}
+        {before.map((date) => <span key={toDayString(date)} className="analytics-calendar-day is-outside" aria-hidden="true"><span>{date.getDate()}</span></span>)}
         {days.map((day, index) => {
           const isToday = toDayString(day.date) === toDayString(today);
           const isFuture = day.date > today;
@@ -131,6 +130,7 @@ export default function WorkCalendar({ sessions, onNavigate, browsable = true })
             </div>
           );
         })}
+        {after.map((date) => <span key={toDayString(date)} className="analytics-calendar-day is-outside" aria-hidden="true"><span>{date.getDate()}</span></span>)}
         {active && !(active.date > today) && (
           <div
             className="analytics-calendar-tooltip"

@@ -50,11 +50,11 @@ export function getSessionListItems(sessions = []) {
   });
 }
 
-// Totals and per-day session time for the current Monday-to-Sunday week.
+// Totals and per-day session time for the current Sunday-to-Saturday week.
 export function getWeeklySummary(sessions = [], referenceDate = new Date()) {
   const start = new Date(referenceDate);
   start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+  start.setDate(start.getDate() - start.getDay());
   const end = new Date(start);
   end.setDate(start.getDate() + 7);
   const thisWeek = sessions.filter((session) => {

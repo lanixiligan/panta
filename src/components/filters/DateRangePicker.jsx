@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import MonthNav from '../calendar/MonthNav.jsx';
-import { addDays, monthDays, parseDay, sameDay, startOfDay, toDayString } from '../calendar/calendarDates.js';
+import { WEEKDAYS, addDays, monthDays, parseDay, sameDay, startOfDay, startOfWeek, toDayString } from '../calendar/calendarDates.js';
 
 // Quick picks under the calendar; 'all' (no limit) is what Clear returns to.
 export const RANGE_PRESETS = [
@@ -9,7 +9,6 @@ export const RANGE_PRESETS = [
   ['month', 'This month'],
 ];
 const PRESET_SHORT_LABELS = { today: 'Today', week: 'Week', month: 'Month' };
-const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 // A range is a preset ({ period }) or a custom span ({ period: 'custom', from, to } as YYYY-MM-DD).
 // URL form: ?period=week, or ?from=2026-10-07&to=2026-10-09 (?date= is accepted as a one-day span).
@@ -34,13 +33,13 @@ export function writeRange(params, range, fallback = 'all') {
   }
 }
 
-// The local-time span [start, end) a range covers; null means no limit. Weeks start on Monday, as on Overview and Analytics.
+// The local-time span [start, end) a range covers; null means no limit. Weeks start on Sunday, as on Overview and Analytics.
 export function rangeBounds(range, now = new Date()) {
   const today = startOfDay(now);
   if (range.period === 'custom') return { start: parseDay(range.from), end: addDays(parseDay(range.to), 1) };
   if (range.period === 'today') return { start: today, end: addDays(today, 1) };
   if (range.period === 'week') {
-    const start = addDays(today, -((today.getDay() + 6) % 7));
+    const start = startOfWeek(today);
     return { start, end: addDays(start, 7) };
   }
   if (range.period === 'month') return { start: new Date(today.getFullYear(), today.getMonth(), 1), end: new Date(today.getFullYear(), today.getMonth() + 1, 1) };
@@ -145,7 +144,7 @@ export default function DateRangePicker({ value, onChange, activeDays = new Set(
 
   const changeMonth = (offset) => setMonth(new Date(month.getFullYear(), month.getMonth() + offset, 1));
   const canGoForward = new Date(month.getFullYear(), month.getMonth() + 1, 1) <= today;
-  const { leading, days } = monthDays(month);
+  const { days, before, after } = monthDays(month);
   // While choosing, the span runs from the first click to the hovered or focused day.
   const previewEnd = anchor ? (hovered || anchor) : null;
   const [spanStart, spanEnd] = anchor
@@ -186,7 +185,7 @@ export default function DateRangePicker({ value, onChange, activeDays = new Set(
                 {WEEKDAYS.map((weekday) => <span key={weekday} className="date-range-weekday">{weekday}</span>)}
               </div>
               <div className="date-range-days">
-                {Array.from({ length: leading }, (_, index) => <span key={`blank-${index}`} aria-hidden="true" />)}
+                {before.map((date) => <span key={toDayString(date)} className="date-range-day is-outside" aria-hidden="true">{date.getDate()}</span>)}
                 {days.map((date) => {
                   const key = toDayString(date);
                   const isFuture = date > today;
@@ -211,7 +210,7 @@ export default function DateRangePicker({ value, onChange, activeDays = new Set(
                     </button>
                   );
                 })}
-                {Array.from({ length: (7 - ((leading + days.length) % 7)) % 7 }, (_, index) => <span key={`tail-${index}`} aria-hidden="true" />)}
+                {after.map((date) => <span key={toDayString(date)} className="date-range-day is-outside" aria-hidden="true">{date.getDate()}</span>)}
               </div>
             </div>
             <p className="date-range-hint" aria-live="polite">{anchor ? 'Choose an end date' : 'Choose a start date'}</p>

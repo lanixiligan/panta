@@ -20,7 +20,7 @@ function startOfLocalDay(value) {
 
 function startOfLocalWeek(value) {
   const day = startOfLocalDay(value);
-  day.setDate(day.getDate() - ((day.getDay() + 6) % 7));
+  day.setDate(day.getDate() - day.getDay());
   return day;
 }
 

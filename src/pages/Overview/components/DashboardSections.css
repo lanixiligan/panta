@@ -4,7 +4,7 @@
 /* The work calendar comes from Analytics; on Overview its frame and heading match the other cards. */
 .dashboard-grid > .analytics-section { gap: var(--space-3); padding: var(--space-5); }
 .dashboard-grid > .analytics-section .analytics-section-heading { align-items: baseline; }
-.dashboard-grid > .analytics-section .analytics-section-heading h2 { font-size: var(--text-lg); letter-spacing: -.025em; }
+.dashboard-grid > .analytics-section .analytics-section-heading h2 { font-size: var(--text-lg); letter-spacing: var(--tracking-tight); }
 
 .dashboard-section-meta { color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); }
 
@@ -17,7 +17,7 @@
 .recent-session-main { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1); }
 .recent-session-goal { overflow: hidden; color: var(--workspace-text); font-size: var(--text-md); text-overflow: ellipsis; white-space: nowrap; }
 .recent-session-goal.is-repo { font: 500 var(--text-md) var(--font-mono); }
-.recent-session-meta { display: flex; min-width: 0; align-items: center; gap: var(--space-2); color: var(--workspace-muted); font-size: var(--text-2xs); white-space: nowrap; }
+.recent-session-meta { display: flex; min-width: 0; overflow: hidden; align-items: center; gap: var(--space-2); color: var(--workspace-muted); font-size: var(--text-2xs); white-space: nowrap; }
 .recent-session-meta > [aria-hidden] { color: var(--workspace-faint); }
 .recent-session-repo { overflow: hidden; color: var(--workspace-secondary); font: var(--text-2xs) var(--font-mono); text-overflow: ellipsis; }
 .session-source-badge { flex: 0 0 auto; padding: 0 var(--space-1); border: 1px dashed var(--workspace-border); border-radius: var(--radius-sm); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); }
@@ -27,7 +27,7 @@
 /* This week: four numbers in one row. */
 .weekly-strip { display: flex; align-items: center; gap: var(--space-6); padding: var(--space-3-5) var(--space-6); }
 .weekly-strip-heading { display: flex; flex: 0 0 250px; flex-direction: column; gap: var(--space-1); }
-.weekly-strip-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-lg); font-weight: 500; letter-spacing: -.025em; }
+.weekly-strip-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .weekly-metrics { display: grid; flex: 1 1 auto; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
 .weekly-metric { display: flex; min-width: 0; flex-direction: column-reverse; gap: var(--space-1); padding-left: var(--space-5); border-left: 1px solid var(--workspace-divider); }
 .weekly-metric dt { color: var(--workspace-secondary); font-size: var(--text-2xs); }
@@ -51,6 +51,11 @@
   .workspace-main-fit .recent-session-list { min-height: 0; flex: 1 1 auto; margin: 0 calc(var(--space-2-5) * -1); padding: 0 var(--space-2-5); overflow: hidden; }
   .workspace-main-fit .dashboard-grid > .analytics-section { min-height: 0; overflow: hidden; }
 }
+/* Two columns on a narrow window leave no room for the commit count beside the goal; Session History has it. */
+@media (min-width: 901px) and (max-width: 1100px) {
+  .recent-session-row { grid-template-columns: minmax(0, 1fr) 64px; }
+  .recent-session-commits { display: none; }
+}
 @media (max-width: 680px) {
   .recent-session-row { grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-3); }
   .recent-session-commits { display: none; }
@@ -61,4 +66,8 @@
 /* Shorter windows: smaller calendar days, so the whole month still fits. */
 @media (min-width: 1024px) and (min-height: 600px) and (max-height: 800px) {
   .workspace-main-fit .dashboard-grid .analytics-calendar-day { min-height: 28px; padding: var(--space-1) var(--space-1-5); }
+  .workspace-main-fit .weekly-strip { padding-top: var(--space-3); padding-bottom: var(--space-3); }
+  .workspace-main-fit .recent-session-row { padding-top: var(--space-2-5); padding-bottom: var(--space-2-5); }
+  .workspace-main-fit .dashboard-grid > .analytics-section, .workspace-main-fit .recent-section { padding-top: var(--space-4); padding-bottom: var(--space-4); }
+  .workspace-main-fit .dashboard-grid > .analytics-section { gap: var(--space-2-5); }
 }

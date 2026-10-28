@@ -1,6 +1,6 @@
 import React from 'react';
-import { followRouteLink, projectDetailPath, routePaths, sessionDetailPath } from '../../../../routing.js';
-import { formatProjectDuration } from '../../../Projects/projectHistory.js';
+import { followRouteLink, repositoryDetailPath, routePaths, sessionDetailPath } from '../../../../routing.js';
+import { formatRepositoryDuration } from '../../../Repositories/repositoryHistory.js';
 import { formatCount } from '../../../../sessions/sessionHelpers.js';
 import FilterSelect from '../../../../components/filters/FilterSelect.jsx';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
@@ -52,14 +52,14 @@ function RepositoryRow({ repository, selected, onSelect }) {
 const RECENT_SESSION_ROWS = 2;
 
 // The selected repository's latest sessions, always in a two-row frame so the panel keeps its shape.
-function RepositoryHistory({ project, onNavigate }) {
-  const sessions = project ? project.sessions.slice(0, RECENT_SESSION_ROWS) : [];
+function RepositoryHistory({ history, onNavigate }) {
+  const sessions = history ? history.sessions.slice(0, RECENT_SESSION_ROWS) : [];
   const fillers = RECENT_SESSION_ROWS - sessions.length;
   return (
     <section className="repository-history" aria-labelledby="repository-history-heading">
       <div className="repository-history-recent-heading">
         <h3 id="repository-history-heading" className="repository-history-heading">Recent sessions</h3>
-        {project && <a className="repository-history-link" href={projectDetailPath(project.fullName)} onClick={(event) => followRouteLink(event, onNavigate)}>View repository <span aria-hidden="true">→</span></a>}
+        {history && <a className="repository-history-link" href={repositoryDetailPath(history.fullName)} onClick={(event) => followRouteLink(event, onNavigate)}>View repository <span aria-hidden="true">→</span></a>}
       </div>
       <ul className="repository-history-list">
         {sessions.map((session) => (
@@ -67,7 +67,7 @@ function RepositoryHistory({ project, onNavigate }) {
             <a className="repository-history-session" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, onNavigate)}>
               <strong className={session.goal ? '' : 'empty'}>{session.goal || 'No goal set'}</strong>
               <span>
-                {formatSessionDate(session.startedAt)} · {formatProjectDuration(session.durationMinutes * 60_000)}
+                {formatSessionDate(session.startedAt)} · {formatRepositoryDuration(session.durationMinutes * 60_000)}
                 {session.hasActivity ? ` · ${formatCount(session.commitCount, 'commit')}` : ''}
               </span>
             </a>
@@ -83,7 +83,7 @@ function RepositoryHistory({ project, onNavigate }) {
   );
 }
 
-export default function SessionSetup({ selectedProject, onNavigate, repositories, loading, error, onRetry, starting = false, startError = '', sessionsError = '', onRetrySessions, selectedRepository, selectedRepositoryId, setSelectedRepositoryId, goal, setGoal, handleSubmit, query, setQuery, type, setType, language, setLanguage, sort, setSort, languages, filteredRepositories }) {
+export default function SessionSetup({ selectedRepositoryHistory, onNavigate, repositories, loading, error, onRetry, starting = false, startError = '', sessionsError = '', onRetrySessions, selectedRepository, selectedRepositoryId, setSelectedRepositoryId, goal, setGoal, handleSubmit, query, setQuery, type, setType, language, setLanguage, sort, setSort, languages, filteredRepositories }) {
   // Start is enabled once a repository is chosen and the goal isn't blank.
   const canStart = Boolean(selectedRepository) && Boolean(goal.trim());
 
@@ -201,7 +201,7 @@ export default function SessionSetup({ selectedProject, onNavigate, repositories
           </div>
         )}
 
-        {selectedRepository && <RepositoryHistory project={selectedProject} onNavigate={onNavigate} />}
+        {selectedRepository && <RepositoryHistory history={selectedRepositoryHistory} onNavigate={onNavigate} />}
 
         <form className="session-goal-form" onSubmit={handleSubmit}>
           <label className="dashboard-field" htmlFor="session-goal">

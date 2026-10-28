@@ -2,7 +2,7 @@ import React from 'react';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
 import { followRouteLink, sessionDetailPath } from '../../../../routing.js';
-import { getSessionDurationMinutes } from '../../../../sessions/sessionHelpers.js';
+import { getSessionDurationMinutes, getSessionDurationMs } from '../../../../sessions/sessionHelpers.js';
 import RepositoryName from '../../../../components/repository/RepositoryName.jsx';
 
 function formatTime(value) {
@@ -17,6 +17,13 @@ function formatDay(value) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(date);
 }
 
+// Under a minute, minutes would round to nothing, so show seconds.
+function formatSessionDuration(session) {
+  const ms = getSessionDurationMs(session);
+  if (Number.isFinite(ms) && ms < 60000) return `${Math.max(0, Math.floor(ms / 1000))}s`;
+  return formatDuration(getSessionDurationMinutes(session));
+}
+
 function formatDuration(durationMinutes) {
   const hours = Math.floor(durationMinutes / 60);
   const minutes = durationMinutes % 60;
@@ -29,7 +36,7 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
   const activityReady = session.activityStatus === 'complete';
   const commits = session.commits || [];
   const repository = session.repository;
-  const duration = formatDuration(getSessionDurationMinutes(session));
+  const duration = formatSessionDuration(session);
   const day = formatDay(session.startedAt);
   const range = [formatTime(session.startedAt), formatTime(session.endedAt)];
   // Files and lines come from commit details. With commits but no details, they were never recorded; zero commits is a recorded 0.
@@ -39,7 +46,7 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
   return (
     <article className="session-workspace-already-active session-recap" aria-label="Completed coding session">
       <div className="session-console-panel">
-        <span className="session-console-status is-complete"><i aria-hidden="true">✓</i> SESSION COMPLETE</span>
+        <span className="session-console-status is-complete" role="status"><i aria-hidden="true">✓</i> SESSION ENDED AND SAVED</span>
         <div className="session-console-timer" aria-label={`Session time ${duration}`}>
           <span className="session-console-time">{duration}</span>
         </div>
@@ -59,7 +66,7 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
           </dl>
         )}
         <div className="session-console-actions">
-          <a className="continue-session-button" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, () => onViewSession(session.id))}>View session <span aria-hidden="true">→</span></a>
+          <a className="continue-session-button" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, () => onViewSession(session.id))}>View summary <span aria-hidden="true">→</span></a>
           <button className="session-workspace-button session-recap-next" type="button" onClick={onStartAnother}>Start another session</button>
         </div>
       </div>

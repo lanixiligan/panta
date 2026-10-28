@@ -12,7 +12,7 @@
 
 /* Lifecycle track: done → current → upcoming */
 .session-phase-track { display: flex; flex: 0 0 auto; align-items: center; margin: 0; padding: 0; list-style: none; }
-.session-phase-track li { position: relative; display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1-5) var(--space-2-5); border: 1px solid transparent; border-radius: var(--radius-pill); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); letter-spacing: .1em; text-transform: uppercase; }
+.session-phase-track li { position: relative; display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1-5) var(--space-2-5); border: 1px solid transparent; border-radius: var(--radius-pill); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); letter-spacing: var(--tracking-label); text-transform: uppercase; }
 .session-phase-track li + li { margin-left: clamp(28px, calc(4vw / var(--ui-zoom)), 52px); }
 .session-phase-track li + li::before { position: absolute; top: 50%; right: calc(100% + 4px); width: calc(clamp(28px, calc(4vw / var(--ui-zoom)), 52px) - 8px); height: 1px; content: ''; background: var(--workspace-border); }
 .session-phase-track li[data-state='done'] + li::before, .session-phase-track li[data-state='current'] + li::before { background: var(--workspace-border-strong); }

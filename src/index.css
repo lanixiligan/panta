@@ -36,8 +36,8 @@
 @import './pages/SessionHistory/SessionDetailPage.css';
 
 /* Other pages */
-@import './pages/Projects/ProjectsPage.css';
-@import './pages/Projects/components/ProjectCard.css';
+@import './pages/Repositories/RepositoriesPage.css';
+@import './pages/Repositories/components/RepositoryCard.css';
 @import './pages/Analytics/AnalyticsPage.css';
 @import './pages/Settings/SettingsPage.css';
 @import './pages/Settings/components/DeleteDialog.css';

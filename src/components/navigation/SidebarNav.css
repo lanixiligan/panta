@@ -3,10 +3,10 @@
 @media (max-width: 760px) {
   .app-brand { flex: 1 1 auto; }
 }
-.workspace-sidebar { position: sticky; top: 0; z-index: 10; display: flex; flex: 0 0 248px; flex-direction: column; height: calc(100vh / var(--ui-zoom)); border-right: 1px solid var(--workspace-border); background: var(--workspace-sidebar); flex-basis: 254px; height: calc(100dvh / var(--ui-zoom)); min-height: 0; }
+.workspace-sidebar { position: sticky; top: 0; z-index: 10; display: flex; flex: 0 0 var(--sidebar-width); width: var(--sidebar-width); min-width: var(--sidebar-width); max-width: var(--sidebar-width); overflow: hidden; flex-direction: column; height: calc(100vh / var(--ui-zoom)); border-right: 1px solid var(--workspace-border); background: var(--workspace-sidebar); height: calc(100dvh / var(--ui-zoom)); min-height: 0; }
 .sidebar-brand { flex: 0 0 auto; gap: var(--space-3); margin: 0 0 var(--space-7) var(--space-1); }
 .sidebar-nav { position: relative; display: flex; flex-direction: column; gap: var(--space-1); }
-.sidebar-nav-item { position: relative; display: flex; align-items: center; width: 100%; padding: 0 var(--space-3); border: 1px solid transparent; background: transparent; text-align: left; text-decoration: none; cursor: pointer; transition: background var(--duration-base) ease, color var(--duration-base) ease; border-radius: var(--radius-md); font-size: var(--text-sm); gap: var(--space-3); color: var(--workspace-secondary); }
+.sidebar-nav-item { position: relative; display: flex; align-items: center; width: 100%; padding: 0 var(--space-3); border: 1px solid transparent; background: transparent; text-align: left; text-decoration: none; cursor: pointer; transition: background var(--duration-base) ease, color var(--duration-base) ease; border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: var(--weight-medium); gap: var(--space-3); color: var(--workspace-secondary); }
 .sidebar-nav-item:hover { color: var(--workspace-text); background: var(--workspace-hover-soft); }
 /* The active pill and its green edge are one element that glides from link to link. */
 .sidebar-nav-indicator { position: absolute; top: 0; left: 0; border-radius: var(--radius-md); background: var(--workspace-nav-active); opacity: 0; pointer-events: none; }
@@ -17,7 +17,7 @@
 .sidebar-nav-icon svg { display: block; width: 18px; height: 18px; }
 .sidebar-live-session { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); width: 100%; padding: var(--space-3); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-lg); background: var(--workspace-surface); color: var(--workspace-text); text-align: left; cursor: pointer; }
 .sidebar-live-session { color: inherit; text-decoration: none; }
-.live-session-heading { display: flex; align-items: center; gap: var(--space-1-5); color: var(--workspace-accent-soft); font: var(--text-2xs) var(--font-mono); letter-spacing: .08em; }
+.live-session-heading { display: flex; align-items: center; gap: var(--space-1-5); color: var(--workspace-accent-soft); font: var(--text-2xs) var(--font-mono); letter-spacing: var(--tracking-label); }
 .live-session-heading i { width: 6px; height: 6px; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 8px var(--workspace-accent-glow); }
 .live-session-heading span { margin-left: auto; color: var(--workspace-muted); font-size: var(--text-2xs); letter-spacing: .04em; }
 .sidebar-live-session strong { max-width: 100%; overflow: hidden; color: var(--workspace-text); font-size: var(--text-sm); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
@@ -58,14 +58,10 @@
   .workspace-sidebar { padding-right: var(--space-3); padding-left: var(--space-3); }
 }
 @media (max-width: 680px) {
-  .workspace-sidebar { position: sticky; top: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; width: 100%; border-right: 0; border-bottom: 1px solid var(--workspace-border); height: auto; min-height: 0; }
+  .workspace-sidebar { position: sticky; top: 0; min-width: 0; max-width: none; overflow: visible; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; width: 100%; border-right: 0; border-bottom: 1px solid var(--workspace-border); height: auto; min-height: 0; }
   .sidebar-brand .brand-lockup { width: 120px; }
-  .sidebar-nav { grid-column: 1 / -1; grid-row: 2; flex-direction: row; width: 100%; margin-top: var(--space-2); overflow-x: auto; scrollbar-width: none; }
-  .sidebar-nav-item { justify-content: center; min-width: 0; padding: 0 var(--space-2-5); white-space: nowrap; flex: 0 0 auto; width: auto; }
-  .sidebar-nav-indicator::before { top: auto; right: 10px; bottom: -1px; left: 10px; width: auto; height: 2px; border-radius: var(--radius-xs) var(--radius-xs) 0 0; }
-  .sidebar-nav-icon { width: auto; }
   .sidebar-bottom { grid-column: 2; grid-row: 1; align-self: center; margin: 0; padding: 0; border: 0; }
-  .sidebar-workspace { grid-column: 1 / -1; grid-row: 3; margin: var(--space-2-5) 0 0; padding: 0; }
+  .sidebar-workspace { grid-column: 1 / -1; grid-row: 2; margin: var(--space-2-5) 0 0; padding: 0; }
   .account-trigger { width: auto; padding: var(--space-0-5) var(--space-1); }
   .account-copy { max-width: 112px; }
   .account-copy small, .account-caret { display: none; }
@@ -75,7 +71,6 @@
 }
 @media (max-width: 420px) {
   .workspace-sidebar { padding-right: var(--space-2); padding-left: var(--space-2); }
-  .sidebar-nav-item { padding: 0 var(--space-2); font-size: var(--text-xs); }
   .account-copy { max-width: 82px; }
 }
 .workspace-sidebar { padding: var(--space-6) var(--space-4) var(--space-3-5); }
@@ -99,7 +94,7 @@
   .sidebar-brand { margin-bottom: 0; }
 }
 .sidebar-socials { display: flex; min-height: 0; max-height: min(calc(38vh / var(--ui-zoom)), 290px); flex: 0 1 auto; flex-direction: column; margin-top: var(--space-3-5); overflow: hidden; border-top: 1px solid var(--workspace-divider); border-bottom: 1px solid var(--workspace-divider); }
-.sidebar-socials-heading { display: flex; min-height: 31px; flex: 0 0 auto; align-items: center; justify-content: space-between; padding: 0 var(--space-3); border: 0; background: transparent; text-align: left; font: var(--text-xs) var(--font-sans); cursor: pointer; color: var(--workspace-muted); }
+.sidebar-socials-heading { display: flex; min-height: 31px; flex: 0 0 auto; align-items: center; justify-content: space-between; padding: 0 var(--space-3); border: 0; background: transparent; text-align: left; font: var(--weight-medium) var(--text-xs) var(--font-sans); cursor: pointer; color: var(--workspace-secondary); }
 .sidebar-socials-label { display: flex; align-items: center; gap: var(--space-3); }
 .sidebar-socials-label svg { flex: 0 0 auto; }
 .sidebar-socials-heading:hover { color: var(--workspace-text); }
@@ -124,3 +119,58 @@
 .sidebar-friend-state { width: 6px; height: 6px; flex: 0 0 auto; border: 1px solid var(--workspace-faint); border-radius: 50%; background: transparent; }
 .sidebar-friend-state.is-online { border-color: var(--workspace-accent); background: var(--workspace-accent); }
 .sidebar-friends-empty { margin: 0; padding: var(--space-0-5) var(--space-2-5) var(--space-2) var(--space-7); color: var(--workspace-muted); font-size: var(--text-2xs); }
+/* The tab bar wrapper adds nothing to the sidebar; on a phone it becomes the bar. */
+.sidebar-tabbar { display: contents; }
+/* Phone: the four pages and Socials become icons in a bar floating at the foot of the screen,
+   in the order History, Repositories, Overview, Analytics, Socials, with Overview as the centre circle. */
+@media (max-width: 680px) {
+  .sidebar-tabbar { position: fixed; z-index: 30; right: var(--space-3); bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px)); left: var(--space-3); display: flex; height: 60px; padding: 0 var(--space-1); border: 1px solid var(--workspace-border); border-radius: var(--radius-pill); background: var(--workspace-sidebar); box-shadow: var(--shadow-popover); }
+  .sidebar-nav { display: flex; flex: 4 1 0; flex-direction: row; gap: 0; min-width: 0; margin: 0; }
+  .sidebar-nav-indicator { display: none; }
+  .sidebar-nav-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .sidebar-nav-item, .sidebar-socials-heading { position: relative; display: flex; flex: 1 1 0; align-items: center; justify-content: center; width: auto; min-width: 0; height: 100%; min-height: 0; padding: 0; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--workspace-muted); }
+  .sidebar-nav-item:hover, .sidebar-socials-heading:hover { background: transparent; color: var(--workspace-text); }
+  .sidebar-socials-heading:active { background: var(--workspace-pressed); }
+  .sidebar-nav-item:nth-of-type(1) { order: 1; }
+  .sidebar-nav-item:nth-of-type(4) { order: 2; }
+  .sidebar-nav-icon, .sidebar-nav-icon svg, .sidebar-socials-label svg { width: 22px; height: 22px; }
+  .sidebar-nav-icon { color: inherit; }
+  /* The active page gets a green icon and a dot beneath it. */
+  .sidebar-nav-item.active .sidebar-nav-icon, .sidebar-socials-heading[aria-expanded="true"] { color: var(--workspace-accent-soft); }
+  .sidebar-nav-item.active::after, .sidebar-socials-heading[aria-expanded="true"]::after { position: absolute; bottom: var(--space-1-5); left: 50%; width: 4px; height: 4px; border-radius: 50%; background: var(--workspace-accent); content: ''; transform: translateX(-50%); }
+  /* Overview: the circle in the middle, outlined in green while it is the current page. */
+  .sidebar-nav-item:nth-of-type(1) .sidebar-nav-icon { width: var(--control-lg); height: var(--control-lg); border: 1px solid var(--workspace-border-strong); border-radius: 50%; background: var(--workspace-raised); color: var(--workspace-secondary); transition: border-color var(--duration-base) ease, background var(--duration-base) ease; }
+  /* Only the circle darkens when Overview is pressed, not the whole slot (beats the shared :active rule). */
+  .sidebar-tabbar .sidebar-nav-item:nth-of-type(1):active:not(:disabled) { background: transparent; }
+  .sidebar-nav-item:nth-of-type(1):active .sidebar-nav-icon { background: var(--workspace-pressed); }
+  .sidebar-nav-item.active:nth-of-type(1) .sidebar-nav-icon { border-color: var(--workspace-accent-line); color: var(--workspace-accent-soft); }
+  .sidebar-nav-item.active:nth-of-type(1)::after { display: none; }
+  .sidebar-nav-item:focus-visible, .sidebar-socials-heading:focus-visible { outline-offset: -4px; }
+  .sidebar-socials { display: flex; flex: 1 1 0; min-width: 0; max-height: none; margin: 0; overflow: visible; border: 0; }
+  .sidebar-socials-label { gap: 0; }
+  .sidebar-socials-chevron { display: none; }
+  /* Socials opens as a panel floating just above the bar. */
+  .sidebar-socials-content { position: fixed; right: var(--space-3); bottom: calc(60px + var(--space-5) + env(safe-area-inset-bottom, 0px)); left: var(--space-3); max-height: min(calc(60vh / var(--ui-zoom)), 420px); padding: var(--space-3) var(--space-1) var(--space-1); border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-sidebar); box-shadow: var(--shadow-popover); }
+}
+
+/* Starting a session swaps the button for the live card: it rises in and a green line sweeps across its top edge. */
+.sidebar-live-session { position: relative; overflow: hidden; animation: live-session-in var(--duration-fade) var(--ease-smooth) both; }
+.sidebar-live-session::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--workspace-accent), transparent); pointer-events: none; animation: live-session-sweep 900ms var(--ease-smooth) 100ms both; }
+.live-session-time { animation: live-session-focus 600ms var(--ease-smooth) 150ms both; }
+@keyframes live-session-in { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+@keyframes live-session-sweep { from { opacity: 1; transform: translateX(-100%); } 70% { opacity: 1; } to { opacity: 0; transform: translateX(100%); } }
+@keyframes live-session-focus { from { opacity: 0; filter: blur(6px); } }
+
+/* The sidebar's width is fixed (--sidebar-width), so content can never resize it: every child may shrink below its text width and long names truncate. */
+.workspace-sidebar > *, .sidebar-workspace, .sidebar-nav, .sidebar-bottom, .sidebar-account { min-width: 0; max-width: 100%; }
+.sidebar-live-session, .sidebar-workspace-link { min-width: 0; max-width: 100%; }
+.sidebar-live-session > * { min-width: 0; max-width: 100%; }
+.sidebar-live-session .repository-name { display: flex; width: 100%; }
+.live-session-heading { white-space: nowrap; }
+.sidebar-workspace-link { background: var(--workspace-accent); border-color: var(--workspace-accent); color: var(--workspace-on-accent); }
+.sidebar-workspace-link:hover { background: var(--workspace-accent-soft); border-color: var(--workspace-accent-soft); color: var(--workspace-on-accent); }
+.sidebar-workspace-link[aria-current="page"] { background: var(--workspace-accent); border-color: var(--workspace-accent-soft); color: var(--workspace-on-accent); }
+.sidebar-workspace-link:active { transform: translateY(1px); }
+.sidebar-workspace-link[aria-disabled="true"] { opacity: .55; pointer-events: none; }
+.sidebar-live-session[data-saving="true"] { cursor: progress; border-color: var(--workspace-border); }
+.sidebar-live-session[data-saving="true"] .live-session-heading i { background: var(--workspace-muted); box-shadow: none; }

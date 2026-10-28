@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, UserRound } from 'lucide-react';
+import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, Play, UserRound } from 'lucide-react';
 import AuthControl from '../auth/AuthControl.jsx';
 import { PantaLockup } from '../brand/PantaLogo.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
@@ -10,15 +10,18 @@ import { formatElapsed, getActiveElapsedMs } from '../../sessions/sessionHelpers
 const items = [
   { label: 'Overview', view: 'Overview', path: routePaths.Overview, Icon: LayoutDashboard },
   { label: 'Session History', view: 'Session History', path: routePaths['Session History'], Icon: History },
-  { label: 'Repositories', view: 'Projects', path: routePaths.Projects, Icon: FolderGit2 },
+  { label: 'Repositories', view: 'Repositories', path: routePaths.Repositories, Icon: FolderGit2 },
   { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, Icon: ChartNoAxesCombined },
 ];
+
+// Matches the breakpoint in SidebarNav.css where the links become the phone's bottom tab bar.
+const phoneQuery = '(max-width: 680px)';
 
 function NavLinks({ pathname, onNavigate }) {
   const navRef = useRef(null);
   const [box, setBox] = useState(null);
   const [ready, setReady] = useState(false);
-  const activeView = items.find(({ view, path }) => pathname === path || ((view === 'Session History' || view === 'Projects') && pathname.startsWith(`${path}/`)))?.view;
+  const activeView = items.find(({ view, path }) => pathname === path || ((view === 'Session History' || view === 'Repositories') && pathname.startsWith(`${path}/`)))?.view;
 
   // One indicator glides to the active link; it is measured so the same code serves the sidebar and the phone's row.
   useLayoutEffect(() => {
@@ -47,7 +50,7 @@ function NavLinks({ pathname, onNavigate }) {
       {items.map(({ label, view, path, Icon }) => {
         const active = view === activeView;
         return <a key={view} href={path} className={`sidebar-nav-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
-          <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.6} /></span><span>{label}</span>
+          <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} strokeWidth={1.6} /></span><span className="sidebar-nav-label">{label}</span>
         </a>;
       })}
     </nav>
@@ -89,11 +92,29 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
   const [offlineExpanded, setOfflineExpanded] = useState(false);
   const onlineMutuals = mutuals.filter((user) => user.presence === 'online');
   const offlineMutuals = mutuals.filter((user) => user.presence !== 'online');
+  const rootRef = useRef(null);
+
+  // On a phone the list floats above the tab bar, so a tap elsewhere or Escape closes it like a menu.
+  useEffect(() => {
+    if (!expanded || !window.matchMedia(phoneQuery).matches) return undefined;
+    function closeOutside(event) {
+      if (!rootRef.current?.contains(event.target)) setExpanded(false);
+    }
+    function closeOnEscape(event) {
+      if (event.key === 'Escape') setExpanded(false);
+    }
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [expanded]);
 
   return (
-    <section className="sidebar-socials" aria-label="Socials">
+    <section ref={rootRef} className="sidebar-socials" aria-label="Socials">
       <button className="sidebar-socials-heading" type="button" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>
-        <span className="sidebar-socials-label"><UserRound size={18} strokeWidth={1.6} aria-hidden="true" />Socials</span><span className="sidebar-socials-chevron" aria-hidden="true">{expanded ? '−' : '+'}</span>
+        <span className="sidebar-socials-label"><UserRound size={18} strokeWidth={1.6} aria-hidden="true" /><span className="sidebar-nav-label">Socials</span></span><span className="sidebar-socials-chevron" aria-hidden="true">{expanded ? '−' : '+'}</span>
       </button>
       {expanded && (
         <div className="sidebar-socials-content">
@@ -116,19 +137,20 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
 
 // The core of Panta, so it gets its own accent button at the foot of the sidebar instead of a row in the list.
 // While a session runs, the button becomes the live session card.
-function SessionWorkspaceLink({ session, now, pathname, onNavigate }) {
+function SessionWorkspaceLink({ session, now, pathname, onNavigate, saving }) {
   const current = pathname === routePaths['Session Workspace'];
   if (!session) {
     return (
       <a className="sidebar-workspace-link" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
-        Session Workspace
+        <Play size={14} aria-hidden="true" />
+        Start session
       </a>
     );
   }
   const repository = repositoryFullName(session.repository) || 'Coding session';
   return (
-    <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={`Open active session for ${repository}`}>
-      <span className="live-session-heading"><i aria-hidden="true" /> LIVE</span>
+    <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={saving ? `Saving session for ${repository}` : `Open active session for ${repository}`} title={repository} data-saving={saving ? 'true' : undefined}>
+      <span className="live-session-heading"><i aria-hidden="true" /> {saving ? 'SAVING SESSION…' : 'ACTIVE SESSION'}</span>
       <strong>{session.repository ? <RepositoryName name={repository} /> : repository}</strong>
       <span className="live-session-time">{formatElapsed(getActiveElapsedMs(session, now))}</span>
     </a>
@@ -199,16 +221,19 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onBeforeLogout,
   );
 }
 
-export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError }) {
+export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, isEndingSession = false, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError }) {
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
         <PantaLockup className="brand-lockup" />
       </a>
-      <NavLinks pathname={pathname} onNavigate={onNavigate} />
-      <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
+      {/* Invisible to the sidebar's layout; on a phone it is the bottom tab bar. */}
+      <div className="sidebar-tabbar">
+        <NavLinks pathname={pathname} onNavigate={onNavigate} />
+        <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
+      </div>
       <div className="sidebar-workspace">
-        <SessionWorkspaceLink session={activeSession} now={now} pathname={pathname} onNavigate={onNavigate} />
+        <SessionWorkspaceLink session={activeSession} saving={isEndingSession} now={now} pathname={pathname} onNavigate={onNavigate} />
       </div>
       <div className="sidebar-bottom">
         {identityStatus === 'authenticated' && identity ? (

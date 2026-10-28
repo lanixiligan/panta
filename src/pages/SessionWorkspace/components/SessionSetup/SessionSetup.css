@@ -5,9 +5,11 @@
 .repository-browser { display: flex; min-width: 0; flex-direction: column; border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); }
 .repository-browser-column { display: flex; min-width: 0; flex-direction: column; padding-top: var(--space-1); }
 .repository-browser-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3-5); }
-.repository-browser-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-xl); font-weight: 500; letter-spacing: -.02em; }
-.repository-browser-filters { display: grid; grid-template-columns: minmax(130px, 1fr) minmax(104px, .75fr) minmax(136px, 1fr) minmax(156px, 1.1fr); gap: var(--space-2-5); padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--workspace-divider); }
-.repository-browser-filters label, .repository-browser-filter { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1-5); color: var(--workspace-muted); font: var(--text-xs) var(--font-sans); }
+.repository-browser-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-xl); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
+/* Search takes the first row; Type, Language, and Sort share the second, since four columns overflow the card. */
+.repository-browser-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2-5); padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--workspace-divider); }
+.repository-search-field { grid-column: 1 / -1; }
+.repository-browser-filters label, .repository-browser-filter { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1-5); color: var(--workspace-secondary); font: var(--weight-medium) var(--text-xs) var(--font-sans); }
 .repository-browser-filters input, .repository-browser-filters select { width: 100%; min-width: 0; height: var(--control-md); padding: 0 var(--space-3); border: 1px solid var(--workspace-control-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-field); color: var(--workspace-text); font: var(--text-sm) var(--font-sans); letter-spacing: 0; text-transform: none; }
 .repository-browser-filters select { font-size: var(--text-xs); }
 .repository-browser-filters input:hover, .dashboard-field input:hover { border-color: var(--workspace-control-border-hover); }
@@ -50,7 +52,7 @@
 
 /* Session rail — sits on the page, concludes the setup */
 .session-workspace-selection { display: flex; min-width: 0; flex-direction: column; padding: var(--space-1) 0 0; }
-.session-workspace-selection h2 { margin: 0 0 var(--space-3-5); color: var(--workspace-text); font-size: var(--text-xl); font-weight: 500; letter-spacing: -.02em; }
+.session-workspace-selection h2 { margin: 0 0 var(--space-3-5); color: var(--workspace-text); font-size: var(--text-xl); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .selected-repository-summary { display: flex; height: 106px; align-items: center; gap: var(--space-3-5); padding: var(--space-4); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-lg); background: var(--workspace-raised); box-shadow: inset 0 2px 0 var(--workspace-accent-line); }
 .selected-repository-details { display: flex; min-width: 0; flex: 1; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
 .selected-repository-heading { display: flex; max-width: 100%; min-width: 0; align-items: center; gap: var(--space-2); }
@@ -89,8 +91,6 @@
 
 @media (max-width: 920px) {
   .session-workspace-layout { grid-template-columns: minmax(0, 1.3fr) minmax(250px, .9fr); gap: var(--space-6); }
-  .repository-browser-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .repository-search-field { grid-column: 1 / -1; }
 }
 
 /* Desktop frame: the repository list scrolls inside the browser */
@@ -113,7 +113,8 @@
   .session-workspace-selection { padding: var(--space-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); }
 }
 @media (max-width: 520px) {
-  .repository-browser-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: var(--space-3-5) var(--space-4); }
+  .repository-browser-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); padding: var(--space-3-5) var(--space-4); }
+  .repository-browser-filters .filter-trigger { gap: var(--space-1-5); padding: 0 var(--space-2); }
   .repository-select-row { gap: var(--space-3); padding: var(--space-3-5) var(--space-4); }
   .repository-browser-error { align-items: flex-start; margin: var(--space-3-5) var(--space-4); }
   .session-workspace-selection { padding: var(--space-4); }

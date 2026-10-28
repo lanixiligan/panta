@@ -9,7 +9,7 @@
 
 /* The motto at the top: the commit line, then "Panta rhei, everything flows" in small caps. */
 .auth-motto { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
-.auth-motto p { margin: 0; color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+.auth-motto p { margin: 0; color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); letter-spacing: var(--tracking-label); text-transform: uppercase; }
 
 /* A tiny commit timeline above the wordmark; the dots light up in turn, like commits landing. */
 .auth-flow { position: relative; display: block; width: 156px; height: 10px; }

@@ -4,9 +4,9 @@ import { getAccessibleRepositories, getActiveSessionCommits, getSessionActivity 
 import { flushSync } from 'react-dom';
 import * as sessionsApi from './api/sessions.js';
 import OverviewPage from './pages/Overview/OverviewPage.jsx';
-import ProjectsPage from './pages/Projects/ProjectsPage.jsx';
-import ProjectDetailPage from './pages/Projects/ProjectDetailPage.jsx';
-import { findProject, getExampleProjects, getProjects } from './pages/Projects/projectHistory.js';
+import RepositoriesPage from './pages/Repositories/RepositoriesPage.jsx';
+import RepositoryDetailPage from './pages/Repositories/RepositoryDetailPage.jsx';
+import { findRepositoryHistory, getExampleRepositoryHistories, getRepositoryHistories } from './pages/Repositories/repositoryHistory.js';
 
 import SessionHistoryPage from './pages/SessionHistory/SessionHistoryPage.jsx';
 import SessionDetailPage from './pages/SessionHistory/SessionDetailPage.jsx';
@@ -153,16 +153,16 @@ export default function App() {
   useEffect(() => watchSystemTheme(setPrefersLight), []);
   useEffect(() => { applyTheme(resolveTheme(themeChoice, prefersLight)); }, [themeChoice, prefersLight]);
   const allDummySessions = useMemo(() => getDummySessions(), []);
-  // Settings' "Show example data" option hides every example session, project, and repository at once.
+  // Settings' "Show example data" option hides every example session and repository at once.
   const visibleDummySessions = showExamples ? allDummySessions : NO_EXAMPLES;
   const analyticsSessions = useMemo(() => [...realSessions, ...visibleDummySessions], [realSessions, visibleDummySessions]);
   const sessionItems = getSessionListItems(analyticsSessions)
     .sort((left, right) => new Date(right.startedAt) - new Date(left.startedAt));
-  const projects = useMemo(() => getProjects(realSessions, repositories), [realSessions, repositories]);
+  const repositoryHistories = useMemo(() => getRepositoryHistories(realSessions, repositories), [realSessions, repositories]);
   // Overview offers to continue in the repository of the latest real session; examples never count.
   const lastRealSession = useMemo(() => realSessions.reduce((latest, session) => (!latest || new Date(session.startedAt) > new Date(latest.startedAt) ? session : latest), null), [realSessions]);
-  const allExampleProjects = useMemo(() => getExampleProjects(), []);
-  const exampleProjects = showExamples ? allExampleProjects : NO_EXAMPLES;
+  const allExampleRepositoryHistories = useMemo(() => getExampleRepositoryHistories(), []);
+  const exampleRepositoryHistories = showExamples ? allExampleRepositoryHistories : NO_EXAMPLES;
   // Example repositories shaped like GitHub's, so the session workspace can list them beside real ones.
   const exampleRepositories = useMemo(() => (showExamples ? dummyRepositories.map((repository) => ({
     id: repository.id,
@@ -171,11 +171,11 @@ export default function App() {
     description: repository.description,
     language: repository.language,
     private: false,
-    updated_at: exampleProjects.find((project) => project.key === `id:${repository.id}`)?.lastWorkedAt ?? null,
+    updated_at: exampleRepositoryHistories.find((history) => history.key === `id:${repository.id}`)?.lastWorkedAt ?? null,
     isExample: true,
-  })) : NO_EXAMPLES), [showExamples, exampleProjects]);
-  // Direct links to an example project keep working while examples are hidden.
-  const routeProject = view === 'Project Detail' ? findProject([...projects, ...allExampleProjects], route.owner, route.repo) : null;
+  })) : NO_EXAMPLES), [showExamples, exampleRepositoryHistories]);
+  // Direct links to an example repository keep working while examples are hidden.
+  const routeRepository = view === 'Repository Detail' ? findRepositoryHistory([...repositoryHistories, ...allExampleRepositoryHistories], route.owner, route.repo) : null;
   // Includes example sessions, like Recent sessions beside it; the card says when it does.
   const weeklySummary = getWeeklySummary(analyticsSessions, new Date(now));
   // Panta stores only a few repository fields, so pages get the live repository's details (its language) too.
@@ -892,6 +892,7 @@ export default function App() {
           pathname={pathname}
           onNavigate={navigate}
           activeSession={displayedActiveSession}
+          isEndingSession={isEndingSession}
           now={now}
           onBeforeLogout={flushGoalSaves}
           onLogout={handleLogout}
@@ -899,7 +900,7 @@ export default function App() {
           mutualsLoading={mutualsLoading}
           mutualsError={mutualsError}
         />
-        <div className={`workspace-main${['Overview', 'Session Detail'].includes(view) ? ' workspace-main-fit' : ''}`}>
+        <div className={`workspace-main${['Overview', 'Session Detail', 'Analytics'].includes(view) ? ' workspace-main-fit' : ''}`}>
           <main className="app-main" id="main-content" tabIndex={-1}>
           {view === 'Overview' && (
             <OverviewPage
@@ -941,9 +942,9 @@ export default function App() {
               onViewCompletedSession={(sessionId) => navigate(sessionDetailPath(sessionId))}
               onStartAnother={() => setCompletedSession(null)}
               onRetryActivity={retrySessionActivity}
-              projects={projects}
+              repositoryHistories={repositoryHistories}
               exampleRepositories={exampleRepositories}
-              exampleProjects={exampleProjects}
+              exampleRepositoryHistories={exampleRepositoryHistories}
               onNavigate={navigate}
             />
           )}
@@ -952,15 +953,15 @@ export default function App() {
               ? <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} />
               : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
           )}
-          {view === 'Projects' && (
+          {view === 'Repositories' && (
             identityStatus === 'authenticated'
-              ? <ProjectsPage projects={projects} exampleProjects={exampleProjects} notice={sessionsNotice} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
+              ? <RepositoriesPage repositories={repositoryHistories} exampleRepositories={exampleRepositoryHistories} notice={sessionsNotice} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
               : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
           )}
-          {view === 'Project Detail' && (
-            routeProject
-              ? <ProjectDetailPage key={routeProject.key} project={routeProject} onBack={() => navigate(routePaths.Projects)} onSelectSession={(sessionId) => openSession(sessionId, { label: routeProject.name })} />
-              : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><BackLink href={routePaths.Projects} label="Repositories" onNavigate={navigate} /></section>
+          {view === 'Repository Detail' && (
+            routeRepository
+              ? <RepositoryDetailPage key={routeRepository.key} repository={routeRepository} onBack={() => navigate(routePaths.Repositories)} onSelectSession={(sessionId) => openSession(sessionId, { label: routeRepository.name })} />
+              : sessionsNotice || <section className="dashboard-section"><h2>Repository not found</h2><p className="dashboard-empty-note">There are no Panta sessions for this repository yet.</p><BackLink href={routePaths.Repositories} label="Repositories" onNavigate={navigate} /></section>
           )}
           {view === 'Analytics' && <AnalyticsPage sessions={analyticsSessions} notice={sessionsNotice} onNavigate={navigate} />}
           {view === 'Settings' && <SettingsPage identity={identity} theme={themeChoice} onChangeTheme={changeTheme} showExamples={showExamples} onToggleExamples={toggleExamples} onLogout={handleLogout} hasActiveSession={Boolean(activeSession)} savedSessionCount={realSessions.length} sessionsStatus={sessionsStatus} onDeleteHistory={deleteSessionHistory} onDeleteAccount={deleteAccount} onBeforeLogout={flushGoalSaves} />}

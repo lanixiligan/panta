@@ -1,21 +1,18 @@
 @media (max-width: 760px) {
   .session-history-search { grid-column: 1 / -1; }
 }
-@media (max-width: 520px) {
-  .session-history-search { grid-column: auto; }
-}
 .session-history-page { gap: var(--space-5); }
 .session-history-page .page-intro { margin-bottom: 0; }
 .session-history-page .page-intro h1 { margin-bottom: var(--space-2); }
 .session-history-workspace { min-width: 0; }
 .session-history-toolbar { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: var(--space-2-5); margin-bottom: var(--space-6); }
-.session-history-toolbar label, .session-history-filter { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1-5); color: var(--workspace-muted); font-size: var(--text-2xs); }
+.session-history-toolbar label, .session-history-filter { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1-5); color: var(--workspace-secondary); font-size: var(--text-xs); font-weight: var(--weight-medium); }
 .session-history-toolbar input, .session-history-toolbar select { width: 100%; min-width: 0; height: var(--control-md); padding: 0 var(--space-2-5); border: 1px solid var(--workspace-control-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-field); color: var(--workspace-text); font-family: inherit; font-size: var(--text-sm); }
 .session-history-toolbar input:hover { border-color: var(--workspace-control-border-hover); }
 .session-history-toolbar input::placeholder { color: var(--workspace-muted); }
 .session-history-toolbar input:focus, .session-history-toolbar select:focus { border-color: var(--workspace-action-border); box-shadow: var(--shadow-focus); }
 .session-history-empty { padding: var(--space-8) 0; border-bottom: 1px solid var(--workspace-divider); }
-.session-history-empty h2 { margin: 0 0 var(--space-1-5); color: var(--workspace-text); font-size: var(--text-md); font-weight: 500; }
+.session-history-empty h2 { margin: 0 0 var(--space-1-5); color: var(--workspace-text); font-size: var(--text-md); font-weight: var(--weight-semibold); }
 .session-history-empty p { margin: 0; color: var(--workspace-muted); font-size: var(--text-xs); }
 @media (max-width: 760px) {
   .session-history-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -24,7 +21,9 @@
   .session-history-toolbar label, .session-history-filter { gap: var(--space-1); }
   .session-history-toolbar input, .session-history-toolbar select { height: var(--control-lg); }
   .session-history-page { gap: var(--space-4); }
-  .session-history-toolbar { grid-template-columns: 1fr; gap: var(--space-2); margin-bottom: var(--space-5); }
+  /* Search takes the first row; Repository, Dates, and Sort share the second. */
+  .session-history-toolbar { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin-bottom: var(--space-5); }
+  .session-history-toolbar .filter-trigger { gap: var(--space-1-5); padding: 0 var(--space-2); }
 }
 .session-history-title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-5); }
 .session-history-title-row h1 { margin-top: var(--space-2-5); }

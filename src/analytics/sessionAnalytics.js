@@ -1,16 +1,7 @@
 import { getSessionDurationMs } from '../sessions/sessionHelpers.js';
 
-const HOUR_MS = 3_600_000;
 // Ranges longer than this are charted per week so the bars stay readable.
 const MAX_DAILY_BUCKETS = 45;
-
-export const SESSION_LENGTH_BUCKETS = [
-  { label: 'Under 15m', maxMs: 15 * 60_000 },
-  { label: '15–30m', maxMs: 30 * 60_000 },
-  { label: '30m–1h', maxMs: HOUR_MS },
-  { label: '1–2h', maxMs: 2 * HOUR_MS },
-  { label: '2h+', maxMs: Infinity },
-];
 
 function startOfLocalDay(value) {
   const day = new Date(value);
@@ -20,7 +11,7 @@ function startOfLocalDay(value) {
 
 function startOfLocalWeek(value) {
   const day = startOfLocalDay(value);
-  day.setDate(day.getDate() - ((day.getDay() + 6) % 7));
+  day.setDate(day.getDate() - day.getDay());
   return day;
 }
 
@@ -79,7 +70,6 @@ function summarize(records) {
     // Days with at least one session, by the local day each session started.
     activeDays: new Set(records.map(({ startedAt }) => dayKey(startedAt))).size,
     averageDurationMs: records.length ? totalDurationMs / records.length : null,
-    commits: sumAvailable(records, (session) => session.activity?.commits).total,
   };
 }
 
@@ -89,7 +79,7 @@ function buildTimeline(records, chartStart, chartEnd, today) {
     days.set(dayKey(date), { start: new Date(date), durationMs: 0, sessionCount: 0, commits: 0, hasCommits: false, isFuture: date > today });
   }
 
-  // A session counts entirely toward the day it started, matching the calendar and Projects.
+  // A session counts entirely toward the day it started, matching the calendar and Repositories.
   records.forEach((record) => {
     const startDay = days.get(dayKey(record.startedAt));
     if (startDay) {
@@ -124,6 +114,29 @@ function buildTimeline(records, chartStart, chartEnd, today) {
   return { unit: 'week', buckets: [...weeks.values()] };
 }
 
+function fileExtension(filename) {
+  const name = filename.split('/').pop();
+  const dot = name.lastIndexOf('.');
+  return dot > 0 ? name.slice(dot).toLowerCase() : 'other';
+}
+
+// Files changed per extension, each file counted once per session. Null when no session has file details.
+function buildFileTypes(records) {
+  const counts = new Map();
+  let recorded = false;
+  records.forEach(({ session }) => {
+    if (!Array.isArray(session.commits) || !session.commits.some((commit) => Array.isArray(commit.files))) return;
+    recorded = true;
+    const filenames = new Set(session.commits.flatMap((commit) => (commit.files || []).map(({ filename }) => filename)));
+    filenames.forEach((filename) => counts.set(fileExtension(filename), (counts.get(fileExtension(filename)) || 0) + 1));
+  });
+  if (!recorded) return null;
+  const total = [...counts.values()].reduce((sum, value) => sum + value, 0);
+  return [...counts.entries()]
+    .map(([extension, count]) => ({ extension, count, share: total ? count / total : 0 }))
+    .sort((left, right) => right.count - left.count);
+}
+
 export function calculateSessionAnalytics(sessions = [], span = null, referenceDate = new Date()) {
   const now = referenceDate instanceof Date ? referenceDate.getTime() : Date.parse(referenceDate);
   const safeNow = Number.isFinite(now) ? now : Date.now();
@@ -136,21 +149,18 @@ export function calculateSessionAnalytics(sessions = [], span = null, referenceD
     .sort((left, right) => right.endedAt - left.endedAt);
 
   const current = summarize(records);
-  const projects = new Map();
-  const lengthBuckets = SESSION_LENGTH_BUCKETS.map(({ label }) => ({ label, count: 0 }));
+  const repositories = new Map();
 
   records.forEach((record) => {
     const name = record.repository.name || record.repository.fullName || record.repository.full_name;
     const fullName = record.repository.fullName || record.repository.full_name || name;
     if (name) {
-      const project = projects.get(fullName) || { name, fullName, durationMs: 0, sessionCount: 0, commits: null, isExample: record.session.source === 'placeholder' };
-      project.durationMs += record.durationMs;
-      project.sessionCount += 1;
-      if (record.commits !== null) project.commits = (project.commits || 0) + record.commits;
-      projects.set(fullName, project);
+      const repository = repositories.get(fullName) || { name, fullName, durationMs: 0, sessionCount: 0, commits: null, isExample: record.session.source === 'placeholder' };
+      repository.durationMs += record.durationMs;
+      repository.sessionCount += 1;
+      if (record.commits !== null) repository.commits = (repository.commits || 0) + record.commits;
+      repositories.set(fullName, repository);
     }
-
-    lengthBuckets[SESSION_LENGTH_BUCKETS.findIndex(({ maxMs }) => record.durationMs < maxMs)].count += 1;
   });
 
   const chartStart = period
@@ -158,7 +168,6 @@ export function calculateSessionAnalytics(sessions = [], span = null, referenceD
     : records.length
       ? startOfLocalDay(Math.min(...records.map(({ startedAt }) => startedAt)))
       : startOfLocalDay(safeNow);
-  const longest = records.reduce((best, record) => (!best || record.durationMs > best.durationMs ? record : best), null);
 
   return {
     // Days of the period so far, today included; for all time, since the first session.
@@ -166,29 +175,25 @@ export function calculateSessionAnalytics(sessions = [], span = null, referenceD
     rangeStart: chartStart,
     rangeEnd: period ? period.last : new Date(safeNow),
     totalCompletedSessions: allCompleted.length,
+    // Used by Repositories.
     sessions: records.map(({ session, startedAt, endedAt, durationMs }) => ({ session, startedAt, endedAt, durationMs })),
     ...current,
-    projectCount: projects.size,
-    projects: [...projects.values()]
-      .map((project) => ({ ...project, share: current.totalDurationMs ? project.durationMs / current.totalDurationMs : 0 }))
+    repositories: [...repositories.values()]
+      .map((repository) => ({ ...repository, share: current.totalDurationMs ? repository.durationMs / current.totalDurationMs : 0 }))
       .sort((left, right) => right.durationMs - left.durationMs),
     // A bounded period charts all of its days, with days still ahead marked as future.
     timeline: buildTimeline(records, chartStart, period ? period.last : today, today),
-    lengthBuckets,
-    longestSession: longest ? { session: longest.session, durationMs: longest.durationMs } : null,
+    fileTypes: buildFileTypes(records),
     activity: {
       commits: sumAvailable(records, (session) => session.activity?.commits),
       filesChanged: sumAvailable(records, (session) => session.activity?.filesChanged),
       additions: sumAvailable(records, (session) => session.activity?.additions),
       deletions: sumAvailable(records, (session) => session.activity?.deletions),
     },
-    sessionsWithActivity: records.filter(({ commits }) => commits !== null).length,
-    // Used by Projects: sessions with any recorded GitHub activity field.
+    // Used by Repositories: sessions with any recorded GitHub activity field.
     activitySessionsWithData: records.filter(({ session }) => ['commits', 'filesChanged', 'additions', 'deletions'].some((field) => {
       const value = session.activity?.[field];
       return typeof value === 'number' && Number.isFinite(value) && value >= 0;
     })).length,
-    sessionsWithCommits: records.filter(({ commits }) => commits > 0).length,
-    includesExamples: records.some(({ session }) => session.source === 'placeholder'),
   };
 }

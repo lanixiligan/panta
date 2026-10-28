@@ -103,4 +103,4 @@ These come from the product invariants in CLAUDE.md:
 
 ## Out of scope
 
-- A branch filter on Session History. Branch names like `main` repeat across repositories, the list would grow with every feature branch, and a session can span several branches or have none (zero commits is valid). Branch filtering belongs inside one repository: on session detail, and later perhaps on project detail.
+- A branch filter on Session History. Branch names like `main` repeat across repositories, the list would grow with every feature branch, and a session can span several branches or have none (zero commits is valid). Branch filtering belongs inside one repository: on session detail, and later perhaps on repository detail.

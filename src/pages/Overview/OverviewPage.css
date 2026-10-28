@@ -19,7 +19,7 @@
 .dashboard-loading div:first-child { height: 54px; width: 46%; border: 0; background: var(--workspace-surface); }
 .dashboard-loading div:nth-child(2) { height: 235px; }
 .dashboard-access-state { max-width: 650px; margin: var(--space-10) auto; padding: var(--space-7); }
-.dashboard-access-state h2 { margin: var(--space-3) 0 var(--space-2); font-size: var(--text-xl); font-weight: 500; }
+.dashboard-access-state h2 { margin: var(--space-3) 0 var(--space-2); font-size: var(--text-xl); font-weight: var(--weight-semibold); }
 .dashboard-access-state p { margin: 0 0 var(--space-4); color: var(--workspace-muted); font-size: var(--text-sm); line-height: 1.6; }
 @keyframes shimmer { 50% { background-position: -100% 0; } }
 @media (max-width: 680px) {

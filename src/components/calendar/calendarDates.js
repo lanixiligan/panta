@@ -1,4 +1,4 @@
-// Local-time day helpers shared by the calendars. A day string is YYYY-MM-DD in local time; weeks start on Monday.
+// Local-time day helpers shared by the calendars. A day string is YYYY-MM-DD in local time; weeks start on Sunday.
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export function startOfDay(value) {
@@ -25,11 +25,28 @@ export function parseDay(value) {
   return Number.isFinite(date.getTime()) ? date : null;
 }
 
+// The Sunday that starts the week holding `value`.
+export function startOfWeek(value) {
+  const date = startOfDay(value);
+  date.setDate(date.getDate() - date.getDay());
+  return date;
+}
+
+export const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 export const sameDay = (left, right) => Boolean(left && right) && left.getTime() === right.getTime();
 
-// The days of `month`, plus how many blank cells come before the 1st in a Monday-first grid.
+// The days of `month` in a six-week, Sunday-first grid. `before` and `after` are the neighbouring months' days that fill it,
+// and `leading` is how many come before the 1st.
 export function monthDays(month) {
-  const first = new Date(month.getFullYear(), month.getMonth(), 1);
-  const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  return { leading: (first.getDay() + 6) % 7, days: Array.from({ length: count }, (_, index) => new Date(month.getFullYear(), month.getMonth(), index + 1)) };
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  const leading = new Date(year, monthIndex, 1).getDay();
+  const count = new Date(year, monthIndex + 1, 0).getDate();
+  return {
+    leading,
+    days: Array.from({ length: count }, (_, index) => new Date(year, monthIndex, index + 1)),
+    before: Array.from({ length: leading }, (_, index) => new Date(year, monthIndex, index - leading + 1)),
+    after: Array.from({ length: 42 - leading - count }, (_, index) => new Date(year, monthIndex + 1, index + 1)),
+  };
 }

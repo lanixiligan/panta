@@ -3,7 +3,7 @@
 .delete-dialog::backdrop { background: var(--workspace-shadow, #00000066); }
 
 .delete-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5); border-bottom: 1px solid var(--workspace-divider); }
-.delete-dialog-header h2 { margin: 0; font-size: var(--text-md); font-weight: 500; }
+.delete-dialog-header h2 { margin: 0; font-size: var(--text-md); font-weight: var(--weight-semibold); }
 .delete-dialog-close { display: inline-grid; place-items: center; width: var(--control-sm); height: var(--control-sm); padding: 0; border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--workspace-secondary); cursor: pointer; transition: background var(--duration-base) ease, color var(--duration-base) ease; }
 .delete-dialog-close:hover:not(:disabled) { background: var(--workspace-raised); color: var(--workspace-text); }
 .delete-dialog-close:disabled { opacity: .5; cursor: not-allowed; }

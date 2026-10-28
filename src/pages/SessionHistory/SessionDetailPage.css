@@ -48,7 +48,7 @@
 .session-detail-body.no-files { grid-template-columns: minmax(0, 1fr); }
 .session-detail-section { min-width: 0; }
 .session-detail-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3-5); }
-.session-detail-section-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-lg); font-weight: 500; }
+.session-detail-section-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-lg); font-weight: var(--weight-semibold); }
 .session-detail-section-heading > a { color: var(--workspace-secondary); font-size: var(--text-xs); text-decoration: none; }
 .session-detail-section-heading > a:hover { color: var(--workspace-accent-soft); }
 .session-detail-section-heading > a:focus-visible { border-radius: var(--radius-sm); outline: 2px solid var(--workspace-focus); outline-offset: 2px; }

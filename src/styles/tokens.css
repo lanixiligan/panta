@@ -29,9 +29,9 @@
 
   /* Text, most to least prominent. Faint is decorative only (separators, empty days), never for words. */
   --workspace-text: #E0EDE4;
-  --workspace-secondary: #9FBDAA;
-  --workspace-muted: #7D9888;
-  --workspace-faint: #4D6155;
+  --workspace-secondary: #A8C5B2;
+  --workspace-muted: #8DA898;
+  --workspace-faint: #587062;
 
   /* Green accents. The accent is for small marks only (live dot, ticks, active markers);
      links, hover text, and large highlighted areas use the softer green. */
@@ -94,16 +94,33 @@
   --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* Type scale */
-  --text-2xs: 11px;
-  --text-xs: 12px;
-  --text-sm: 13px;
-  --text-md: 14px;
-  --text-lg: 16px;
-  --text-xl: 18px;
-  --text-2xl: 22px;
-  --text-3xl: 28px;
-  --text-display: clamp(26px, calc(2.8vw / var(--ui-zoom)), 34px);
+  /* Type scale. 12px is the floor for anything people read; 2xs is metadata, xs supporting text, sm–md body and
+     labels, lg–xl section headings, 2xl–3xl prominent figures, display the page title. */
+  --text-2xs: 12px;
+  --text-xs: 13px;
+  --text-sm: 14px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 19px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-display: clamp(28px, calc(2.9vw / var(--ui-zoom)), 36px);
+
+  /* Weights: DM Sans is loaded at 400–700, DM Mono at 400 and 500 */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Line heights: figures and titles, single-line labels, running text */
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+
+  /* Letter spacing: large titles pull in, uppercase mono labels open up slightly */
+  --tracking-display: -.025em;
+  --tracking-tight: -.015em;
+  --tracking-label: .05em;
 
   /* Spacing: 2px steps up to 16, then 4px and 8px steps */
   --space-0-5: 2px;

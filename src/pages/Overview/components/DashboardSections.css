@@ -4,7 +4,7 @@
 /* The work calendar comes from Analytics; on Overview its frame and heading match the other cards. */
 .dashboard-grid > .analytics-section { gap: var(--space-3); padding: var(--space-5); }
 .dashboard-grid > .analytics-section .analytics-section-heading { align-items: baseline; }
-.dashboard-grid > .analytics-section .analytics-section-heading h2 { font-size: var(--text-lg); letter-spacing: -.025em; }
+.dashboard-grid > .analytics-section .analytics-section-heading h2 { font-size: var(--text-lg); letter-spacing: var(--tracking-tight); }
 
 .dashboard-section-meta { color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); }
 
@@ -27,7 +27,7 @@
 /* This week: four numbers in one row. */
 .weekly-strip { display: flex; align-items: center; gap: var(--space-6); padding: var(--space-3-5) var(--space-6); }
 .weekly-strip-heading { display: flex; flex: 0 0 250px; flex-direction: column; gap: var(--space-1); }
-.weekly-strip-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-lg); font-weight: 500; letter-spacing: -.025em; }
+.weekly-strip-heading h2 { margin: 0; color: var(--workspace-text); font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .weekly-metrics { display: grid; flex: 1 1 auto; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
 .weekly-metric { display: flex; min-width: 0; flex-direction: column-reverse; gap: var(--space-1); padding-left: var(--space-5); border-left: 1px solid var(--workspace-divider); }
 .weekly-metric dt { color: var(--workspace-secondary); font-size: var(--text-2xs); }

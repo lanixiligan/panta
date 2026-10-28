@@ -36,6 +36,7 @@
   /* Green accents. The accent is for small marks only (live dot, ticks, active markers);
      links, hover text, and large highlighted areas use the softer green. */
   --workspace-accent: #34C77B;
+  --workspace-on-accent: #04120A;
   --workspace-accent-soft: #5FD394;
   --workspace-focus: #34C77B;
 
@@ -139,6 +140,7 @@
   --space-12: 48px;
   --space-14: 56px;
   --space-16: 64px;
+  --sidebar-width: 254px;
 
   /* Radii: tiny marks, badges, controls, small surfaces, cards */
   --radius-xs: 2px;
@@ -196,6 +198,7 @@
   --workspace-faint: #7FA78F;
 
   --workspace-accent: #187F47;
+  --workspace-on-accent: #FFFFFF;
   --workspace-accent-soft: #0F6036;
   --workspace-focus: #0F6036;
 

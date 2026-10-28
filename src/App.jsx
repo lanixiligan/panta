@@ -892,6 +892,7 @@ export default function App() {
           pathname={pathname}
           onNavigate={navigate}
           activeSession={displayedActiveSession}
+          isEndingSession={isEndingSession}
           now={now}
           onBeforeLogout={flushGoalSaves}
           onLogout={handleLogout}

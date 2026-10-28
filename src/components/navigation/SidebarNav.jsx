@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, UserRound } from 'lucide-react';
+import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, Play, UserRound } from 'lucide-react';
 import AuthControl from '../auth/AuthControl.jsx';
 import { PantaLockup } from '../brand/PantaLogo.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
@@ -137,19 +137,20 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
 
 // The core of Panta, so it gets its own accent button at the foot of the sidebar instead of a row in the list.
 // While a session runs, the button becomes the live session card.
-function SessionWorkspaceLink({ session, now, pathname, onNavigate }) {
+function SessionWorkspaceLink({ session, now, pathname, onNavigate, saving }) {
   const current = pathname === routePaths['Session Workspace'];
   if (!session) {
     return (
       <a className="sidebar-workspace-link" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
-        Session Workspace
+        <Play size={14} aria-hidden="true" />
+        Start session
       </a>
     );
   }
   const repository = repositoryFullName(session.repository) || 'Coding session';
   return (
-    <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={`Open active session for ${repository}`}>
-      <span className="live-session-heading"><i aria-hidden="true" /> LIVE</span>
+    <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={saving ? `Saving session for ${repository}` : `Open active session for ${repository}`} title={repository} data-saving={saving ? 'true' : undefined}>
+      <span className="live-session-heading"><i aria-hidden="true" /> {saving ? 'SAVING SESSION…' : 'ACTIVE SESSION'}</span>
       <strong>{session.repository ? <RepositoryName name={repository} /> : repository}</strong>
       <span className="live-session-time">{formatElapsed(getActiveElapsedMs(session, now))}</span>
     </a>
@@ -220,7 +221,7 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onBeforeLogout,
   );
 }
 
-export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError }) {
+export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, isEndingSession = false, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError }) {
   return (
     <aside className="workspace-sidebar">
       <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
@@ -232,7 +233,7 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
         <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
       </div>
       <div className="sidebar-workspace">
-        <SessionWorkspaceLink session={activeSession} now={now} pathname={pathname} onNavigate={onNavigate} />
+        <SessionWorkspaceLink session={activeSession} saving={isEndingSession} now={now} pathname={pathname} onNavigate={onNavigate} />
       </div>
       <div className="sidebar-bottom">
         {identityStatus === 'authenticated' && identity ? (

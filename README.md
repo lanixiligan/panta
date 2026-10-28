@@ -53,7 +53,7 @@ A session is valid even when no commits were made. Work that has not been pushed
 
 ## The Session Workspace
 
-Sessions run inside the Session Workspace (`/session-workspace`, opened from the accent **Session Workspace** button at the foot of the sidebar, which shows the live session instead while one is running). It is one page with three phases:
+Sessions run inside the Session Workspace (`/session-workspace`, opened from the accent **Start session** button at the foot of the sidebar, which becomes an **Active session** card with the elapsed time while one is running). It is one page with three phases:
 
 1. **Session Setup** — browse, search, filter, and sort the repositories Panta can access (the search, filters, and sort are kept in the URL until a session starts); select one; optionally describe what you are working on; start the session. A side panel shows your Panta history with the selected repository, or your recent work across repositories when none is selected.
 2. **Active Session** — two columns. On the left, the session you declared: the elapsed-time timer at the top, then the repository and goal (editable), with the actions at the bottom (view the repository on GitHub, cancel without recording anything, or end the session). On the right, GitHub activity: when GitHub was last checked (“Checked 12s ago”), then the commits detected so far, newest first, in a list that fills the page and scrolls on its own. Narrow screens stack the two.

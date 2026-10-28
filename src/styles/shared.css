@@ -24,7 +24,7 @@
 .text-link { border-color: transparent; padding: 0; }
 .text-link:hover { border-color: transparent; background: transparent; color: var(--workspace-accent-soft); }
 .page-intro { margin: 0 0 var(--space-6); }
-.sessions-page, .projects-page { display: flex; flex-direction: column; gap: var(--space-6); }
+.sessions-page, .repositories-page { display: flex; flex-direction: column; gap: var(--space-6); }
 .repository-visibility { display: inline-flex; align-items: center; width: max-content; padding: var(--space-1) var(--space-1-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-sm); color: var(--workspace-secondary); font: var(--text-2xs) var(--font-mono); letter-spacing: .06em; white-space: nowrap; }
 .repository-visibility.private { border-color: var(--workspace-border-strong); color: var(--workspace-text); }
 .repository-visibility.example { border-style: dashed; color: var(--workspace-muted); }
@@ -89,9 +89,9 @@
 /* Pressed: buttons and clickable rows darken while held. Solid green buttons dip by a pixel instead. */
 :is(.session-workspace-button, .subtle-action, .settings-button, .continue-session-button, .cancel-session-button,
   .session-detail-delete, .session-detail-refresh, .not-found-action, .repository-browser-state-link, .sidebar-workspace-link, .sidebar-auth .github-sign-in,
-  .date-range-presets button, .date-range-clear, .month-nav button, .project-segmented button, .project-day-filter,
+  .date-range-presets button, .date-range-clear, .month-nav button, .repository-segmented button, .repository-day-filter,
   .app-render-error button, .account-trigger, .account-menu button, .account-menu a, .sidebar-nav-item, .sidebar-live-session, .back-link,
-  .overview-next, .recent-session-row, .history-row, .project-session-row, .repository-select-row, .repository-history-session,
-  a.analytics-project-row, .session-file-list button, .filter-trigger, .history-month-toggle, .editable-goal-button, .delete-dialog-close):active:not(:disabled) { background: var(--workspace-pressed); }
+  .overview-next, .recent-session-row, .history-row, .repository-session-row, .repository-select-row, .repository-history-session,
+  a.analytics-repository-row, .session-file-list button, .filter-trigger, .history-month-toggle, .editable-goal-button, .delete-dialog-close):active:not(:disabled) { background: var(--workspace-pressed); }
 :is(.finish-session-button, .cancel-session-button.danger, .session-detail-delete.danger, .settings-button.is-danger):active:not(:disabled) { border-color: var(--workspace-danger); background: var(--workspace-danger-bg); }
 :is(.auth-screen .github-sign-in, .preview-banner-action):active { transform: translateY(1px); }

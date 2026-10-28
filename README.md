@@ -68,7 +68,7 @@ Each page is described in full in [docs/features.md](docs/features.md).
 - **Overview** — a one-screen dashboard with your next step, this week's totals, your latest sessions, and a calendar of when you work.
 - **Session History** — a searchable list of completed sessions, filtered by repository and any span of days, with a detail page for each session.
 - **Repositories** — the repositories you have worked on, with session time and GitHub activity kept apart.
-- **Analytics** — where your time went and when you work, over any range of days.
+- **Analytics** — session time per day and where your time went, over any range of days.
 - **Socials** — which of your GitHub mutuals are online in Panta.
 - **Settings** — your account, GitHub connection, and saved session history.
 
@@ -296,10 +296,10 @@ panta/
         ├── SessionHistory/
         │   ├── SessionHistoryPage.jsx (+ .css)
         │   └── SessionDetailPage.jsx (+ .css)
-        ├── Projects/
-        │   ├── ProjectsPage.jsx (+ .css)
-        │   ├── ProjectDetailPage.jsx
-        │   └── projectHistory.js                      # Derives projects from sessions
+        ├── Repositories/
+        │   ├── RepositoriesPage.jsx (+ .css)
+        │   ├── RepositoryDetailPage.jsx
+        │   └── repositoryHistory.js                   # Derives repository histories from sessions
         ├── Analytics/AnalyticsPage.jsx (+ .css)
         ├── Settings/SettingsPage.jsx (+ .css)
         ├── Authentication/AuthenticationPage.jsx (+ .css)
@@ -367,7 +367,7 @@ The name reflects the idea that development is an ongoing process:
 
 **sessions → activity → history → progress**
 
-Individual work periods become part of a larger picture of how a project evolves over time.
+Individual work periods become part of a larger picture of how a repository evolves over time.
 
 ---
 

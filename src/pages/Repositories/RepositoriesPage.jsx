@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
-import { recentDailyMinutes } from './projectHistory.js';
-import ProjectCard, { ACTIVITY_DAYS } from './components/ProjectCard.jsx';
+import { recentDailyMinutes } from './repositoryHistory.js';
+import RepositoryCard, { ACTIVITY_DAYS } from './components/RepositoryCard.jsx';
 import Pager from '../../components/navigation/Pager.jsx';
 
 // Three full rows in the three-column grid.
@@ -12,14 +12,14 @@ const sortOptions = [
   ['sessions', 'Most sessions'],
 ];
 
-function sortProjects(projects, sort) {
-  if (sort === 'time') return [...projects].sort((left, right) => right.totalDurationMs - left.totalDurationMs);
-  if (sort === 'sessions') return [...projects].sort((left, right) => right.sessionCount - left.sessionCount || right.lastWorkedAt - left.lastWorkedAt);
-  return projects;
+function sortRepositories(repositories, sort) {
+  if (sort === 'time') return [...repositories].sort((left, right) => right.totalDurationMs - left.totalDurationMs);
+  if (sort === 'sessions') return [...repositories].sort((left, right) => right.sessionCount - left.sessionCount || right.lastWorkedAt - left.lastWorkedAt);
+  return repositories;
 }
 
 // `notice` is one line from App while the sessions load or when they couldn't be loaded; the empty state waits for it.
-export default function ProjectsPage({ projects: realProjects = [], exampleProjects = [], notice = null, onNavigate, onStartSession }) {
+export default function RepositoriesPage({ repositories: realRepositories = [], exampleRepositories = [], notice = null, onNavigate, onStartSession }) {
   // Search, sort, and page live in the URL (?q=, ?sort=, ?page=).
   const [query, setQueryState] = useState(() => readSearchParam('q') || '');
   const [sort, setSortState] = useState(() => (sortOptions.some(([value]) => value === readSearchParam('sort')) ? readSearchParam('sort') : 'recent'));
@@ -28,25 +28,25 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
   const setPage = (value) => { setPageState(value); updateSearchParams({ page: value > 1 ? value : null }); };
   const setSort = (value) => { setSortState(value); setPage(1); updateSearchParams({ sort: value === 'recent' ? null : value }); };
   const setQuery = (value) => { setQueryState(value); setPage(1); updateSearchParams({ q: value.trim() ? value : null }); };
-  const projects = useMemo(
-    () => [...realProjects, ...exampleProjects].sort((left, right) => right.lastWorkedAt - left.lastWorkedAt),
-    [realProjects, exampleProjects],
+  const repositories = useMemo(
+    () => [...realRepositories, ...exampleRepositories].sort((left, right) => right.lastWorkedAt - left.lastWorkedAt),
+    [realRepositories, exampleRepositories],
   );
-  const sortedProjects = useMemo(() => {
+  const sortedRepositories = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
     const matches = needle
-      ? projects.filter((project) => [project.fullName, project.description].some((value) => value?.toLocaleLowerCase().includes(needle)))
-      : projects;
-    return sortProjects(matches, sort);
-  }, [projects, query, sort]);
-  const activity = useMemo(() => new Map(projects.map((project) => [project.key, recentDailyMinutes(project, ACTIVITY_DAYS)])), [projects]);
-  // One scale for every project, so bar heights compare honestly across projects.
+      ? repositories.filter((repository) => [repository.fullName, repository.description].some((value) => value?.toLocaleLowerCase().includes(needle)))
+      : repositories;
+    return sortRepositories(matches, sort);
+  }, [repositories, query, sort]);
+  const activity = useMemo(() => new Map(repositories.map((repository) => [repository.key, recentDailyMinutes(repository, ACTIVITY_DAYS)])), [repositories]);
+  // One scale for every repository, so bar heights compare honestly across repositories.
   const maxMinutes = Math.max(1, ...[...activity.values()].flat().map((day) => day.minutes));
-  // Badges mark exceptions: when every project is an example, the toolbar labels them once.
-  const allExamples = projects.length > 0 && projects.every((project) => project.isExample);
-  const pageCount = Math.max(1, Math.ceil(sortedProjects.length / PAGE_SIZE));
+  // Badges mark exceptions: when every repository is an example, the toolbar labels them once.
+  const allExamples = repositories.length > 0 && repositories.every((repository) => repository.isExample);
+  const pageCount = Math.max(1, Math.ceil(sortedRepositories.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
-  const pageProjects = sortedProjects.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const pageRepositories = sortedRepositories.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   function goToPage(next) {
     setPage(next);
@@ -56,7 +56,7 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
   }
 
   return (
-    <div className="projects-page" ref={pageRef}>
+    <div className="repositories-page" ref={pageRef}>
       <section className="page-intro">
         <h1>Repositories</h1>
         <p>Every repository you’ve worked on through Panta, with the time you declared and what GitHub saw.</p>
@@ -64,26 +64,26 @@ export default function ProjectsPage({ projects: realProjects = [], exampleProje
 
       {notice}
 
-      {projects.length ? (
-        <section className="project-list-section" aria-label="Repositories">
-          <div className="project-toolbar">
-            <input className="project-search" type="search" name="q" aria-label="Search repositories" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search repositories…" />
-            <div className="project-toolbar-group">
-              <div className="project-segmented" role="group" aria-label="Sort repositories">
+      {repositories.length ? (
+        <section className="repository-list-section" aria-label="Repositories">
+          <div className="repository-toolbar">
+            <input className="repositories-search" type="search" name="q" aria-label="Search repositories" autoComplete="off" spellCheck={false} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search repositories…" />
+            <div className="repository-toolbar-group">
+              <div className="repository-segmented" role="group" aria-label="Sort repositories">
                 {sortOptions.map(([value, label]) => (
                   <button key={value} type="button" className={sort === value ? 'is-active' : undefined} aria-pressed={sort === value} onClick={() => setSort(value)}>{label}</button>
                 ))}
               </div>
-              {allExamples && <span className="project-badge is-example">Example data</span>}
+              {allExamples && <span className="repository-badge is-example">Example data</span>}
             </div>
           </div>
 
-          {!sortedProjects.length ? (
-            <p className="project-list-empty">No matching repositories</p>
+          {!sortedRepositories.length ? (
+            <p className="repository-list-empty">No matching repositories</p>
           ) : (
-            <div className="project-grid">
-              {pageProjects.map((project) => (
-                <ProjectCard key={project.key} project={project} days={activity.get(project.key)} maxMinutes={maxMinutes} showExample={!allExamples} onNavigate={onNavigate} />
+            <div className="repository-grid">
+              {pageRepositories.map((repository) => (
+                <RepositoryCard key={repository.key} repository={repository} days={activity.get(repository.key)} maxMinutes={maxMinutes} showExample={!allExamples} onNavigate={onNavigate} />
               ))}
             </div>
           )}

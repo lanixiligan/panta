@@ -10,7 +10,7 @@ import { formatElapsed, getActiveElapsedMs } from '../../sessions/sessionHelpers
 const items = [
   { label: 'Overview', view: 'Overview', path: routePaths.Overview, Icon: LayoutDashboard },
   { label: 'Session History', view: 'Session History', path: routePaths['Session History'], Icon: History },
-  { label: 'Repositories', view: 'Projects', path: routePaths.Projects, Icon: FolderGit2 },
+  { label: 'Repositories', view: 'Repositories', path: routePaths.Repositories, Icon: FolderGit2 },
   { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, Icon: ChartNoAxesCombined },
 ];
 
@@ -21,7 +21,7 @@ function NavLinks({ pathname, onNavigate }) {
   const navRef = useRef(null);
   const [box, setBox] = useState(null);
   const [ready, setReady] = useState(false);
-  const activeView = items.find(({ view, path }) => pathname === path || ((view === 'Session History' || view === 'Projects') && pathname.startsWith(`${path}/`)))?.view;
+  const activeView = items.find(({ view, path }) => pathname === path || ((view === 'Session History' || view === 'Repositories') && pathname.startsWith(`${path}/`)))?.view;
 
   // One indicator glides to the active link; it is measured so the same code serves the sidebar and the phone's row.
   useLayoutEffect(() => {

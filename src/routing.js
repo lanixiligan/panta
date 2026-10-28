@@ -2,7 +2,7 @@ export const routePaths = {
   Overview: '/',
   'Session Workspace': '/session-workspace',
   'Session History': '/session-history',
-  Projects: '/repositories',
+  Repositories: '/repositories',
   Analytics: '/analytics',
   Settings: '/settings',
   Preview: '/preview',
@@ -12,7 +12,7 @@ export function sessionDetailPath(sessionId) {
   return `/session-history/${encodeURIComponent(sessionId)}`;
 }
 
-export function projectDetailPath(fullName) {
+export function repositoryDetailPath(fullName) {
   const [owner = '', repo = ''] = fullName.split('/');
   return `/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
 }
@@ -56,12 +56,12 @@ export function resolveRoute(pathname) {
   }
   // `/projects` is the old name for `/repositories`; old links still open.
   const repositoriesPath = normalizedPath.replace(/^\/projects(?=\/|$)/, '/repositories');
-  if (repositoriesPath === '/repositories') return { view: 'Projects' };
+  if (repositoriesPath === '/repositories') return { view: 'Repositories' };
   if (repositoriesPath.startsWith('/repositories/')) {
     const segments = repositoriesPath.slice('/repositories/'.length).split('/');
     if (segments.length === 2 && segments.every(Boolean)) {
       try {
-        return { view: 'Project Detail', owner: decodeURIComponent(segments[0]), repo: decodeURIComponent(segments[1]) };
+        return { view: 'Repository Detail', owner: decodeURIComponent(segments[0]), repo: decodeURIComponent(segments[1]) };
       } catch {
         return { view: 'Not Found' };
       }

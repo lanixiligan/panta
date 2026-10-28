@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import SessionSetup from './components/SessionSetup/SessionSetup.jsx';
 import ActiveSession from './components/ActiveSession/ActiveSession.jsx';
 import SessionRecap from './components/SessionRecap/SessionRecap.jsx';
-import { findProjectForRepository } from '../Projects/projectHistory.js';
+import { findHistoryForRepository } from '../Repositories/repositoryHistory.js';
 import { readSearchParam, updateSearchParams } from '../../routing.js';
 
 const phases = [
@@ -20,7 +20,7 @@ const phaseCopy = {
 const REPOSITORY_TYPES = ['all', 'public', 'private'];
 const REPOSITORY_SORTS = ['updated', 'name'];
 
-export default function SessionWorkspacePage({ repositories: githubRepositories = [], exampleRepositories = [], exampleProjects = [], loading, error, onRetry, onStart, starting = false, startError = '', sessionsError = '', onRetrySessions, activeSession, completedSession, now, onFinish, onCancel, onUpdateGoal, isEndingSession, sessionEndingAt, activeSessionError = null, onViewCompletedSession, onStartAnother, onRetryActivity, projects = [], onNavigate }) {
+export default function SessionWorkspacePage({ repositories: githubRepositories = [], exampleRepositories = [], exampleRepositoryHistories = [], loading, error, onRetry, onStart, starting = false, startError = '', sessionsError = '', onRetrySessions, activeSession, completedSession, now, onFinish, onCancel, onUpdateGoal, isEndingSession, sessionEndingAt, activeSessionError = null, onViewCompletedSession, onStartAnother, onRetryActivity, repositoryHistories = [], onNavigate }) {
   // Search, type, language, and sort live in the URL (?q=, ?type=, ?language=, ?sort=), so a reload or Back keeps the list as it was.
   const [query, setQueryState] = useState(() => readSearchParam('q') || '');
   const [type, setTypeState] = useState(() => (REPOSITORY_TYPES.includes(readSearchParam('type')) ? readSearchParam('type') : 'all'));
@@ -37,7 +37,7 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
 
   const repositories = useMemo(() => (githubRepositories.length ? [...githubRepositories, ...exampleRepositories] : githubRepositories), [githubRepositories, exampleRepositories]);
   const selectedRepository = repositories.find((repository) => String(repository.id) === selectedRepositoryId);
-  const selectedProject = useMemo(() => findProjectForRepository(selectedRepository?.isExample ? exampleProjects : projects, selectedRepository), [projects, exampleProjects, selectedRepository]);
+  const selectedRepositoryHistory = useMemo(() => findHistoryForRepository(selectedRepository?.isExample ? exampleRepositoryHistories : repositoryHistories, selectedRepository), [repositoryHistories, exampleRepositoryHistories, selectedRepository]);
   const languages = useMemo(() => [...new Set(repositories.map((repository) => repository.language).filter(Boolean))].sort((left, right) => left.localeCompare(right)), [repositories]);
   // A language from an old link that none of the repositories use falls back to all languages.
   const activeLanguage = languages.includes(language) ? language : 'all';
@@ -123,7 +123,7 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
           setSort={setSort}
           languages={languages}
           filteredRepositories={filteredRepositories}
-          selectedProject={selectedProject}
+          selectedRepositoryHistory={selectedRepositoryHistory}
           onNavigate={onNavigate}
         />
       )}

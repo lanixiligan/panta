@@ -1,7 +1,7 @@
 import { dummyRepositories } from './repositories.js';
 import { exampleSession } from './exampleSession.js';
 
-// Generated example sessions for the larger example portfolio, so Projects, Analytics, and the
+// Generated example sessions for the larger example portfolio, so Repositories, Analytics, and the
 // history views can be seen with realistic volume. Everything is deterministic (seeded) and placed
 // relative to today, so the 14-day strips and recent-period analytics always have data.
 // None of it was retrieved from GitHub.

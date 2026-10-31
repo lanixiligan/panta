@@ -65,7 +65,7 @@ A running session is stored in Panta, so reloading the page, closing the tab, or
 
 Each page is described in full in [docs/features.md](docs/features.md).
 
-- **Overview** — a one-screen dashboard with your next step, this week's totals, your latest sessions, and a calendar of when you work.
+- **Overview** — a one-screen dashboard with your next step, this week's totals, and your latest sessions.
 - **Session History** — a searchable list of completed sessions, filtered by repository and any span of days, with a detail page for each session.
 - **Repositories** — the repositories you have worked on, with session time and GitHub activity kept apart.
 - **Analytics** — session time per day and where your time went, over any range of days.

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getActiveElapsedMs, getSessionDurationMinutes, getSessionDurationMs } from './sessionHelpers.js';
+import { formatDuration, getWeeklySummary, getActiveElapsedMs, getSessionDurationMinutes, getSessionDurationMs } from './sessionHelpers.js';
 import { getDummySessions } from '../dummy-data/index.js';
 
 const HOUR_MS = 3_600_000;
@@ -67,4 +67,27 @@ test('getActiveElapsedMs never goes below 0', () => {
   const now = Date.parse('2026-10-19T10:10:00Z');
   assert.equal(getActiveElapsedMs({ startedAt: session.startedAt, pausedMs: 700_000 }, now), 0);
   assert.equal(getActiveElapsedMs({ startedAt: '2026-10-19T10:20:00Z' }, now), 0);
+});
+
+test('formatDuration drops empty units and shows <1m for under a minute', () => {
+  assert.equal(formatDuration(125), '2h 5m');
+  assert.equal(formatDuration(120), '2h');
+  assert.equal(formatDuration(45), '45m');
+  assert.equal(formatDuration(0), '<1m');
+});
+
+test('weekly summary days count commits only where activity was recorded', () => {
+  const at = (day, hour) => new Date(2026, 10, day, hour).toISOString();
+  const sessions = [
+    { startedAt: at(1, 9), endedAt: at(1, 10), activity: { commits: 3 } },
+    { startedAt: at(1, 14), endedAt: at(1, 15), activity: { commits: 0 } },
+    { startedAt: at(2, 9), endedAt: at(2, 9) },
+  ];
+  const { days } = getWeeklySummary(sessions, new Date(2026, 10, 4, 12));
+  assert.equal(days[0].sessionCount, 2);
+  assert.equal(days[0].sessionMinutes, 120);
+  assert.equal(days[0].commitCount, 3);
+  assert.equal(days[1].commitCount, null);
+  assert.equal(days[2].sessionCount, 0);
+  assert.equal(days[2].commitCount, null);
 });

@@ -93,5 +93,7 @@
   .app-render-error button, .account-trigger, .account-menu button, .account-menu a, .sidebar-nav-item, .sidebar-live-session, .back-link,
   .overview-next, .recent-session-row, .history-row, .repository-session-row, .repository-select-row, .repository-history-session,
   a.analytics-repository-row, .session-file-list button, .filter-trigger, .history-month-toggle, .editable-goal-button, .delete-dialog-close):active:not(:disabled) { background: var(--workspace-pressed); }
+/* Text-only links and buttons have no face to darken, so their text dims while held. */
+:is(.text-link, .dashboard-error button):active { opacity: .7; }
 :is(.finish-session-button, .cancel-session-button.danger, .session-detail-delete.danger, .settings-button.is-danger):active:not(:disabled) { border-color: var(--workspace-danger); background: var(--workspace-danger-bg); }
 :is(.auth-screen .github-sign-in, .preview-banner-action):active { transform: translateY(1px); }

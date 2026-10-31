@@ -68,12 +68,15 @@ export function getWeeklySummary(sessions = [], referenceDate = new Date()) {
     const date = new Date(start);
     date.setDate(start.getDate() + index);
     const dateKey = date.toDateString();
+    const daySessions = thisWeek.filter((session) => new Date(session.startedAt).toDateString() === dateKey);
+    const dayWithActivity = daySessions.filter((session) => typeof session.activity?.commits === 'number');
     return {
       label: new Intl.DateTimeFormat(undefined, { weekday: 'short' }).format(date),
       date: date.toISOString(),
-      sessionMinutes: thisWeek
-        .filter((session) => new Date(session.startedAt).toDateString() === dateKey)
-        .reduce((sum, session) => sum + getSessionDurationMinutes(session), 0),
+      sessionCount: daySessions.length,
+      sessionMinutes: daySessions.reduce((sum, session) => sum + getSessionDurationMinutes(session), 0),
+      // Unavailable, not zero, when no session that day has recorded activity.
+      commitCount: dayWithActivity.length ? dayWithActivity.reduce((sum, session) => sum + session.activity.commits, 0) : null,
       isToday: dateKey === today,
       isFuture: date > new Date(referenceDate),
     };
@@ -104,6 +107,13 @@ export function formatRelativeTime(value, now = Date.now()) {
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86_400) return `${Math.floor(seconds / 3600)}h ago`;
   return `${Math.floor(seconds / 86_400)}d ago`;
+}
+
+// "2h 5m", "2h", "45m", "<1m": a whole-minute duration, compact enough for a list column.
+export function formatDuration(minutes) {
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return [hours ? `${hours}h` : '', remainingMinutes ? `${remainingMinutes}m` : ''].filter(Boolean).join(' ') || '<1m';
 }
 
 // "01:05:09": elapsed time as hours, minutes, and seconds.

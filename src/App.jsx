@@ -911,7 +911,6 @@ export default function App() {
               lastSession={lastRealSession}
               onViewSessions={() => navigate(routePaths['Session History'])}
               recentSessions={sessionItems.slice(0, 5)}
-              calendarSessions={analyticsSessions}
               onNavigate={navigate}
               weeklySummary={weeklySummary}
               notice={sessionsNotice}
@@ -951,12 +950,12 @@ export default function App() {
           {view === 'Session History' && (
             identityStatus === 'authenticated'
               ? <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} />
-              : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
+              : <OverviewPage {...identityProps} activeSession={null} onRetryRepositories={loadWorkspace} />
           )}
           {view === 'Repositories' && (
             identityStatus === 'authenticated'
               ? <RepositoriesPage repositories={repositoryHistories} exampleRepositories={exampleRepositoryHistories} notice={sessionsNotice} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
-              : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
+              : <OverviewPage {...identityProps} activeSession={null} onRetryRepositories={loadWorkspace} />
           )}
           {view === 'Repository Detail' && (
             routeRepository

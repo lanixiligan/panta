@@ -17,13 +17,8 @@
 @import './components/calendar/MonthNav.css';
 @import './components/filters/FilterSelect.css';
 @import './components/filters/DateRangePicker.css';
-@import './components/analytics/WorkCalendar.css';
 @import './components/repository/RepositoryName.css';
 @import './components/repository/RepositoryLanguage.css';
-
-/* Overview */
-@import './pages/Overview/OverviewPage.css';
-@import './pages/Overview/components/DashboardSections.css';
 
 /* Session Workspace: page first, then Setup → Active Session → Recap */
 @import './pages/SessionWorkspace/SessionWorkspacePage.css';

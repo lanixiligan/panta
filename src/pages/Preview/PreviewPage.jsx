@@ -1,7 +1,6 @@
 import React from 'react';
 import SessionDetailPage from '../SessionHistory/SessionDetailPage.jsx';
 import { getDummySessionById } from '../../dummy-data/index.js';
-import { routePaths } from '../../routing.js';
 
 // The handcrafted example session shown to visitors before they sign in. Its ID is stable, unlike the generated examples.
 const PREVIEW_SESSION_ID = 'session-001';
@@ -21,8 +20,8 @@ export default function PreviewPage({ onNavigate, signedIn }) {
       <main className="app-main preview-main" id="main-content">
         <SessionDetailPage
           session={session}
-          backHref={signedIn ? routePaths.Overview : '/'}
-          backLabel={signedIn ? 'Overview' : 'Sign in'}
+          backHref={'/'}
+          backLabel={signedIn ? 'Session Workspace' : 'Sign in'}
           onBack={() => onNavigate('/')}
           onRetryActivity={() => {}}
         />

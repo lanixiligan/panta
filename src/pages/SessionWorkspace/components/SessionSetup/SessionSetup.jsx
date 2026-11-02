@@ -52,11 +52,12 @@ function RepositoryRow({ repository, selected, onSelect }) {
 const RECENT_SESSION_ROWS = 2;
 
 // The selected repository's latest sessions, always in a two-row frame so the panel keeps its shape.
-function RepositoryHistory({ history, onNavigate }) {
+// With no repository chosen the frame stays, dimmed.
+function RepositoryHistory({ history, selected, onNavigate }) {
   const sessions = history ? history.sessions.slice(0, RECENT_SESSION_ROWS) : [];
   const fillers = RECENT_SESSION_ROWS - sessions.length;
   return (
-    <section className="repository-history" aria-labelledby="repository-history-heading">
+    <section className={`repository-history${selected ? '' : ' is-idle'}`} aria-labelledby="repository-history-heading">
       <div className="repository-history-recent-heading">
         <h3 id="repository-history-heading" className="repository-history-heading">Recent sessions</h3>
         {history && <a className="repository-history-link" href={repositoryDetailPath(history.fullName)} onClick={(event) => followRouteLink(event, onNavigate)}>View repository <span aria-hidden="true">→</span></a>}
@@ -75,7 +76,7 @@ function RepositoryHistory({ history, onNavigate }) {
         ))}
         {Array.from({ length: fillers }, (_, index) => (
           <li key={`empty-${index}`} className="repository-history-filler" aria-hidden={sessions.length > 0 || index > 0 ? 'true' : undefined}>
-            {!sessions.length && index === 0 && <span>No sessions yet</span>}
+            {!sessions.length && index === 0 && <span>{selected ? 'No sessions yet' : 'Choose a repository to see its sessions'}</span>}
           </li>
         ))}
       </ul>
@@ -129,7 +130,7 @@ export default function SessionSetup({ selectedRepositoryHistory, onNavigate, re
             </div>
           </div>
 
-          {loading && <p className="repository-browser-state" role="status"><span className="dashboard-spinner" />Loading repositories…</p>}
+          {loading && <p className="repository-browser-state" role="status"><span className="dashboard-spinner" aria-hidden="true" />Loading repositories…</p>}
           {error && (
             <div className="repository-browser-error" role="alert">
               <div><strong>Could not load repositories</strong><p>{error}</p></div>
@@ -201,7 +202,7 @@ export default function SessionSetup({ selectedRepositoryHistory, onNavigate, re
           </div>
         )}
 
-        {selectedRepository && <RepositoryHistory history={selectedRepositoryHistory} onNavigate={onNavigate} />}
+        <RepositoryHistory history={selectedRepositoryHistory} selected={Boolean(selectedRepository)} onNavigate={onNavigate} />
 
         <form className="session-goal-form" onSubmit={handleSubmit}>
           <label className="dashboard-field" htmlFor="session-goal">
@@ -234,7 +235,6 @@ export default function SessionSetup({ selectedRepositoryHistory, onNavigate, re
             </div>
           ) : null}
         </form>
-
       </aside>
     </div>
   );

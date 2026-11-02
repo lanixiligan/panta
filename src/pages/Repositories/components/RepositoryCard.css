@@ -10,30 +10,21 @@
 .repository-card:hover .repository-card-title strong { color: var(--workspace-accent-soft); }
 .repository-card-description { display: -webkit-box; min-height: calc(var(--text-sm) * var(--leading-normal) * 2); overflow: hidden; margin: var(--space-1-5) 0 0; color: var(--workspace-secondary); font-size: var(--text-sm); line-height: var(--leading-normal); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 
-.repository-card-measures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--workspace-divider); border-radius: var(--radius-lg); background: var(--workspace-field); }
-.repository-card-measure { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1-5); padding: var(--space-3-5) var(--space-4); }
-.repository-card-measure + .repository-card-measure { border-left: 1px solid var(--workspace-divider); }
-.repository-measure-label { color: var(--workspace-muted); font: var(--text-xs) var(--font-sans); }
-.repository-card-measure strong { color: var(--workspace-text); font: var(--weight-medium) var(--text-3xl) var(--font-mono); letter-spacing: -.03em; line-height: 1; white-space: nowrap; }
-.repository-card-measure strong.is-unavailable { color: var(--workspace-secondary); font-size: var(--text-lg); letter-spacing: 0; line-height: 26px; }
-.repository-measure-unit { margin-left: var(--space-1-5); color: var(--workspace-secondary); font: var(--text-xs) var(--font-sans); letter-spacing: 0; }
-.repository-measure-note { color: var(--workspace-secondary); font-size: var(--text-xs); }
+.repository-card-measures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.repository-card-measure { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1-5); }
+.repository-card-measure + .repository-card-measure { padding-left: var(--space-5); border-left: 1px solid var(--workspace-divider); }
+.repository-measure-label { color: var(--workspace-muted); font: var(--text-sm) var(--font-sans); }
+.repository-card-measure strong { color: var(--workspace-text); font: var(--weight-medium) var(--text-2xl) var(--font-mono); letter-spacing: -.03em; line-height: 1; white-space: nowrap; }
+.repository-card-measure strong.is-unavailable { color: var(--workspace-secondary); font-size: var(--text-lg); letter-spacing: 0; line-height: var(--text-2xl); }
+.repository-measure-unit { margin-left: var(--space-1-5); color: var(--workspace-secondary); font: var(--text-sm) var(--font-sans); letter-spacing: 0; }
+.repository-measure-note { color: var(--workspace-secondary); font-size: var(--text-sm); }
+.repository-card-measure .repository-lines { font-size: var(--text-sm); }
 
-.repository-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: var(--space-1-5); height: 40px; }
-.repository-strip i { display: block; height: 3px; border-radius: var(--radius-xs); background: var(--workspace-raised); }
-.repository-strip i.has-time { border-radius: var(--radius-sm) var(--radius-sm) var(--radius-xs) var(--radius-xs); background: var(--workspace-level-3); }
-.repository-strip i.is-today:not(.has-time) { background: var(--workspace-level-2); }
-.repository-strip i.is-today.has-time { background: var(--workspace-level-4); }
-.repository-card-activity { display: flex; flex-direction: column; gap: var(--space-2); }
-.repository-strip-scale { display: flex; justify-content: space-between; gap: var(--space-2); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); }
-
-.repository-card-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: auto; padding-top: var(--space-3-5); border-top: 1px solid var(--workspace-divider); color: var(--workspace-secondary); font-size: var(--text-xs); white-space: nowrap; }
-.repository-card-footer time { color: var(--workspace-text); }
-.repository-card-go { font-weight: 500; transition: color var(--duration-base) ease; }
-.repository-card:hover .repository-card-go { color: var(--workspace-accent-soft); }
+.repository-card-meta { margin-top: auto; color: var(--workspace-secondary); font-size: var(--text-sm); white-space: nowrap; }
+.repository-card-meta time { color: var(--workspace-text); }
 
 @media (max-width: 520px) {
   .repository-card { padding: var(--space-5) var(--space-3-5); }
-  .repository-card-measure { padding: var(--space-3); }
-  .repository-card-measure strong { font-size: var(--text-2xl); }
+  .repository-card-measure + .repository-card-measure { padding-left: var(--space-3); }
+  .repository-card-measure .repository-lines { font-size: var(--text-xs); }
 }

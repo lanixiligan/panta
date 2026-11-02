@@ -17,21 +17,21 @@
 .repository-browser-filters input:focus, .repository-browser-filters select:focus { border-color: var(--workspace-action-border); box-shadow: var(--shadow-focus); }
 
 .repository-select-list { display: flex; flex-direction: column; padding: var(--space-1-5) 0; }
-.repository-select-row { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: var(--space-4); width: 100%; min-width: 0; padding: var(--space-3-5) var(--space-6); border: 0; border-top: 1px solid var(--workspace-divider); background: transparent; color: inherit; text-align: left; cursor: pointer; transition: background var(--duration-base) ease; }
+.repository-select-row { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; gap: var(--space-4); width: 100%; min-width: 0; padding: var(--space-5) var(--space-6); border: 0; border-top: 1px solid var(--workspace-divider); background: transparent; color: inherit; text-align: left; cursor: pointer; transition: background var(--duration-base) ease; }
 .repository-select-row:first-child { border-top: 0; }
 .repository-select-row:hover { background: var(--workspace-hover); }
 .repository-select-row:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
 .repository-select-row.selected { background: var(--workspace-accent-tint); box-shadow: inset 3px 0 0 var(--workspace-accent); }
-.repository-select-indicator { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--workspace-border); border-radius: 50%; color: var(--workspace-action-text); font-size: var(--text-2xs); font-weight: 700; }
+.repository-select-indicator { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--workspace-control-border); border-radius: 50%; color: var(--workspace-action-text); font-size: var(--text-2xs); font-weight: 700; }
 .repository-select-row:hover .repository-select-indicator { border-color: var(--workspace-border-hover); }
 .repository-select-row.selected .repository-select-indicator { border-color: var(--workspace-accent); background: var(--workspace-accent); }
 .repository-select-main { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1); }
 .repository-select-heading { display: flex; min-width: 0; align-items: center; gap: var(--space-2-5); }
-.repository-select-heading strong { overflow: hidden; color: var(--workspace-text); font: 500 var(--text-lg) var(--font-mono); letter-spacing: -.01em; text-overflow: ellipsis; white-space: nowrap; }
-.repository-select-row.selected .repository-select-heading strong { color: var(--workspace-text); font-weight: 600; }
+.repository-select-heading strong { overflow: hidden; color: var(--workspace-text); font: 500 var(--text-xl) var(--font-mono); letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; transition: color var(--duration-base) ease; }
+.repository-select-row:hover .repository-select-heading strong, .repository-select-row.selected .repository-select-heading strong { color: var(--workspace-accent-soft); }
 .repository-select-heading .repository-visibility, .selected-repository-heading .repository-visibility { padding: var(--space-0-5) var(--space-1-5); font-size: var(--text-2xs); text-transform: capitalize; }
-.repository-select-description { display: -webkit-box; overflow: hidden; margin-top: var(--space-0-5); color: var(--workspace-secondary); font-size: var(--text-sm); line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.repository-select-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin-top: var(--space-0-5); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); white-space: nowrap; }
+.repository-select-description { display: -webkit-box; overflow: hidden; margin-top: var(--space-1); color: var(--workspace-secondary); font-size: var(--text-md); font-weight: var(--weight-medium); line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.repository-select-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin-top: var(--space-1); color: var(--workspace-muted); font: 500 var(--text-2xs) var(--font-mono); white-space: nowrap; }
 
 .repository-browser-state { padding: var(--space-7) var(--space-6); color: var(--workspace-text); font-size: var(--text-md); }
 .repository-browser-state strong { font-weight: 500; }
@@ -48,9 +48,10 @@
 .repository-browser-error { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin: var(--space-5) var(--space-6); padding: var(--space-3) var(--space-3-5); border: 1px solid var(--workspace-danger-border); border-radius: var(--radius-lg); background: var(--workspace-danger-bg); color: var(--workspace-danger); font-size: var(--text-sm); }
 .repository-browser-error strong { font-weight: 500; }
 .repository-browser-error p { margin: var(--space-1) 0 0; color: var(--workspace-danger); line-height: 1.5; }
+.repository-browser-error button:active { opacity: .7; }
 .repository-browser-error button { flex: 0 0 auto; padding: 0; border: 0; background: none; color: var(--workspace-danger); font-size: var(--text-xs); text-decoration: underline; cursor: pointer; }
 
-/* Session rail — sits on the page, concludes the setup */
+/* Session rail — sits on the page: the choice, then your history with that repository, then the goal and Start */
 .session-workspace-selection { display: flex; min-width: 0; flex-direction: column; padding: var(--space-1) 0 0; }
 .session-workspace-selection h2 { margin: 0 0 var(--space-3-5); color: var(--workspace-text); font-size: var(--text-xl); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
 .selected-repository-summary { display: flex; height: 106px; align-items: center; gap: var(--space-3-5); padding: var(--space-4); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-lg); background: var(--workspace-raised); box-shadow: inset 0 2px 0 var(--workspace-accent-line); }
@@ -68,10 +69,10 @@
 .dashboard-field input, .dashboard-field select { width: 100%; min-width: 0; height: var(--control-lg); padding: 0 var(--space-3-5); border: 1px solid var(--workspace-control-border); border-radius: var(--radius-md); outline: none; background: var(--workspace-field); color: var(--workspace-text); font-size: var(--text-md); }
 .dashboard-field input::placeholder { color: var(--workspace-muted); }
 .dashboard-field input:focus, .dashboard-field select:focus { border-color: var(--workspace-action-border); box-shadow: var(--shadow-focus); }
-.session-goal-hint { margin: 0; color: var(--workspace-muted); font-size: var(--text-xs); line-height: 1.55; }
 
 /* Your history with the selected repository */
-.repository-history { display: flex; flex-direction: column; margin-top: var(--space-6); padding-bottom: var(--space-6); }
+.repository-history { display: flex; flex-direction: column; margin-top: var(--space-6); padding-bottom: var(--space-1); transition: opacity var(--duration-base) ease; }
+.repository-history.is-idle { opacity: .5; }
 .repository-history-recent-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2-5); }
 .repository-history-heading { margin: 0; color: var(--workspace-text); font-size: var(--text-lg); font-weight: 500; letter-spacing: -.01em; }
 .repository-history-list { margin: 0; padding: 0; overflow: hidden; border: 1px solid var(--workspace-border); border-radius: var(--radius-lg); background: var(--workspace-surface); list-style: none; }
@@ -87,27 +88,24 @@
 .repository-history-session span { color: var(--workspace-muted); font: var(--text-xs) var(--font-mono); }
 .repository-history-link { flex: 0 0 auto; color: var(--workspace-secondary); font-size: var(--text-sm); text-decoration: none; }
 .repository-history-link:hover { color: var(--workspace-accent-soft); }
+.repository-history-link:active { opacity: .7; }
 .repository-history-link:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 3px; }
 
-@media (max-width: 920px) {
-  .session-workspace-layout { grid-template-columns: minmax(0, 1.3fr) minmax(250px, .9fr); gap: var(--space-6); }
-}
-
-/* Desktop frame: the repository list scrolls inside the browser */
-@media (min-width: 681px) {
+/* Wide windows (see SessionWorkspacePage.css): the repository list scrolls inside the browser */
+@media (min-width: 1080px) {
   .session-workspace-layout { min-height: 0; align-items: stretch; }
   .repository-browser-column { min-height: 0; }
   .repository-browser { min-height: 0; flex: 1 1 auto; overflow: hidden; }
   .repository-browser-heading, .repository-browser-filters { flex: 0 0 auto; }
   .repository-select-list { min-height: 0; flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; }
   .session-workspace-selection { min-height: 0; overflow-y: auto; }
-  .session-goal-form { margin-top: auto; }
 }
-@media (max-height: 620px) and (min-width: 681px) {
+@media (max-height: 620px) and (min-width: 1080px) {
   .session-workspace-layout { min-height: 520px; }
 }
 
-@media (max-width: 680px) {
+/* Narrower windows stack the choice above the rail */
+@media (max-width: 1079px) {
   .session-workspace-layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
   .repository-select-list { max-height: min(calc(56vh / var(--ui-zoom)), 480px); min-height: 220px; overflow-y: auto; overscroll-behavior: contain; }
   .session-workspace-selection { padding: var(--space-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); }

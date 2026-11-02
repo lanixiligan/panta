@@ -4,3 +4,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Impeccable design-tool state (critique snapshots, sidecar, config)
+.impeccable/

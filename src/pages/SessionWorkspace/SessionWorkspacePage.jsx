@@ -5,22 +5,19 @@ import SessionRecap from './components/SessionRecap/SessionRecap.jsx';
 import { findHistoryForRepository } from '../Repositories/repositoryHistory.js';
 import { readSearchParam, updateSearchParams } from '../../routing.js';
 
-const phases = [
-  { key: 'setup', label: 'Setup', name: 'Session setup' },
-  { key: 'active', label: 'Active', name: 'Active session' },
-  { key: 'recap', label: 'Recap', name: 'Session recap' },
-];
+const phaseTitles = { active: 'Session in progress', recap: 'Session recap' };
 
-const phaseCopy = {
-  setup: { title: 'Start a session', description: 'Choose where you’re working, then start the clock.' },
-  active: { title: 'Session in progress', description: 'Session time is running. GitHub activity appears as it’s detected.' },
-  recap: { title: 'Session recap', description: 'Here’s what happened during your session.' },
-};
+// Setup opens with a greeting by the hour. Late nights stay "evening": nothing here judges when you work.
+function greeting(now, name) {
+  const hour = new Date(now).getHours();
+  const part = hour >= 5 && hour < 12 ? 'morning' : hour >= 12 && hour < 18 ? 'afternoon' : 'evening';
+  return name ? `Good ${part}, ${name}` : `Good ${part}`;
+}
 
 const REPOSITORY_TYPES = ['all', 'public', 'private'];
 const REPOSITORY_SORTS = ['updated', 'name'];
 
-export default function SessionWorkspacePage({ repositories: githubRepositories = [], exampleRepositories = [], exampleRepositoryHistories = [], loading, error, onRetry, onStart, starting = false, startError = '', sessionsError = '', onRetrySessions, activeSession, completedSession, now, onFinish, onCancel, onUpdateGoal, isEndingSession, sessionEndingAt, activeSessionError = null, onViewCompletedSession, onStartAnother, onRetryActivity, repositoryHistories = [], onNavigate }) {
+export default function SessionWorkspacePage({ greetingName = '', repositories: githubRepositories = [], exampleRepositories = [], exampleRepositoryHistories = [], loading, error, onRetry, onStart, starting = false, startError = '', sessionsError = '', onRetrySessions, activeSession, completedSession, now, onFinish, onCancel, onUpdateGoal, isEndingSession, sessionEndingAt, activeSessionError = null, onViewCompletedSession, onStartAnother, onRetryActivity, repositoryHistories = [], onNavigate }) {
   // Search, type, language, and sort live in the URL (?q=, ?type=, ?language=, ?sort=), so a reload or Back keeps the list as it was.
   const [query, setQueryState] = useState(() => readSearchParam('q') || '');
   const [type, setTypeState] = useState(() => (REPOSITORY_TYPES.includes(readSearchParam('type')) ? readSearchParam('type') : 'all'));
@@ -30,7 +27,7 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
   const setType = (value) => { setTypeState(value); updateSearchParams({ type: value === 'all' ? null : value }); };
   const setLanguage = (value) => { setLanguageState(value); updateSearchParams({ language: value === 'all' ? null : value }); };
   const setSort = (value) => { setSortState(value); updateSearchParams({ sort: value === 'updated' ? null : value }); };
-  // The selected repository lives in the URL (?repo=<id>), so Overview's "Continue" can open the workspace with it chosen.
+  // The selected repository lives in the URL (?repo=<id>), so a link can open the workspace with it chosen.
   const [selectedRepositoryId, setSelectedRepositoryIdState] = useState(() => readSearchParam('repo') || '');
   const setSelectedRepositoryId = (value) => { setSelectedRepositoryIdState(value); updateSearchParams({ repo: value || null }); };
   const [goal, setGoal] = useState('');
@@ -66,26 +63,13 @@ export default function SessionWorkspacePage({ repositories: githubRepositories 
   }
 
   const phase = completedSession ? 'recap' : activeSession ? 'active' : 'setup';
-  const phaseIndex = phases.findIndex(({ key }) => key === phase);
 
   return (
     <div className="session-workspace-page">
       <header className="session-workspace-header">
         <div className="page-intro">
-          <h1>{phaseCopy[phase].title}</h1>
-          <p>{phaseCopy[phase].description}</p>
+          <h1>{phase === 'setup' ? greeting(now, greetingName) : phaseTitles[phase]}</h1>
         </div>
-        <ol className="session-phase-track" aria-label="Session phases">
-          {phases.map(({ key, label, name }, index) => {
-            const state = index < phaseIndex ? 'done' : index === phaseIndex ? 'current' : 'upcoming';
-            return (
-              <li key={key} data-state={state} aria-current={state === 'current' ? 'step' : undefined} aria-label={`${name}${state === 'done' ? ' (done)' : ''}`}>
-                <span className="session-phase-marker" aria-hidden="true">{state === 'done' ? '✓' : ''}</span>
-                <span className="session-phase-label">{label}</span>
-              </li>
-            );
-          })}
-        </ol>
       </header>
 
       {completedSession ? (

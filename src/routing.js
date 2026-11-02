@@ -1,12 +1,19 @@
 export const routePaths = {
-  Overview: '/',
-  'Session Workspace': '/session-workspace',
+  'Session Workspace': '/',
   'Session History': '/session-history',
   Repositories: '/repositories',
   Analytics: '/analytics',
   Settings: '/settings',
   Preview: '/preview',
 };
+
+// `/session-workspace` was the workspace's old address; it now lives at `/`, and old links are rewritten to it in place.
+export function readPathname() {
+  if (window.location.pathname.replace(/\/+$/, '') === '/session-workspace') {
+    window.history.replaceState(window.history.state, '', `/${window.location.search}${window.location.hash}`);
+  }
+  return window.location.pathname;
+}
 
 export function sessionDetailPath(sessionId) {
   return `/session-history/${encodeURIComponent(sessionId)}`;
@@ -41,8 +48,7 @@ export function followRouteLink(event, navigate) {
 
 export function resolveRoute(pathname) {
   const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, '') : '/';
-  if (normalizedPath === '/') return { view: 'Overview' };
-  if (normalizedPath === '/session-workspace') return { view: 'Session Workspace' };
+  if (normalizedPath === '/' || normalizedPath === '/session-workspace') return { view: 'Session Workspace' };
   if (normalizedPath === '/session-history') return { view: 'Session History' };
   if (normalizedPath.startsWith('/session-history/')) {
     const segment = normalizedPath.slice('/session-history/'.length);

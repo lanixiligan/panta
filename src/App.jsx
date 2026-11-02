@@ -3,7 +3,6 @@ import { getCurrentUser } from './api/auth.js';
 import { getAccessibleRepositories, getActiveSessionCommits, getSessionActivity } from './api/github.js';
 import { flushSync } from 'react-dom';
 import * as sessionsApi from './api/sessions.js';
-import OverviewPage from './pages/Overview/OverviewPage.jsx';
 import RepositoriesPage from './pages/Repositories/RepositoriesPage.jsx';
 import RepositoryDetailPage from './pages/Repositories/RepositoryDetailPage.jsx';
 import { findRepositoryHistory, getExampleRepositoryHistories, getRepositoryHistories } from './pages/Repositories/repositoryHistory.js';
@@ -23,9 +22,9 @@ import PreviewPage from './pages/Preview/PreviewPage.jsx';
 import SidebarNav from './components/navigation/SidebarNav.jsx';
 import Footer from './components/layout/Footer.jsx';
 import useSlowWait from './components/auth/useSlowWait.js';
-import { getSessionListItems, getWeeklySummary } from './sessions/sessionHelpers.js';
+import { getSessionListItems } from './sessions/sessionHelpers.js';
 import { dummyRepositories, getDummySessionById, getDummySessions } from './dummy-data/index.js';
-import { resolveRoute, routePaths, sessionDetailPath } from './routing.js';
+import { readPathname, resolveRoute, routePaths, sessionDetailPath } from './routing.js';
 import { getGitHubMutuals, sendPresenceHeartbeat } from './api/presence.js';
 import { applyTheme, readThemeChoice, resolveTheme, saveThemeChoice, systemPrefersLight, watchSystemTheme } from './theme.js';
 
@@ -106,7 +105,7 @@ function readShowExamples() {
 }
 
 export default function App() {
-  const [pathname, setPathname] = useState(() => window.location.pathname);
+  const [pathname, setPathname] = useState(readPathname);
   const route = resolveRoute(pathname);
   const { view } = route;
   const [identity, setIdentity] = useState(null);
@@ -159,8 +158,6 @@ export default function App() {
   const sessionItems = getSessionListItems(analyticsSessions)
     .sort((left, right) => new Date(right.startedAt) - new Date(left.startedAt));
   const repositoryHistories = useMemo(() => getRepositoryHistories(realSessions, repositories), [realSessions, repositories]);
-  // Overview offers to continue in the repository of the latest real session; examples never count.
-  const lastRealSession = useMemo(() => realSessions.reduce((latest, session) => (!latest || new Date(session.startedAt) > new Date(latest.startedAt) ? session : latest), null), [realSessions]);
   const allExampleRepositoryHistories = useMemo(() => getExampleRepositoryHistories(), []);
   const exampleRepositoryHistories = showExamples ? allExampleRepositoryHistories : NO_EXAMPLES;
   // Example repositories shaped like GitHub's, so the session workspace can list them beside real ones.
@@ -176,8 +173,6 @@ export default function App() {
   })) : NO_EXAMPLES), [showExamples, exampleRepositoryHistories]);
   // Direct links to an example repository keep working while examples are hidden.
   const routeRepository = view === 'Repository Detail' ? findRepositoryHistory([...repositoryHistories, ...allExampleRepositoryHistories], route.owner, route.repo) : null;
-  // Includes example sessions, like Recent sessions beside it; the card says when it does.
-  const weeklySummary = getWeeklySummary(analyticsSessions, new Date(now));
   // Panta stores only a few repository fields, so pages get the live repository's details (its language) too.
   const displayedActiveSession = useMemo(() => {
     if (!activeSession) return null;
@@ -189,7 +184,7 @@ export default function App() {
   useEffect(() => {
     function syncPathname() {
       void flushGoalSaves();
-      setPathname(window.location.pathname);
+      setPathname(readPathname());
     }
     window.addEventListener('popstate', syncPathname);
     return () => window.removeEventListener('popstate', syncPathname);
@@ -824,19 +819,8 @@ export default function App() {
     setRepositories([]);
     setMutuals([]);
     setMutualsError('');
-    navigate(routePaths.Overview);
+    navigate(routePaths['Session Workspace']);
   }
-
-  const identityProps = {
-    identity,
-    identityStatus,
-    identityError,
-    repositories,
-    repositoriesLoading,
-    repositoriesError,
-    onRetryIdentity: loadWorkspace,
-    onRetryRepositories: () => identity && loadRepositories(),
-  };
 
   // One line for pages that list sessions, while the first list loads or when it couldn't be loaded. Until then a missing
   // session or repository isn't "not found".
@@ -900,26 +884,11 @@ export default function App() {
           mutualsLoading={mutualsLoading}
           mutualsError={mutualsError}
         />
-        <div className={`workspace-main${['Overview', 'Session Detail', 'Analytics'].includes(view) ? ' workspace-main-fit' : ''}`}>
+        <div className={`workspace-main${['Session Detail', 'Analytics'].includes(view) ? ' workspace-main-fit' : ''}`}>
           <main className="app-main" id="main-content" tabIndex={-1}>
-          {view === 'Overview' && (
-            <OverviewPage
-              {...identityProps}
-              activeSession={displayedActiveSession}
-              now={now}
-              onNavigateToStart={() => navigate(routePaths['Session Workspace'])}
-              lastSession={lastRealSession}
-              onViewSessions={() => navigate(routePaths['Session History'])}
-              recentSessions={sessionItems.slice(0, 5)}
-              calendarSessions={analyticsSessions}
-              onNavigate={navigate}
-              weeklySummary={weeklySummary}
-              notice={sessionsNotice}
-              onSelectSession={openSession}
-            />
-          )}
           {view === 'Session Workspace' && (
             <SessionWorkspacePage
+              greetingName={(identity?.displayName || identity?.username || '').trim().split(/\s+/)[0]}
               repositories={repositories}
               // Setup waits for the sessions too, so a running session is resumed before another can be started.
               loading={repositoriesLoading || sessionsStatus === 'loading'}
@@ -948,16 +917,8 @@ export default function App() {
               onNavigate={navigate}
             />
           )}
-          {view === 'Session History' && (
-            identityStatus === 'authenticated'
-              ? <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} />
-              : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
-          )}
-          {view === 'Repositories' && (
-            identityStatus === 'authenticated'
-              ? <RepositoriesPage repositories={repositoryHistories} exampleRepositories={exampleRepositoryHistories} notice={sessionsNotice} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />
-              : <OverviewPage {...identityProps} activeSession={null} now={now} onRetryRepositories={loadWorkspace} />
-          )}
+          {view === 'Session History' && <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} onNavigate={navigate} />}
+          {view === 'Repositories' && <RepositoriesPage repositories={repositoryHistories} exampleRepositories={exampleRepositoryHistories} notice={sessionsNotice} onNavigate={navigate} />}
           {view === 'Repository Detail' && (
             routeRepository
               ? <RepositoryDetailPage key={routeRepository.key} repository={routeRepository} onBack={() => navigate(routePaths.Repositories)} onSelectSession={(sessionId) => openSession(sessionId, { label: routeRepository.name })} />
@@ -985,7 +946,7 @@ export default function App() {
                 />
               : sessionsNotice || <section className="dashboard-section"><h2>Session not found</h2><p className="dashboard-empty-note">That session could not be found.</p><BackLink href={routePaths['Session History']} label="Session History" onNavigate={navigate} /></section>
           )}
-          {view === 'Not Found' && <NotFoundPage onGoHome={() => navigate(routePaths.Overview)} />}
+          {view === 'Not Found' && <NotFoundPage onGoHome={() => navigate(routePaths['Session Workspace'])} />}
           </main>
           <Footer />
         </div>

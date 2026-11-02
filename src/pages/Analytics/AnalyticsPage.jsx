@@ -5,6 +5,7 @@ import DateRangePicker, { readRange, rangeBounds, writeRange } from '../../compo
 import { toDayString } from '../../components/calendar/calendarDates.js';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
 import { formatCount } from '../../sessions/sessionHelpers.js';
+import StartSessionLink from '../../components/navigation/StartSessionLink.jsx';
 
 const DEFAULT_PERIOD = 'month';
 const HOUR_MS = 3_600_000;
@@ -325,11 +326,12 @@ function RepositoryBreakdown({ repositories, onNavigate }) {
 
 const EMPTY_PERIOD = { today: 'No sessions yet today.', week: 'No sessions yet this week.', month: 'No sessions yet this month.' };
 
-function AnalyticsEmptyState({ period, hasAnySessions, onShowAllTime }) {
+function AnalyticsEmptyState({ period, hasAnySessions, onShowAllTime, onNavigate }) {
   return (
-    <section className="analytics-empty-state" role="status">
+    <section className="empty-page" role="status">
       <h2>{hasAnySessions ? EMPTY_PERIOD[period] || 'No sessions in this period.' : 'Complete a session to start building your work history.'}</h2>
       {hasAnySessions && period !== 'all' && <button className="text-link" type="button" onClick={onShowAllTime}>Show all time <span aria-hidden="true">→</span></button>}
+      {!hasAnySessions && <StartSessionLink onNavigate={onNavigate} />}
     </section>
   );
 }
@@ -370,7 +372,7 @@ export default function AnalyticsPage({ sessions = [], notice = null, onNavigate
 
       {notice}
 
-      {!hasSessions ? (notice ? null : <AnalyticsEmptyState period={range.period} hasAnySessions={analytics.totalCompletedSessions > 0} onShowAllTime={() => setRange({ period: 'all' })} />) : (
+      {!hasSessions ? (notice ? null : <AnalyticsEmptyState period={range.period} hasAnySessions={analytics.totalCompletedSessions > 0} onShowAllTime={() => setRange({ period: 'all' })} onNavigate={onNavigate} />) : (
         <>
           <SessionTimeChart timeline={analytics.timeline} averageMs={averagePerActive} />
           <div className="analytics-grid">

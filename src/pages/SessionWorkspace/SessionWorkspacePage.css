@@ -6,47 +6,38 @@
 }
 .session-workspace-page { display: flex; flex-direction: column; gap: var(--space-6); }
 
-.session-workspace-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-6); padding-bottom: var(--space-5); border-bottom: 1px solid var(--workspace-divider); }
 .session-workspace-header .page-intro { margin: 0; }
-.session-workspace-header .page-intro h1 { margin: 0 0 var(--space-1-5); font-size: var(--text-display); }
-
-/* Lifecycle track: done → current → upcoming */
-.session-phase-track { display: flex; flex: 0 0 auto; align-items: center; margin: 0; padding: 0; list-style: none; }
-.session-phase-track li { position: relative; display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1-5) var(--space-2-5); border: 1px solid transparent; border-radius: var(--radius-pill); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); letter-spacing: var(--tracking-label); text-transform: uppercase; }
-.session-phase-track li + li { margin-left: clamp(28px, calc(4vw / var(--ui-zoom)), 52px); }
-.session-phase-track li + li::before { position: absolute; top: 50%; right: calc(100% + 4px); width: calc(clamp(28px, calc(4vw / var(--ui-zoom)), 52px) - 8px); height: 1px; content: ''; background: var(--workspace-border); }
-.session-phase-track li[data-state='done'] + li::before, .session-phase-track li[data-state='current'] + li::before { background: var(--workspace-border-strong); }
-.session-phase-marker { display: grid; width: 14px; height: 14px; flex: 0 0 auto; place-items: center; border: 1px solid var(--workspace-border); border-radius: 50%; color: var(--workspace-accent-soft); font-size: var(--text-2xs); line-height: 1; }
-.session-phase-track li[data-state='done'] { color: var(--workspace-secondary); }
-.session-phase-track li[data-state='done'] .session-phase-marker { border-color: var(--workspace-border-strong); background: var(--workspace-raised); }
-.session-phase-track li[data-state='current'] { border-color: var(--workspace-border); background: var(--workspace-raised); color: var(--workspace-text); }
-.session-phase-track li[data-state='current'] .session-phase-marker { border-color: var(--workspace-accent); background: var(--workspace-accent); box-shadow: 0 0 0 3px var(--workspace-accent-ring); }
+.session-workspace-header .page-intro h1 { margin: 0; font-size: var(--text-display); overflow-wrap: anywhere; }
 
 /* Shared primary action inside the workspace */
 .session-workspace-page .session-workspace-button { width: 100%; min-height: var(--control-lg); font-size: var(--text-md); }
 
-@media (max-width: 760px) {
-  .session-workspace-header { align-items: flex-start; flex-direction: column; gap: var(--space-4); }
-}
 @media (max-width: 520px) {
   .session-workspace-page { gap: var(--space-5); }
-  .session-workspace-header { padding-bottom: var(--space-4); }
-  .session-phase-track li { padding: var(--space-1) var(--space-2); font-size: var(--text-2xs); }
-  .session-phase-track li + li { margin-left: var(--space-6); }
-  .session-phase-track li + li::before { width: 14px; }
 }
 
-/* Desktop: the workspace is a fixed frame; only lists scroll inside it. */
-@media (min-width: 681px) {
-  .workspace-main:has(.session-workspace-page) { height: calc(100dvh / var(--ui-zoom)); overflow: hidden; }
-  .workspace-main:has(.session-workspace-page) .app-main { display: flex; min-height: 0; flex: 1 1 auto; padding-bottom: var(--space-5); }
+/* Wide windows: the workspace is a fixed frame; only lists scroll inside it. The sidebar always takes 254px, so the main column is that
+   much narrower than the window. Setup is two columns from 1080px; Active and Recap lay their band out in one row from 1200px. Below
+   that the page stacks and scrolls. */
+@media (min-width: 1080px) {
+  .workspace-main:has(.session-workspace-layout) { height: calc(100dvh / var(--ui-zoom)); overflow: hidden; }
+  .workspace-main:has(.session-workspace-layout) .app-main { display: flex; min-height: 0; flex: 1 1 auto; padding-bottom: var(--space-5); }
+}
+@media (min-width: 1200px) {
+  .workspace-main:has(.session-workspace-already-active) { height: calc(100dvh / var(--ui-zoom)); overflow: hidden; }
+  .workspace-main:has(.session-workspace-already-active) .app-main { display: flex; min-height: 0; flex: 1 1 auto; padding-bottom: var(--space-5); }
+}
+@media (min-width: 1080px) {
   .session-workspace-page { width: 100%; min-height: 0; flex: 1 1 auto; }
   .session-workspace-header { flex: 0 0 auto; }
-  .session-workspace-page > .session-workspace-already-active,
   .session-workspace-page > .session-workspace-layout { min-height: 0; flex: 1 1 auto; }
 }
-/* Short desktop windows: let the page scroll instead of squeezing the frame. */
-@media (max-height: 620px) and (min-width: 681px) {
-  .workspace-main:has(.session-workspace-page) { overflow-y: auto; }
-  .workspace-main:has(.session-workspace-page) .app-main { min-height: 620px; flex: 0 0 auto; }
+/* Short windows: let the page scroll instead of squeezing the frame. */
+@media (max-height: 620px) and (min-width: 1080px) {
+  .workspace-main:has(.session-workspace-layout) { overflow-y: auto; }
+  .workspace-main:has(.session-workspace-layout) .app-main { min-height: 620px; flex: 0 0 auto; }
+}
+@media (max-height: 620px) and (min-width: 1200px) {
+  .workspace-main:has(.session-workspace-already-active) { overflow-y: auto; }
+  .workspace-main:has(.session-workspace-already-active) .app-main { min-height: 620px; flex: 0 0 auto; }
 }

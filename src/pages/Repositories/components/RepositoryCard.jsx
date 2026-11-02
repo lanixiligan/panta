@@ -4,16 +4,10 @@ import { formatLastWorked, formatRepositoryDuration } from '../repositoryHistory
 import { formatCount } from '../../../sessions/sessionHelpers.js';
 import RepositoryName from '../../../components/repository/RepositoryName.jsx';
 
-export const ACTIVITY_DAYS = 7;
-
-function formatDay(date) {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(date);
-}
-
 // `showExample` is off when every listed repository is an example; the page labels them once instead.
 function RepositoryBadge({ repository, showExample = true }) {
   if (repository.isExample) return showExample ? <span className="repository-badge is-example">Example</span> : null;
-  return repository.visibility ? <span className={`repository-badge is-${repository.visibility}`}>{repository.visibility}</span> : null;
+  return repository.visibility === 'private' ? <span className="repository-badge is-private">Private</span> : null;
 }
 
 function LineChanges({ additions, deletions }) {
@@ -26,27 +20,7 @@ function LineChanges({ additions, deletions }) {
   );
 }
 
-function ActivityStrip({ days, maxMinutes }) {
-  const workedDays = days.filter((day) => day.minutes > 0).length;
-  const dayValues = days.filter((day) => day.minutes > 0).map((day) => `${formatDay(day.date)} ${formatRepositoryDuration(day.minutes * 60_000)}`).join(', ');
-  return (
-    <div className="repository-strip" role="img" aria-label={`Session time on ${workedDays} of the last ${ACTIVITY_DAYS} days${dayValues ? `: ${dayValues}` : ''}`}>
-      {days.map((day, index) => {
-        const isToday = index === days.length - 1;
-        return (
-          <i
-            key={day.key}
-            className={[day.minutes > 0 && 'has-time', isToday && 'is-today'].filter(Boolean).join(' ') || undefined}
-            style={day.minutes > 0 ? { height: `${Math.max(16, Math.round(day.minutes / maxMinutes * 100))}%` } : undefined}
-            title={`${formatDay(day.date)}: ${day.minutes > 0 ? formatRepositoryDuration(day.minutes * 60_000) : 'no sessions'}`}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-export default function RepositoryCard({ repository, days, maxMinutes, showExample, onNavigate }) {
+export default function RepositoryCard({ repository, showExample, onNavigate }) {
   const { commits, additions, deletions } = repository.activity;
   return (
     <a className="repository-card" href={repositoryDetailPath(repository.fullName)} onClick={(event) => followRouteLink(event, onNavigate)}>
@@ -71,25 +45,13 @@ export default function RepositoryCard({ repository, days, maxMinutes, showExamp
           ) : (
             <>
               <strong>{commits.total.toLocaleString()}<span className="repository-measure-unit">{commits.total === 1 ? 'commit' : 'commits'}</span></strong>
-              <LineChanges additions={additions.total} deletions={deletions.total} />
+              {commits.total > 0 && <LineChanges additions={additions.total} deletions={deletions.total} />}
             </>
           )}
         </div>
       </div>
 
-      <div className="repository-card-activity">
-        <ActivityStrip days={days} maxMinutes={maxMinutes} />
-        <div className="repository-strip-scale">
-          <span>{formatDay(days[0].date)}</span>
-          <span>Last {ACTIVITY_DAYS} days</span>
-          <span>Today</span>
-        </div>
-      </div>
-
-      <div className="repository-card-footer">
-        <span>Last worked <time dateTime={new Date(repository.lastWorkedAt).toISOString()}>{formatLastWorked(repository.lastWorkedAt)}</time></span>
-        <span className="repository-card-go">View repository <span aria-hidden="true">→</span></span>
-      </div>
+      <span className="repository-card-meta">Last worked <time dateTime={new Date(repository.lastWorkedAt).toISOString()}>{formatLastWorked(repository.lastWorkedAt)}</time></span>
     </a>
   );
 }

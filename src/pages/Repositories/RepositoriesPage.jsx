@@ -1,7 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
-import { recentDailyMinutes } from './repositoryHistory.js';
-import RepositoryCard, { ACTIVITY_DAYS } from './components/RepositoryCard.jsx';
+import RepositoryCard from './components/RepositoryCard.jsx';
 import Pager from '../../components/navigation/Pager.jsx';
 
 // Three full rows in the three-column grid.
@@ -39,9 +38,6 @@ export default function RepositoriesPage({ repositories: realRepositories = [], 
       : repositories;
     return sortRepositories(matches, sort);
   }, [repositories, query, sort]);
-  const activity = useMemo(() => new Map(repositories.map((repository) => [repository.key, recentDailyMinutes(repository, ACTIVITY_DAYS)])), [repositories]);
-  // One scale for every repository, so bar heights compare honestly across repositories.
-  const maxMinutes = Math.max(1, ...[...activity.values()].flat().map((day) => day.minutes));
   // Badges mark exceptions: when every repository is an example, the toolbar labels them once.
   const allExamples = repositories.length > 0 && repositories.every((repository) => repository.isExample);
   const pageCount = Math.max(1, Math.ceil(sortedRepositories.length / PAGE_SIZE));
@@ -83,7 +79,7 @@ export default function RepositoriesPage({ repositories: realRepositories = [], 
           ) : (
             <div className="repository-grid">
               {pageRepositories.map((repository) => (
-                <RepositoryCard key={repository.key} repository={repository} days={activity.get(repository.key)} maxMinutes={maxMinutes} showExample={!allExamples} onNavigate={onNavigate} />
+                <RepositoryCard key={repository.key} repository={repository} showExample={!allExamples} onNavigate={onNavigate} />
               ))}
             </div>
           )}

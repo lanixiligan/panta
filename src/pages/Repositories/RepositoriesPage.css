@@ -19,7 +19,6 @@
 /* Shared pieces */
 .repository-badge { flex: 0 0 auto; padding: var(--space-0-5) var(--space-2); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-sm); background: var(--workspace-raised); color: var(--workspace-accent-soft); font: var(--text-2xs) var(--font-mono); text-transform: capitalize; white-space: nowrap; }
 .repository-badge.is-example { border: 1px dashed var(--workspace-faint); background: transparent; color: var(--workspace-secondary); }
-.repository-badge.is-public { border-color: var(--workspace-border); background: transparent; color: var(--workspace-secondary); }
 .repository-lines { display: inline-flex; gap: var(--space-1-5); font: var(--text-xs) var(--font-mono); white-space: nowrap; }
 .repository-lines .history-additions { color: var(--workspace-additions); }
 .repository-lines .history-deletions { color: var(--workspace-deletions); }
@@ -43,7 +42,7 @@
 .repository-detail-repo { color: var(--workspace-secondary); text-decoration: none; }
 .repository-detail-repo:hover { color: var(--workspace-accent-soft); }
 .repository-detail-repo:focus-visible { border-radius: var(--radius-sm); outline: 2px solid var(--workspace-focus); outline-offset: 2px; }
-.repository-detail-description { grid-column: 1 / -1; overflow: hidden; margin: 0; color: var(--workspace-secondary); font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
+.repository-detail-description { grid-column: 1 / -1; display: -webkit-box; overflow: hidden; margin: 0; color: var(--workspace-secondary); font-size: var(--text-sm); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 
 .repository-detail-stats { display: flex; flex-direction: column; padding: 0 var(--space-6); border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); }
 .repository-stat-group { display: grid; grid-template-columns: 120px minmax(0, 1fr); align-items: center; gap: var(--space-4); padding: var(--space-4) 0; }
@@ -52,9 +51,11 @@
 .repository-stat-group dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
 .repository-stat { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1); }
 .repository-stat dt { color: var(--workspace-muted); font-size: var(--text-xs); white-space: nowrap; }
-.repository-stat dd { margin: 0; color: var(--workspace-text); font: 400 var(--text-lg) var(--font-mono); white-space: nowrap; }
+.repository-stat dd { margin: 0; color: var(--workspace-text); font: 400 var(--text-2xl) var(--font-mono); white-space: nowrap; }
 .repository-stat dd .is-unavailable { color: var(--workspace-muted); }
-.repository-stat .repository-lines { flex-wrap: wrap; gap: var(--space-0-5) var(--space-2); font-size: inherit; }
+.repository-stat:has(.repository-lines) { grid-column: span 2; }
+.repository-stat .repository-lines { gap: var(--space-0-5) var(--space-3); font-size: var(--text-lg); line-height: var(--text-2xl); }
+.repository-stat-none { margin: 0; color: var(--workspace-secondary); font-size: var(--text-sm); }
 /* A narrow strip puts each group's label above its numbers. */
 .repository-detail-stats { container-type: inline-size; }
 @container (max-width: 560px) {
@@ -69,6 +70,7 @@
 .repository-detail-chart .repository-detail-section-heading { padding-bottom: 0; border-bottom: 0; }
 .repository-detail-chart-empty { margin: 0; color: var(--workspace-secondary); font-size: var(--text-sm); }
 .repository-detail-plot { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: 150px auto; column-gap: var(--space-3); row-gap: var(--space-2); }
+.repository-strip-scale { display: flex; justify-content: space-between; gap: var(--space-2); color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); }
 .repository-detail-plot .repository-strip-scale { grid-column: 2; }
 .repository-detail-scale { position: relative; min-width: 34px; }
 .repository-detail-scale span { position: absolute; right: 0; color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); transform: translateY(-50%); white-space: nowrap; }
@@ -76,8 +78,6 @@
 .repository-detail-line { position: absolute; inset: 0; pointer-events: none; }
 .repository-detail-grid { position: absolute; right: 0; left: 0; border-top: 1px solid var(--workspace-divider); }
 .repository-detail-grid:first-child { border-top-color: var(--workspace-border); }
-.repository-detail-average { stroke: var(--workspace-secondary); stroke-dasharray: 4 4; stroke-width: 1; opacity: .7; }
-.repository-detail-average-label { position: absolute; right: 0; padding: 0 var(--space-1); background: var(--workspace-surface); color: var(--workspace-secondary); font: var(--text-2xs) var(--font-mono); transform: translateY(calc(-100% - 2px)); }
 .repository-detail-line svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .repository-detail-area { fill: url(#repository-area-fill); stroke: none; }
 .repository-detail-stroke { fill: none; stroke: var(--workspace-accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }

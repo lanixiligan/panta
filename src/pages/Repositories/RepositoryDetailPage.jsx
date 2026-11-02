@@ -66,13 +66,17 @@ function RepositoryStats({ repository }) {
       </div>
       <div className="repository-stat-group" role="group" aria-labelledby="repository-activity-heading">
         <h2 id="repository-activity-heading">{repository.isExample ? 'Activity' : 'GitHub activity'}</h2>
-        <dl>
-          <Stat label="Commits" unavailable={commits.total === null}>{commits.total?.toLocaleString()}</Stat>
-          <Stat label="Files changed" unavailable={filesChanged.total === null}>{filesChanged.total?.toLocaleString()}</Stat>
-          <Stat label="Lines" unavailable={additions.total === null || deletions.total === null}>
-            <span className="repository-lines"><span className="history-additions">+{additions.total?.toLocaleString()}</span><span className="history-deletions">−{deletions.total?.toLocaleString()}</span></span>
-          </Stat>
-        </dl>
+        {commits.total === 0 ? (
+          <p className="repository-stat-none">No commits</p>
+        ) : (
+          <dl>
+            <Stat label="Commits" unavailable={commits.total === null}>{commits.total?.toLocaleString()}</Stat>
+            <Stat label="Files changed" unavailable={filesChanged.total === null}>{filesChanged.total?.toLocaleString()}</Stat>
+            <Stat label="Lines" unavailable={additions.total === null || deletions.total === null}>
+              <span className="repository-lines"><span className="history-additions">+{additions.total?.toLocaleString()}</span><span className="history-deletions">−{deletions.total?.toLocaleString()}</span></span>
+            </Stat>
+          </dl>
+        )}
       </div>
     </section>
   );
@@ -89,7 +93,6 @@ function SessionTimeChart({ repository, selectedDay, onSelectDay }) {
   const x = (index) => (index + 0.5) / dayCount * 100;
   const { top, ticks } = chartScale(maxMinutes);
   const y = (minutes) => 100 - minutes / top * 100;
-  const averageMinutes = workedDays ? totalMinutes / workedDays : 0;
   const linePoints = days.map((day, index) => `${x(index)},${y(day.minutes)}`);
   const firstLabelOptions = new Date(days[0].date).getFullYear() === new Date().getFullYear()
     ? { month: 'short', day: 'numeric' }
@@ -126,9 +129,7 @@ function SessionTimeChart({ repository, selectedDay, onSelectDay }) {
                 </defs>
                 <polygon className="repository-detail-area" points={`${x(0)},100 ${linePoints.join(' ')} ${x(dayCount - 1)},100`} />
                 <polyline className="repository-detail-stroke" points={linePoints.join(' ')} />
-                {averageMinutes > 0 && <line className="repository-detail-average" x1="0" x2="100" y1={y(averageMinutes)} y2={y(averageMinutes)} vectorEffect="non-scaling-stroke" />}
               </svg>
-              {averageMinutes > 0 && <span className="repository-detail-average-label" style={{ top: `${y(averageMinutes)}%` }}>avg {formatMinutes(averageMinutes)}</span>}
               {days.map((day, index) => {
                 const selected = selectedDay === isoDay(day.date);
                 // Dense histories only mark the day being pointed at or chosen, so the line stays readable.
@@ -201,7 +202,9 @@ function RepositorySessionRow({ session, onSelectSession }) {
         </span>
       </div>
       <div className="repository-session-activity">
-        {session.hasActivity ? (
+        {session.hasActivity && session.commitCount === 0 ? (
+          <span className="repository-session-activity-note">No commits</span>
+        ) : session.hasActivity ? (
           <>
             <span>{formatCount(session.commitCount, 'commit')}</span>
             <span className="repository-lines"><span className="history-additions">+{session.additions.toLocaleString()}</span><span className="history-deletions">−{session.deletions.toLocaleString()}</span></span>
@@ -216,7 +219,6 @@ function RepositorySessionRow({ session, onSelectSession }) {
 }
 
 export default function RepositoryDetailPage({ repository, onBack, onSelectSession }) {
-  const firstSession = repository.sessions[repository.sessions.length - 1];
   const [selectedDay, setSelectedDay] = useState(() => (parseIsoDay(readSearchParam('day')) ? readSearchParam('day') : null));
   const selectedDate = parseIsoDay(selectedDay);
   const sessions = useMemo(
@@ -238,11 +240,10 @@ export default function RepositoryDetailPage({ repository, onBack, onSelectSessi
           <h1><RepositoryName name={repository.fullName} /></h1>
           {repository.isExample
             ? <span className="repository-badge is-example">Example</span>
-            : repository.visibility && <span className={`repository-badge is-${repository.visibility}`}>{repository.visibility}</span>}
+            : repository.visibility === 'private' && <span className="repository-badge is-private">Private</span>}
         </div>
         <p className="repository-detail-meta">
           Last worked <strong>{formatLastWorked(repository.lastWorkedAt)}</strong>
-          {firstSession && <><span aria-hidden="true">·</span>First session <strong>{formatDate(firstSession.startedAt, { month: 'short', day: 'numeric', year: 'numeric' })}</strong></>}
           {repository.htmlUrl && !repository.isExample && <><span aria-hidden="true">·</span><a className="repository-detail-repo" href={repository.htmlUrl} target="_blank" rel="noreferrer">View on GitHub <span aria-hidden="true">↗</span></a></>}
         </p>
         {repository.description && <p className="repository-detail-description" title={repository.description}>{repository.description}</p>}

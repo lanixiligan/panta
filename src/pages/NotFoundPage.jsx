@@ -22,10 +22,10 @@ export default function NotFoundPage({ onGoHome }) {
 
         <a
           className="not-found-action"
-          href={routePaths.Overview}
+          href={routePaths['Session Workspace']}
           onClick={(event) => followRouteLink(event, () => onGoHome())}
         >
-          <span>Back to Overview</span>
+          <span>Back to Session Workspace</span>
           <span aria-hidden="true">→</span>
         </a>
       </div>

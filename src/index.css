@@ -20,10 +20,6 @@
 @import './components/repository/RepositoryName.css';
 @import './components/repository/RepositoryLanguage.css';
 
-/* Overview */
-@import './pages/Overview/OverviewPage.css';
-@import './pages/Overview/components/DashboardSections.css';
-
 /* Session Workspace: page first, then Setup → Active Session → Recap */
 @import './pages/SessionWorkspace/SessionWorkspacePage.css';
 @import './pages/SessionWorkspace/components/SessionSetup/SessionSetup.css';

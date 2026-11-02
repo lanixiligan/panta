@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChartNoAxesCombined, FolderGit2, History, LayoutDashboard, Play, UserRound } from 'lucide-react';
+import { ChartNoAxesCombined, FolderGit2, History, Timer, UserRound } from 'lucide-react';
 import AuthControl from '../auth/AuthControl.jsx';
 import { PantaLockup } from '../brand/PantaLogo.jsx';
 import { logoutCurrentUser } from '../../api/auth.js';
@@ -8,7 +8,7 @@ import RepositoryName, { repositoryFullName } from '../repository/RepositoryName
 import { formatElapsed, getActiveElapsedMs } from '../../sessions/sessionHelpers.js';
 
 const items = [
-  { label: 'Overview', view: 'Overview', path: routePaths.Overview, Icon: LayoutDashboard },
+  { label: 'Session Workspace', view: 'Session Workspace', path: routePaths['Session Workspace'], Icon: Timer },
   { label: 'Session History', view: 'Session History', path: routePaths['Session History'], Icon: History },
   { label: 'Repositories', view: 'Repositories', path: routePaths.Repositories, Icon: FolderGit2 },
   { label: 'Analytics', view: 'Analytics', path: routePaths.Analytics, Icon: ChartNoAxesCombined },
@@ -135,18 +135,9 @@ function SocialsSection({ mutuals = [], loading = false, error = '' }) {
   );
 }
 
-// The core of Panta, so it gets its own accent button at the foot of the sidebar instead of a row in the list.
-// While a session runs, the button becomes the live session card.
-function SessionWorkspaceLink({ session, now, pathname, onNavigate, saving }) {
+// Shown only while a session runs (or is being saved), so the running session stays visible from every page.
+function LiveSessionCard({ session, now, pathname, onNavigate, saving }) {
   const current = pathname === routePaths['Session Workspace'];
-  if (!session) {
-    return (
-      <a className="sidebar-workspace-link" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)}>
-        <Play size={14} aria-hidden="true" />
-        Start session
-      </a>
-    );
-  }
   const repository = repositoryFullName(session.repository) || 'Coding session';
   return (
     <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={saving ? `Saving session for ${repository}` : `Open active session for ${repository}`} title={repository} data-saving={saving ? 'true' : undefined}>
@@ -224,7 +215,7 @@ function UserProfileMenu({ identity, view, pathname, onNavigate, onBeforeLogout,
 export default function SidebarNav({ identity, identityStatus, view, pathname, onNavigate, activeSession, isEndingSession = false, now, onBeforeLogout, onLogout, mutuals, mutualsLoading, mutualsError }) {
   return (
     <aside className="workspace-sidebar">
-      <a className="app-brand sidebar-brand" href={routePaths.Overview} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta overview">
+      <a className="app-brand sidebar-brand" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, onNavigate)} aria-label="Panta home">
         <PantaLockup className="brand-lockup" />
       </a>
       {/* Invisible to the sidebar's layout; on a phone it is the bottom tab bar. */}
@@ -232,9 +223,11 @@ export default function SidebarNav({ identity, identityStatus, view, pathname, o
         <NavLinks pathname={pathname} onNavigate={onNavigate} />
         <SocialsSection mutuals={mutuals} loading={mutualsLoading} error={mutualsError} />
       </div>
-      <div className="sidebar-workspace">
-        <SessionWorkspaceLink session={activeSession} saving={isEndingSession} now={now} pathname={pathname} onNavigate={onNavigate} />
-      </div>
+      {activeSession && (
+        <div className="sidebar-workspace">
+          <LiveSessionCard session={activeSession} saving={isEndingSession} now={now} pathname={pathname} onNavigate={onNavigate} />
+        </div>
+      )}
       <div className="sidebar-bottom">
         {identityStatus === 'authenticated' && identity ? (
           <UserProfileMenu identity={identity} view={view} pathname={pathname} onNavigate={onNavigate} onBeforeLogout={onBeforeLogout} onLogout={onLogout} />

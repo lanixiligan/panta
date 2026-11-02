@@ -207,6 +207,7 @@ A monochrome green world: forest-black surfaces, pale green-grey ink, and one br
 - **Title** (500, 15px): goals, list primary lines, intro text.
 - **Body** (400, 13–14px, 1.55): running text, controls, supporting copy.
 - **Figure** (DM Mono 400, 24px, −0.02em): prominent numbers on stat cards; 30px for the largest.
+- **Timer** (DM Mono 400, 40–84px by the width of its band, −0.05em): the running and finished session time in the Session Workspace. The session goal heading beside it runs 22–26px. Both are one-off display sizes and size from their container, so they never overflow a narrow panel.
 - **Label** (DM Mono 400, 12px, +0.05em): metadata, durations, badges, kickers.
 
 ### Named Rules
@@ -218,7 +219,7 @@ A monochrome green world: forest-black surfaces, pale green-grey ink, and one br
 
 A fixed 254px sidebar on the left with the main column scrolling beside it; content is capped at 1120px (workspace pages up to 1600px) with fluid side padding `clamp(24px, 5vw, 64px)`. Spacing follows a 2px scale to 16px, then 4px and 8px steps (`--space-*`). Cards pad 20px × 24px; sections stack with 24px gaps.
 
-Overview and Session detail fit the window on screens at least 1024 × 600 and scroll internally; elsewhere pages scroll. Below 680px the sidebar becomes a floating pill tab bar 12px above the bottom edge, and two-column layouts (Active Session, Recap) stack. Viewport units are always written as `calc(100vh / var(--ui-zoom))` because the interface zooms on large screens.
+Session detail and Analytics fit the window on screens at least 1024 × 600 and scroll internally; elsewhere pages scroll. In the Session Workspace, Setup is two columns in a fixed frame from 1080px of window width (the sidebar takes 254px of it) and stacks and scrolls below that. Active Session and Recap are a band for what you declared above a card for what GitHub observed; the band is one row (clock, session, actions) from 1200px and stacks below it. Below 680px the sidebar becomes a floating pill tab bar 12px above the bottom edge, and two-column layouts (Active Session, Recap) stack. Viewport units are always written as `calc(100vh / var(--ui-zoom))` because the interface zooms on large screens.
 
 ## Elevation & Depth
 
@@ -243,7 +244,7 @@ Soft, consistent rounding: 12px on cards, sections, and stat tiles; 6px on butto
 ### Buttons
 Soft and tactile, never loud.
 - **Shape:** gently rounded (6px), 38px tall by default, 32px compact, 44px for touch or primary.
-- **Primary:** a dark Sidebar Moss face, Signal Green Soft label, and a green control border (the sidebar's Start session button). Hover brightens the border to `level-4` and the label to Ink.
+- **Primary:** a dark Sidebar Moss face, Signal Green Soft label, and a green control border (the Session Workspace's Start session button). Hover brightens the border to `level-4` and the label to Ink.
 - **Subtle:** transparent with a 1px border and Ink Secondary label; hover fills Raised Stone and the text turns Ink.
 - **Text link:** no border or fill; hover turns Signal Green Soft.
 - **Solid green:** Action Green with near-black text, reserved for sign-in and the skip link; it dips 1px when pressed.
@@ -264,16 +265,13 @@ Soft and tactile, never loud.
 - **Error:** inline one-line danger message on Danger Bg with a Danger border.
 
 ### Navigation
-Sidebar items are 40px tall, Ink Secondary at rest, Surface Pool on hover. The active item has no fill: Ink text at weight 500 and a Signal Green Soft icon. Start session sits at the foot of the sidebar as the primary button and becomes an Active session card with a glowing live dot while a session runs. On phones, navigation becomes a floating pill tab bar whose active item is marked by a 4px green dot beneath the icon.
+Sidebar items are 40px tall, Ink Secondary at rest, Surface Pool on hover. The active item has no fill: Ink text at weight 500 and a Signal Green Soft icon. While a session runs, an Active session card with a glowing live dot appears at the foot of the sidebar. On phones, navigation becomes a floating pill tab bar whose active item is marked by a 4px green dot beneath the icon.
 
 ### Badges
 Mono 12px labels with a 1px border and 4px radius. They mark exceptions only: `Private` (stronger border), `Example` (dashed border, muted text), or a non-completed status.
 
-### Overview hero
-The greeting is the largest type in the app (one-off display size, clamp 34–56px, −0.03em), with the date beneath it in DM Mono. Beside it sits the next-step card: a mono label ("Continue where you left off", or a glowing dot and "In session"), the repository in DM Mono at 19px, and a Signal Green Soft action. A running session gives the card an accent-line border. Below 680px the card stacks under the greeting.
-
-### Week river (signature)
-The Overview's This week card is the page's centrepiece: Sunday to Saturday drawn as the logo's wave line, one wave per day, 132px tall (96px on short windows, 84px on phones). The main bed runs in Border Strong up to now and turns into a dashed Border line after it, and two fainter echoes run beneath in the logo's brand greens (`--brand-green-mid`, `--brand-green-deep`), like the logo's three waves. Each day with sessions gets a stretch of stream whose weight (5–16px) and shade (level 2, level 3, then Brand Green from two hours) grow with that day's session time. Commits sit on the stream as Ink dots (the logo's end-dot), up to ten per day, and the stream ends at a "now" dot placed at the time of day, glowing Signal Green while a session runs. Session time and commits stay separate marks. Each day's time is printed beneath it, the week's four totals run along the card's foot as 30px mono figures, and every day is spoken in a visually hidden list. On load each day's stretch flows in from the left, and the motion is skipped under reduced motion.
+### Session Workspace title
+Setup's title is a greeting by the hour and first name ("Good evening, Lanix"); Active and Recap keep plain titles.
 
 ### Session commit list (signature)
 GitHub activity is a list of commits, newest first, in its own scroll area: message in Ink, time and line changes in DM Mono with Additions and Deletions colours. It stays visually apart from the declared session column, so declared time and observed activity never merge.

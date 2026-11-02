@@ -53,11 +53,11 @@ A session is valid even when no commits were made. Work that has not been pushed
 
 ## The Session Workspace
 
-Sessions run inside the Session Workspace (`/session-workspace`, opened from the accent **Start session** button at the foot of the sidebar, which becomes an **Active session** card with the elapsed time while one is running). It is one page with three phases:
+Sessions run inside the Session Workspace (`/`, the default page and the first item in the sidebar; while a session runs, an **Active session** card with the elapsed time appears at the foot of the sidebar). Setup opens with a greeting by the hour. It is one page with three phases:
 
-1. **Session Setup** — browse, search, filter, and sort the repositories Panta can access (the search, filters, and sort are kept in the URL until a session starts); select one; optionally describe what you are working on; start the session. A side panel shows your Panta history with the selected repository, or your recent work across repositories when none is selected.
-2. **Active Session** — two columns. On the left, the session you declared: the elapsed-time timer at the top, then the repository and goal (editable), with the actions at the bottom (view the repository on GitHub, cancel without recording anything, or end the session). On the right, GitHub activity: when GitHub was last checked (“Checked 12s ago”), then the commits detected so far, newest first, in a list that fills the page and scrolls on its own. Narrow screens stack the two.
-3. **Session Recap** — the same two columns as the active session. On the left, the session you declared: its duration in place of the timer, then the repository, goal, and time range, with **View session** and **Start another session** at the bottom. On the right, GitHub activity from the final sync: the commit count, files and line changes, and the commits made during the session, newest first, in a list that scrolls on its own.
+1. **Session Setup** — browse, search, filter, and sort the repositories Panta can access (the search, filters, and sort are kept in the URL until a session starts); select one; describe what you are working on; start the session. The side panel runs in that order: the chosen repository, your two latest Panta sessions in it (dimmed until a repository is chosen), then the goal with **Start session**.
+2. **Active Session** — what you declared is one band across the top: the elapsed-time timer, then the repository and goal (editable) beside a rule, with a link to the repository on GitHub next to its language, and **End session** and **Discard session** at the right. Both ask first, in place, with **Keep going** focused; discarding records nothing. Below it, what GitHub observed fills the page: when GitHub was last checked (“Checked 12s ago”) and the commit count, then the commits detected so far, newest first, one line each, in a list that scrolls on its own. Below 1200px of window width (the sidebar takes 254px of it) the band stacks (timer, session, actions) and the page scrolls.
+3. **Session Recap** — the same frame. The band holds the session you declared: its duration in place of the timer, then the repository, goal, and time range, with **Start another session** and **View summary** at the right. The GitHub activity card carries the final sync: the commit count, files and line changes in its heading, and the commits made during the session, newest first, in a list that scrolls on its own.
 
 A running session is stored in Panta, so reloading the page, closing the tab, or signing in again, in any browser, brings you back to it. The session clock pauses while no Panta tab is open: a gap of more than 90 seconds without a tab's heartbeat is left out of the session time, and commits made during it still count. Leaving the site while a session runs asks for confirmation first.
 
@@ -65,7 +65,6 @@ A running session is stored in Panta, so reloading the page, closing the tab, or
 
 Each page is described in full in [docs/features.md](docs/features.md).
 
-- **Overview** — a one-screen dashboard with your next step, this week's totals, and your latest sessions.
 - **Session History** — a searchable list of completed sessions, filtered by repository and any span of days, with a detail page for each session.
 - **Repositories** — the repositories you have worked on, with session time and GitHub activity kept apart.
 - **Analytics** — session time per day and where your time went, over any range of days.
@@ -76,8 +75,7 @@ Each page is described in full in [docs/features.md](docs/features.md).
 
 | Route | View |
 | --- | --- |
-| `/` | Overview |
-| `/session-workspace` | Session Workspace (Setup → Active Session → Recap) |
+| `/` | Session Workspace (Setup → Active Session → Recap), the default page (`/session-workspace` still works) |
 | `/session-history` | Session History |
 | `/session-history/:id` | Session detail |
 | `/repositories` | Repositories (`/projects` still works) |
@@ -224,11 +222,11 @@ The server keeps only these fields when it writes, so anything else a browser se
 
 ### Example (Dummy) Data
 
-`src/dummy-data/` contains illustrative example data marked as examples (`source: 'placeholder'`): 25 example repositories, five handcrafted example sessions, and about 150 generated ones (`generatedSessions.js`). The generated sessions are deterministic, never overlap, and are placed over the last 120 days relative to today, so recent-period views always have data. They include sessions with no commits and sessions whose GitHub activity was never recorded. Their commits and activity totals are made up and were never retrieved from GitHub. They keep Overview, Session History, Analytics, and Repositories populated during development and are labeled as examples wherever they appear. Example repositories built from example sessions are kept separate from real ones, so they never affect the repository history shown when starting a session. They are not a mock of the GitHub API.
+`src/dummy-data/` contains illustrative example data marked as examples (`source: 'placeholder'`): 25 example repositories, five handcrafted example sessions, and about 150 generated ones (`generatedSessions.js`). The generated sessions are deterministic, never overlap, and are placed over the last 120 days relative to today, so recent-period views always have data. They include sessions with no commits and sessions whose GitHub activity was never recorded. Their commits and activity totals are made up and were never retrieved from GitHub. They keep Session History, Analytics, and Repositories populated during development and are labeled as examples wherever they appear. Example repositories built from example sessions are kept separate from real ones, so they never affect the repository history shown when starting a session. They are not a mock of the GitHub API.
 
 **Show example data** in Settings (Preferences) hides or shows all of it at once: example sessions and example repositories, including those in the session workspace. The choice is remembered in the browser (`localStorage`, `panta.showExamples`) and defaults to hidden. Direct links to an example session or repository still open while examples are hidden.
 
-The folder holds only example data; `index.js` exposes it as `getDummySessions()` and `getDummySessionById()`. The session list and weekly summary helpers live in `src/sessions/sessionHelpers.js` and the analytics calculation in `src/analytics/sessionAnalytics.js`; both work on real and example sessions alike.
+The folder holds only example data; `index.js` exposes it as `getDummySessions()` and `getDummySessionById()`. The session list and duration helpers live in `src/sessions/sessionHelpers.js` and the analytics calculation in `src/analytics/sessionAnalytics.js`; both work on real and example sessions alike.
 
 ## Project Structure
 
@@ -282,11 +280,8 @@ panta/
     │   ├── exampleSession.js
     │   └── generatedSessions.js
     ├── sessions/
-    │   └── sessionHelpers.js # Session list items, durations, weekly summary
+    │   └── sessionHelpers.js # Session list items, durations, formatters
     └── pages/
-        ├── Overview/
-        │   ├── OverviewPage.jsx (+ .css)
-        │   └── components/DashboardSections.jsx (+ .css)
         ├── SessionWorkspace/
         │   ├── SessionWorkspacePage.jsx (+ .css)
         │   └── components/

@@ -22,7 +22,7 @@ Two measurements, kept apart: **session time** (declared by the developer, exclu
 
 - Flow: choose a repository → start a session with a goal → work (commits polled every 30 s) → end the session → review the recap.
 - Used alongside an editor during work; the Session Workspace is often left open in a tab for hours.
-- Pages: Overview, Session Workspace (Setup → Active Session → Recap), Session History and detail, Repositories and detail, Analytics, Settings, a public `/preview` example session.
+- Pages: Session Workspace at `/`, the default page (Setup → Active Session → Recap), Session History and detail, Repositories and detail, Analytics, Settings, a public `/preview` example session.
 - Socials is a light, ambient presence signal (which GitHub mutuals are online in Panta). No feeds, comparisons, or leaderboards are planned.
 - Live site runs on free hosting; the first load after a quiet period can take up to a minute while the API wakes.
 

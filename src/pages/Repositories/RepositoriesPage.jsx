@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { followRouteLink, readSearchParam, routePaths, updateSearchParams } from '../../routing.js';
+import { readSearchParam, updateSearchParams } from '../../routing.js';
 import RepositoryCard from './components/RepositoryCard.jsx';
+import StartSessionLink from '../../components/navigation/StartSessionLink.jsx';
 import Pager from '../../components/navigation/Pager.jsx';
 
 // Three full rows in the three-column grid.
@@ -18,7 +19,7 @@ function sortRepositories(repositories, sort) {
 }
 
 // `notice` is one line from App while the sessions load or when they couldn't be loaded; the empty state waits for it.
-export default function RepositoriesPage({ repositories: realRepositories = [], exampleRepositories = [], notice = null, onNavigate, onStartSession }) {
+export default function RepositoriesPage({ repositories: realRepositories = [], exampleRepositories = [], notice = null, onNavigate }) {
   // Search, sort, and page live in the URL (?q=, ?sort=, ?page=).
   const [query, setQueryState] = useState(() => readSearchParam('q') || '');
   const [sort, setSortState] = useState(() => (sortOptions.some(([value]) => value === readSearchParam('sort')) ? readSearchParam('sort') : 'recent'));
@@ -86,10 +87,10 @@ export default function RepositoriesPage({ repositories: realRepositories = [], 
           <Pager page={currentPage} pageCount={pageCount} onChange={goToPage} label="Repository pages" />
         </section>
       ) : !notice && (
-        <div className="session-empty-state">
-          <span className="empty-state-mark" aria-hidden="true">⌂</span>
-          <div><h3>No repositories yet</h3><p>Complete your first session and the repository will appear here.</p></div>
-          <a className="subtle-action" href={routePaths['Session Workspace']} onClick={(event) => followRouteLink(event, () => onStartSession())}>Start a session <span aria-hidden="true">→</span></a>
+        <div className="empty-page">
+          <h2>No repositories yet</h2>
+          <p>Complete your first session and the repository will appear here.</p>
+          <StartSessionLink onNavigate={onNavigate} />
         </div>
       )}
     </div>

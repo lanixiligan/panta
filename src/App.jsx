@@ -917,8 +917,8 @@ export default function App() {
               onNavigate={navigate}
             />
           )}
-          {view === 'Session History' && <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} />}
-          {view === 'Repositories' && <RepositoriesPage repositories={repositoryHistories} exampleRepositories={exampleRepositoryHistories} notice={sessionsNotice} onNavigate={navigate} onStartSession={() => navigate(routePaths['Session Workspace'])} />}
+          {view === 'Session History' && <SessionHistoryPage sessions={sessionItems} notice={sessionsNotice} onSelectSession={(sessionId) => openSession(sessionId, { label: 'Session History' })} onNavigate={navigate} />}
+          {view === 'Repositories' && <RepositoriesPage repositories={repositoryHistories} exampleRepositories={exampleRepositoryHistories} notice={sessionsNotice} onNavigate={navigate} />}
           {view === 'Repository Detail' && (
             routeRepository
               ? <RepositoryDetailPage key={routeRepository.key} repository={routeRepository} onBack={() => navigate(routePaths.Repositories)} onSelectSession={(sessionId) => openSession(sessionId, { label: routeRepository.name })} />

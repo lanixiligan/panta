@@ -4,6 +4,7 @@ import { toDayString } from '../../components/calendar/calendarDates.js';
 import FilterSelect from '../../components/filters/FilterSelect.jsx';
 import Pager from '../../components/navigation/Pager.jsx';
 import RepositoryName from '../../components/repository/RepositoryName.jsx';
+import StartSessionLink from '../../components/navigation/StartSessionLink.jsx';
 import { formatCount } from '../../sessions/sessionHelpers.js';
 
 const sortOptions = [
@@ -186,17 +187,18 @@ function SessionHistoryGroup({ groupKey, title, count, minutes, rows, isCollapse
   );
 }
 
-function EmptyHistory({ hasFilters }) {
+function EmptyHistory({ hasFilters, onNavigate }) {
   return (
-    <div className="session-history-empty" role="status">
+    <div className="empty-page" role="status">
       <h2>{hasFilters ? 'No sessions match your filters.' : 'No sessions yet.'}</h2>
       {!hasFilters && <p>Start a session and your work will appear here.</p>}
+      {!hasFilters && <StartSessionLink onNavigate={onNavigate} />}
     </div>
   );
 }
 
 // `notice` is one line from App while the sessions load or when they couldn't be loaded; the empty state waits for it.
-export default function SessionHistoryPage({ sessions = [], notice = null, onSelectSession }) {
+export default function SessionHistoryPage({ sessions = [], notice = null, onSelectSession, onNavigate }) {
   const initial = useMemo(readHistoryParams, []);
   const [query, setQuery] = useState(initial.query);
   const [repository, setRepository] = useState(initial.repository);
@@ -347,7 +349,7 @@ export default function SessionHistoryPage({ sessions = [], notice = null, onSel
           </div>
         )}
 
-        {!filteredSessions.length && !notice && <EmptyHistory hasFilters={hasFilters || sessions.length > 0} />}
+        {!filteredSessions.length && !notice && <EmptyHistory hasFilters={hasFilters || sessions.length > 0} onNavigate={onNavigate} />}
       </section>
     </div>
   );

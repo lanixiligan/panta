@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import EditableGoal from '../../../../components/sessions/EditableGoal.jsx';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
-import { formatElapsed, formatRelativeTime, getActiveElapsedMs } from '../../../../sessions/sessionHelpers.js';
+import { formatCount, formatElapsed, formatRelativeTime, getActiveElapsedMs } from '../../../../sessions/sessionHelpers.js';
 import RepositoryName from '../../../../components/repository/RepositoryName.jsx';
 import RepositoryLanguage from '../../../../components/repository/RepositoryLanguage.jsx';
 
@@ -15,17 +15,41 @@ function syncLabel(status, isEnding, checkedAt, now) {
   return 'Checking GitHub…';
 }
 
-function CancelSession({ onCancel, disabled }) {
-  const [confirming, setConfirming] = useState(false);
-  if (!confirming) {
-    return <button className="cancel-session-button" type="button" onClick={() => setConfirming(true)} disabled={disabled}>Cancel session</button>;
+// Ending stops the clock for good, and discarding deletes the session, so each asks first, in place. Only one question is
+// open at a time; "Keep going" takes focus, so Enter can't confirm by accident, and returns it to the button that asked.
+function SessionExit({ onFinish, onCancel, isEnding }) {
+  const [asking, setAsking] = useState(null);
+  const keepGoing = useRef(null);
+  const triggers = useRef({});
+  const lastAsked = useRef(null);
+  useEffect(() => {
+    if (asking) {
+      lastAsked.current = asking;
+      keepGoing.current?.focus();
+    } else if (lastAsked.current) {
+      triggers.current[lastAsked.current]?.focus();
+      lastAsked.current = null;
+    }
+  }, [asking]);
+  const confirm = (action) => () => { setAsking(null); action(); };
+
+  if (asking) {
+    const ending = asking === 'end';
+    return (
+      <div className="session-exit-confirm" role="group" aria-label={ending ? 'Confirm ending this session' : 'Confirm discarding this session'}>
+        <span>{ending ? 'End this session?' : 'Discard without saving?'}</span>
+        <span className="session-exit-buttons">
+          <button className={ending ? 'finish-session-button' : 'cancel-session-button danger'} type="button" onClick={confirm(ending ? onFinish : onCancel)}>{ending ? 'End session' : 'Discard'}</button>
+          <button ref={keepGoing} className="cancel-session-button" type="button" onClick={() => setAsking(null)}>Keep going</button>
+        </span>
+      </div>
+    );
   }
   return (
-    <div className="cancel-session-confirm" role="group" aria-label="Confirm cancelling this session">
-      <span>Discard without saving?</span>
-      <button className="cancel-session-button danger" type="button" onClick={onCancel}>Discard</button>
-      <button className="cancel-session-button" type="button" onClick={() => setConfirming(false)}>Keep going</button>
-    </div>
+    <>
+      <button ref={(node) => { triggers.current.end = node; }} className="finish-session-button" type="button" onClick={() => setAsking('end')} disabled={isEnding}>{isEnding ? 'Ending…' : 'End session'}</button>
+      {onCancel && !isEnding && <button ref={(node) => { triggers.current.discard = node; }} className="cancel-session-button" type="button" onClick={() => setAsking('discard')}>Discard session</button>}
+    </>
   );
 }
 
@@ -41,21 +65,22 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
     <section className="session-workspace-already-active" aria-label="Active coding session">
       {/* Left: what you declared (the session and its controls). Right: what GitHub observed. */}
       <div className="session-console-panel">
-        <span className="session-console-status"><i aria-hidden="true" /> ACTIVE SESSION</span>
-        <div className="session-console-timer" aria-label={`Elapsed time ${elapsed}`}>
-          <span className="session-console-time">{elapsed}</span>
+        <div className="session-console-clock">
+          <span className="session-console-status"><i aria-hidden="true" /> ACTIVE SESSION</span>
+          <div className="session-console-timer" role="timer" aria-label="Elapsed time">
+            <span className="session-console-time">{elapsed}</span>
+          </div>
         </div>
         <div className="session-console-context">
           <p className="session-console-repo"><RepositoryName repository={repository} /></p>
           <EditableGoal as="h2" goal={session.goal} onSave={isEnding ? undefined : onUpdateGoal} />
-          {repository.language && <p className="session-console-meta"><RepositoryLanguage language={repository.language} /></p>}
+          <p className="session-console-meta session-console-meta-row">
+            {repository.language && <RepositoryLanguage language={repository.language} />}
+            <a className="text-link" href={repository.html_url} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>
+          </p>
         </div>
         <div className="session-console-actions">
-          <a className="continue-session-button" href={repository.html_url} target="_blank" rel="noreferrer">View repository <span aria-hidden="true">↗</span></a>
-          {onCancel && !isEnding && <CancelSession onCancel={onCancel} />}
-          <button className="finish-session-button" type="button" onClick={onFinish} disabled={isEnding}>
-            {isEnding ? 'Syncing final activity…' : 'End Session'}
-          </button>
+          <SessionExit onFinish={onFinish} onCancel={onCancel} isEnding={isEnding} />
         </div>
         {error && (
           <div className="dashboard-error" role="alert">
@@ -65,7 +90,9 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
         )}
       </div>
 
-      <section className="session-console-activity" aria-labelledby="session-console-activity-heading" aria-live="polite">
+      <section className="session-console-activity" aria-labelledby="session-console-activity-heading">
+        {/* The one live announcement: the commit count when it changes, or that GitHub can't be reached. The timer and the relative times stay silent. */}
+        <p className="visually-hidden" role="status">{activityStatus === 'error' ? 'Couldn’t reach GitHub, retrying' : formatCount(commits.length, 'commit')}</p>
         <div className="session-console-activity-heading">
           <div>
             <h3 id="session-console-activity-heading">GitHub activity</h3>
@@ -79,7 +106,7 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
           </ScrollArea>
         ) : (
           <div className="session-console-empty">
-            <strong>{activityStatus === 'loading' ? 'Checking GitHub for session commits…' : 'Waiting for GitHub activity…'}</strong>
+            <strong>{activityStatus === 'loading' ? 'Checking GitHub for session commits…' : 'No commits yet'}</strong>
             <p>Commits you push to <RepositoryName repository={repository} /> during this session will appear here.</p>
           </div>
         )}

@@ -46,37 +46,39 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
   return (
     <article className="session-workspace-already-active session-recap" aria-label="Completed coding session">
       <div className="session-console-panel">
-        <span className="session-console-status is-complete" role="status"><i aria-hidden="true">✓</i> SESSION ENDED AND SAVED</span>
-        <div className="session-console-timer" aria-label={`Session time ${duration}`}>
-          <span className="session-console-time">{duration}</span>
+        <div className="session-console-clock">
+          <span className="session-console-status is-complete" role="status"><i aria-hidden="true">✓</i> SESSION ENDED</span>
+          <div className="session-console-timer" role="group" aria-label="Session time">
+            <span className="session-console-time">{duration}</span>
+          </div>
         </div>
         <div className="session-console-context">
           <p className="session-console-repo"><RepositoryName repository={repository} /></p>
           {session.goal && <h2>{session.goal}</h2>}
           {day && <p className="session-console-meta">{day}{range[0] && range[1] && <> · {range[0]} <span aria-hidden="true">–</span> {range[1]}</>}</p>}
         </div>
-        {activityReady && (
-          <dl className="session-recap-stats">
-            <div><dt>{commits.length === 1 ? 'Commit' : 'Commits'}</dt><dd>{commits.length}</dd></div>
-            <div><dt>{activity.filesChanged === 1 ? 'File changed' : 'Files changed'}</dt><dd>{detailsRecorded ? activity.filesChanged ?? 0 : unavailable}</dd></div>
-            <div aria-label={detailsRecorded ? `${activity.additions ?? 0} lines added and ${activity.deletions ?? 0} lines deleted` : undefined}>
-              <dt>Lines</dt>
-              <dd>{detailsRecorded ? <><span className="history-additions">+{activity.additions ?? 0}</span> <span className="history-deletions">−{activity.deletions ?? 0}</span></> : unavailable}</dd>
-            </div>
-          </dl>
-        )}
         <div className="session-console-actions">
-          <a className="continue-session-button" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, () => onViewSession(session.id))}>View summary <span aria-hidden="true">→</span></a>
           <button className="session-workspace-button session-recap-next" type="button" onClick={onStartAnother}>Start another session</button>
+          <a className="continue-session-button" href={sessionDetailPath(session.id)} onClick={(event) => followRouteLink(event, () => onViewSession(session.id))}>View summary <span aria-hidden="true">→</span></a>
         </div>
       </div>
 
       <section className="session-console-activity" aria-labelledby="session-recap-activity-heading">
         <div className="session-console-activity-heading">
           <h3 id="session-recap-activity-heading">GitHub activity</h3>
+          {activityReady && (
+            <dl className="session-recap-stats">
+              <div><dt>{commits.length === 1 ? 'Commit' : 'Commits'}</dt><dd>{commits.length}</dd></div>
+              <div><dt>{activity.filesChanged === 1 ? 'File changed' : 'Files changed'}</dt><dd>{detailsRecorded ? activity.filesChanged ?? 0 : unavailable}</dd></div>
+              <div aria-label={detailsRecorded ? `${activity.additions ?? 0} lines added and ${activity.deletions ?? 0} lines deleted` : undefined}>
+                <dt>Lines</dt>
+                <dd>{detailsRecorded ? <><span className="history-additions">+{activity.additions ?? 0}</span> <span className="history-deletions">−{activity.deletions ?? 0}</span></> : unavailable}</dd>
+              </div>
+            </dl>
+          )}
         </div>
         {session.activityStatus === 'loading' && (
-          <p className="session-recap-state" role="status"><span className="dashboard-spinner" />Retrieving GitHub activity…</p>
+          <p className="session-recap-state" role="status"><span className="dashboard-spinner" aria-hidden="true" />Retrieving GitHub activity…</p>
         )}
         {session.activityStatus === 'error' && (
           <div className="dashboard-error session-recap-state" role="alert">

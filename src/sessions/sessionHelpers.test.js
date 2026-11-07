@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatDuration, getActiveElapsedMs, getSessionDurationMinutes, getSessionDurationMs } from './sessionHelpers.js';
+import { formatDuration, getActiveElapsedMs, getBranchSummary, getOtherBranches, getSessionDurationMinutes, getSessionDurationMs } from './sessionHelpers.js';
 import { getDummySessions } from '../dummy-data/index.js';
 
 const HOUR_MS = 3_600_000;
@@ -74,4 +74,16 @@ test('formatDuration drops empty units and shows <1m for under a minute', () => 
   assert.equal(formatDuration(120), '2h');
   assert.equal(formatDuration(45), '45m');
   assert.equal(formatDuration(0), '<1m');
+});
+
+test('branch summary puts the branch with the most commits first and breaks ties by name', () => {
+  const commits = [{ branches: ['main'] }, { branches: ['main', 'feature'] }, { branches: ['fix'] }, { branches: ['feature'] }, {}];
+  assert.deepEqual(getBranchSummary(commits), [{ name: 'feature', count: 2 }, { name: 'main', count: 2 }, { name: 'fix', count: 1 }]);
+  assert.deepEqual(getBranchSummary([]), []);
+});
+
+test('only commits missing from the main branch get branch tags', () => {
+  assert.deepEqual(getOtherBranches({ branches: ['main', 'feature'] }, 'main'), []);
+  assert.deepEqual(getOtherBranches({ branches: ['fix'] }, 'main'), ['fix']);
+  assert.deepEqual(getOtherBranches({}, 'main'), []);
 });

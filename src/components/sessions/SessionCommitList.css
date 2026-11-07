@@ -20,6 +20,10 @@
 .session-commit-list-active { max-height: 220px; overflow: auto; overscroll-behavior: contain; scrollbar-color: var(--workspace-border-hover) var(--workspace-border-hover); scrollbar-width: thin; margin: var(--space-2) 0 0; padding: 0; }
 .session-commit-list-active .session-commit-row-main { grid-template-columns: 58px minmax(0, 1fr) auto; grid-template-areas: "sha message time"; }
 .session-commit-list-active .session-commit-row-main strong { grid-area: message; }
+/* Branch tags: placed by the list's container (ActiveSession.css); long names truncate and show in full on hover. */
+.session-commit-branches { grid-area: branch; display: flex; min-width: 0; gap: var(--space-1); }
+.session-commit-list .session-commit-row-main .session-commit-branches code { max-width: 160px; overflow: hidden; text-decoration: none; padding: 0 var(--space-1); border: 1px solid var(--workspace-border); border-radius: var(--radius-sm); color: var(--workspace-text); text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 520px) {
   .session-commit-list-active .session-commit-row-main { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "sha time" "message message"; row-gap: var(--space-1); }
+  .session-commit-list .session-commit-row-main .session-commit-branches code { max-width: 120px; }
 }

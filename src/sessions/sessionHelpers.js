@@ -79,3 +79,15 @@ export function formatElapsed(milliseconds) {
   const remainingSeconds = seconds % 60;
   return [hours, minutes, remainingSeconds].map((value) => String(value).padStart(2, '0')).join(':');
 }
+
+// Branches across a session's commits, most commits first (ties by name). The first is the session's main branch: its
+// commits go untagged, and only commits found solely on other branches show a branch tag.
+export function getBranchSummary(commits = []) {
+  const counts = new Map();
+  commits.forEach((commit) => (commit.branches || []).forEach((branch) => counts.set(branch, (counts.get(branch) || 0) + 1)));
+  return [...counts].map(([name, count]) => ({ name, count })).sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
+}
+
+export function getOtherBranches(commit, primaryBranch) {
+  return commit.branches?.length && !commit.branches.includes(primaryBranch) ? commit.branches : [];
+}

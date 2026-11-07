@@ -48,6 +48,8 @@
 .session-console-activity .session-commit-row-link code { width: max-content; color: var(--workspace-secondary); text-decoration: underline; text-decoration-color: var(--workspace-border-hover); text-underline-offset: 2px; }
 .session-console-activity .session-commit-row-link:hover code { color: var(--workspace-accent-soft); text-decoration-color: currentColor; }
 .session-console-activity .session-commit-list-active .session-commit-row-main { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "message time" "sha sha"; row-gap: var(--space-1); }
+/* A commit only on another branch: the branch tags follow the SHA under the message. */
+.session-console-activity .session-commit-list-active .session-commit-row-main.has-branch { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "message message time" "sha branch branch"; column-gap: var(--space-2); }
 .session-console-activity .session-commit-row-main strong { color: var(--workspace-text); font-size: var(--text-md); white-space: normal; }
 .session-console-activity .session-commit-row-main code { color: var(--workspace-muted); font-size: var(--text-2xs); }
 .session-console-activity .session-commit-row-main time { color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); }
@@ -78,6 +80,7 @@ dialog.session-exit-dialog { width: min(400px, calc(100vw / var(--ui-zoom) - var
   .session-console-actions { flex-direction: column; align-items: stretch; padding-top: 0; border-top: 0; }
   .session-console-actions > * { justify-content: center; text-align: center; }
   .session-console-activity .session-commit-list-active .session-commit-row-main { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "message sha time"; column-gap: var(--space-6); }
+  .session-console-activity .session-commit-list-active .session-commit-row-main.has-branch { grid-template-columns: minmax(0, 1fr) auto auto auto; grid-template-areas: "message branch sha time"; column-gap: var(--space-6); }
   .session-console-activity .session-commit-row-main strong { font-size: var(--text-sm); }
 }
 

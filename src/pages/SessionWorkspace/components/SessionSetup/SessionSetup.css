@@ -21,7 +21,7 @@
 .repository-select-row:first-child { border-top: 0; }
 .repository-select-row:hover { background: var(--workspace-hover); }
 .repository-select-row:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
-.repository-select-row.selected { background: var(--workspace-accent-tint); box-shadow: inset 3px 0 0 var(--workspace-accent); }
+.repository-select-row.selected { background: var(--workspace-accent-tint); }
 .repository-select-indicator { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--workspace-control-border); border-radius: 50%; color: var(--workspace-action-text); font-size: var(--text-2xs); font-weight: 700; }
 .repository-select-row:hover .repository-select-indicator { border-color: var(--workspace-border-hover); }
 .repository-select-row.selected .repository-select-indicator { border-color: var(--workspace-accent); background: var(--workspace-accent); }
@@ -54,7 +54,7 @@
 /* Session rail — sits on the page: the choice, then your history with that repository, then the goal and Start */
 .session-workspace-selection { display: flex; min-width: 0; flex-direction: column; padding: var(--space-1) 0 0; }
 .session-workspace-selection h2 { margin: 0 0 var(--space-3-5); color: var(--workspace-text); font-size: var(--text-xl); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); }
-.selected-repository-summary { display: flex; height: 106px; align-items: center; gap: var(--space-3-5); padding: var(--space-4); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-lg); background: var(--workspace-raised); box-shadow: inset 0 2px 0 var(--workspace-accent-line); }
+.selected-repository-summary { display: flex; height: 106px; align-items: center; gap: var(--space-3-5); padding: var(--space-4); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-lg); background: var(--workspace-raised); }
 .selected-repository-details { display: flex; min-width: 0; flex: 1; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
 .selected-repository-heading { display: flex; max-width: 100%; min-width: 0; align-items: center; gap: var(--space-2); }
 .selected-repository-heading .repository-visibility { flex: 0 0 auto; }

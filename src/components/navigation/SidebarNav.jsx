@@ -141,7 +141,7 @@ function LiveSessionCard({ session, now, pathname, onNavigate, saving }) {
   const repository = repositoryFullName(session.repository) || 'Coding session';
   return (
     <a className="sidebar-live-session" href={routePaths['Session Workspace']} aria-current={current ? 'page' : undefined} onClick={(event) => followRouteLink(event, onNavigate)} aria-label={saving ? `Saving session for ${repository}` : `Open active session for ${repository}`} title={repository} data-saving={saving ? 'true' : undefined}>
-      <span className="live-session-heading"><i aria-hidden="true" /> {saving ? 'SAVING SESSION…' : 'ACTIVE SESSION'}</span>
+      <span className="live-session-heading"><i aria-hidden="true" /> {saving ? 'Saving session…' : 'Active session'}</span>
       <strong>{session.repository ? <RepositoryName name={repository} /> : repository}</strong>
       <span className="live-session-time">{formatElapsed(getActiveElapsedMs(session, now))}</span>
     </a>

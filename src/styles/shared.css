@@ -1,6 +1,5 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 .app-main, .app-footer { width: 100%; max-width: 1120px; margin: 0 auto; }
-.section-kicker { color: var(--workspace-muted); font: var(--text-2xs) var(--font-mono); letter-spacing: .12em; }
 .page-intro h1 { margin: var(--space-2-5) 0 var(--space-1); color: var(--workspace-text); font-weight: var(--weight-semibold); }
 .page-intro p { margin: 0; color: var(--workspace-secondary); }
 .active-session-card, .dashboard-section { border: 1px solid var(--workspace-border); background: var(--workspace-surface); }

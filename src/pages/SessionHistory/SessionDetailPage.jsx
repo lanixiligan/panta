@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getSessionDurationMinutes } from '../../sessions/sessionHelpers.js';
+import { getBranchSummary, getOtherBranches, getSessionDurationMinutes } from '../../sessions/sessionHelpers.js';
 import { orderCommits } from '../../components/sessions/SessionCommitList.jsx';
 import EditableGoal from '../../components/sessions/EditableGoal.jsx';
 import { routePaths } from '../../routing.js';
@@ -45,12 +45,6 @@ function formatDuration(minutes) {
 
 function getRepositoryUrl(repository) {
   return repository.html_url || repository.htmlUrl || `https://github.com/${repositoryFullName(repository)}`;
-}
-
-function getBranchSummary(commits) {
-  const counts = new Map();
-  commits.forEach((commit) => (commit.branches || []).forEach((branch) => counts.set(branch, (counts.get(branch) || 0) + 1)));
-  return [...counts].map(([name, count]) => ({ name, count })).sort((left, right) => right.count - left.count || left.name.localeCompare(right.name));
 }
 
 function getFilesTouched(commits) {
@@ -214,7 +208,7 @@ function CommitTimeline({ commits, primaryBranch, compareUrl, selectedFile, onCl
             const message = commit.message?.split('\n')[0] || 'Commit message unavailable';
             const hasLines = Array.isArray(commit.files);
             // Only commits outside the session's main branch get a branch tag.
-            const otherBranches = commit.branches?.length && !commit.branches.includes(primaryBranch) ? commit.branches : [];
+            const otherBranches = getOtherBranches(commit, primaryBranch);
             const content = (
               <>
                 <time dateTime={commit.timestamp || undefined}>{isValidDate(commit.timestamp) ? formatTime(commit.timestamp) : '—'}</time>

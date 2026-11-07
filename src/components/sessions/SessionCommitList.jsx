@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatRelativeTime } from '../../sessions/sessionHelpers.js';
+import { formatRelativeTime, getBranchSummary, getOtherBranches } from '../../sessions/sessionHelpers.js';
 
 function formatTimestamp(value, mode, now) {
   const date = new Date(value);
@@ -23,7 +23,10 @@ export function orderCommits(commits = [], direction = 'newest') {
 
 // `linkRows` makes each whole row the link to the commit on GitHub (the active session); otherwise only the message links.
 // `repositoryUrl` fills in the link for commits that arrived without one.
+// In the active list, a commit found only on branches other than the session's main one shows those branch names, as on the
+// session detail page; a session on one branch shows none.
 export default function SessionCommitList({ commits = [], mode = 'recap', timestampMode = 'time', now = Date.now(), showDetails = false, order = 'oldest', linkRows = false, repositoryUrl }) {
+  const primaryBranch = mode === 'active' ? getBranchSummary(commits)[0]?.name : undefined;
   return (
     <ol className={`session-commit-list session-commit-list-${mode}`} aria-label="Session commits">
       {orderCommits(commits, order).map((commit) => {
@@ -31,13 +34,21 @@ export default function SessionCommitList({ commits = [], mode = 'recap', timest
         const href = commit.htmlUrl || (repositoryUrl && commit.sha ? `${repositoryUrl}/commit/${commit.sha}` : null);
         const time = <time dateTime={commit.timestamp || undefined}>{formatTimestamp(commit.timestamp, timestampMode, now)}</time>;
         const sha = <code translate="no">{commit.sha?.slice(0, 7) || 'Unknown SHA'}</code>;
+        const otherBranches = primaryBranch ? getOtherBranches(commit, primaryBranch) : [];
+        const branchTags = otherBranches.length > 0 && (
+          <span className="session-commit-branches">
+            {otherBranches.map((branch) => <code key={branch} title={branch} translate="no">{branch}</code>)}
+          </span>
+        );
+        const rowClass = `session-commit-row-main${branchTags ? ' has-branch' : ''}`;
 
         if (linkRows && href) {
           return (
             <li key={commit.sha}>
-              <a className="session-commit-row-main session-commit-row-link" href={href} target="_blank" rel="noreferrer" title="View commit on GitHub">
+              <a className={`${rowClass} session-commit-row-link`} href={href} target="_blank" rel="noreferrer" title="View commit on GitHub">
                 <code translate="no">{commit.sha?.slice(0, 7) || 'Unknown SHA'}<span aria-hidden="true"> ↗</span></code>
                 <strong>{message}</strong>
+                {branchTags}
                 {time}
               </a>
             </li>
@@ -46,9 +57,10 @@ export default function SessionCommitList({ commits = [], mode = 'recap', timest
 
         return (
           <li key={commit.sha}>
-            <div className="session-commit-row-main">
+            <div className={rowClass}>
               {sha}
               <strong>{href ? <a href={href} target="_blank" rel="noreferrer">{message}</a> : message}</strong>
+              {branchTags}
               {time}
             </div>
             {showDetails && (

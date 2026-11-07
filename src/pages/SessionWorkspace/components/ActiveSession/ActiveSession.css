@@ -11,11 +11,10 @@
    what GitHub observed fills the page beneath it. Narrow, the band stacks in that order. The frame is the container its band lays out against. */
 .session-workspace-already-active { container: session-frame / inline-size; display: flex; flex-direction: column; gap: var(--space-6); }
 
-.session-console-panel { container-type: inline-size; display: flex; min-width: 0; flex-direction: column; gap: var(--space-6); padding: var(--space-7) var(--space-6); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-xl); background: var(--workspace-surface); box-shadow: inset 0 2px 0 var(--workspace-accent-line); }
+.session-console-panel { container-type: inline-size; display: flex; min-width: 0; flex-direction: column; gap: var(--space-6); padding: var(--space-7) var(--space-6); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-xl); background: var(--workspace-surface); }
 .session-console-clock { display: flex; min-width: 0; flex-direction: column; gap: var(--space-3); }
-.session-console-status { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--workspace-accent-soft); font: var(--text-2xs) var(--font-mono); letter-spacing: .14em; }
-.session-console-status i, .session-console-sync i { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 0 3px var(--workspace-accent-ring); animation: session-live-pulse 2.4s ease-in-out infinite; }
-@keyframes session-live-pulse { 50% { opacity: .45; } }
+.session-console-status { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--workspace-accent-soft); font-size: var(--text-xs); font-weight: var(--weight-medium); }
+.session-console-status i, .session-console-sync i { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: var(--workspace-accent); }
 
 .session-console-context { min-width: 0; padding-top: var(--space-6); border-top: 1px solid var(--workspace-divider); }
 .session-console-repo { margin: 0 0 var(--space-2-5); overflow: hidden; color: var(--workspace-secondary); font: var(--text-md) var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
@@ -27,9 +26,9 @@
 .session-console-timer { display: flex; flex-direction: column; }
 .session-console-time { color: var(--workspace-text); font: 400 clamp(40px, 21cqw, 76px) var(--font-mono); letter-spacing: -.05em; line-height: .95; font-variant-numeric: tabular-nums; }
 .session-console-sync { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1-5); color: var(--workspace-muted); font: var(--text-xs) var(--font-mono); letter-spacing: .02em; }
-.session-console-sync[data-status='loading'] i, .session-console-sync[data-status='syncing'] i, .session-console-sync[data-status='ending'] i { background: var(--workspace-muted); box-shadow: none; }
+.session-console-sync[data-status='loading'] i, .session-console-sync[data-status='syncing'] i, .session-console-sync[data-status='ending'] i { background: var(--workspace-muted); }
 .session-console-sync[data-status='error'] { color: var(--workspace-danger); }
-.session-console-sync[data-status='error'] i { background: var(--workspace-danger); box-shadow: none; animation: none; }
+.session-console-sync[data-status='error'] i { background: var(--workspace-danger); }
 
 /* GitHub activity: a card whose commit list takes the rest of the page */
 .session-console-activity { display: flex; min-width: 0; flex-direction: column; padding: var(--space-5) var(--space-6); border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); }
@@ -49,6 +48,8 @@
 .session-console-activity .session-commit-row-link code { width: max-content; color: var(--workspace-secondary); text-decoration: underline; text-decoration-color: var(--workspace-border-hover); text-underline-offset: 2px; }
 .session-console-activity .session-commit-row-link:hover code { color: var(--workspace-accent-soft); text-decoration-color: currentColor; }
 .session-console-activity .session-commit-list-active .session-commit-row-main { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "message time" "sha sha"; row-gap: var(--space-1); }
+/* A commit only on another branch: the branch tags follow the SHA under the message. */
+.session-console-activity .session-commit-list-active .session-commit-row-main.has-branch { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "message message time" "sha branch branch"; column-gap: var(--space-2); }
 .session-console-activity .session-commit-row-main strong { color: var(--workspace-text); font-size: var(--text-md); white-space: normal; }
 .session-console-activity .session-commit-row-main code { color: var(--workspace-muted); font-size: var(--text-2xs); }
 .session-console-activity .session-commit-row-main time { color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); }
@@ -56,14 +57,20 @@
 .session-console-empty strong { color: var(--workspace-text); font-size: var(--text-md); font-weight: 500; }
 .session-console-empty p { margin: 0; color: var(--workspace-muted); font-size: var(--text-sm); }
 
-/* End session first, Discard session after it; the question that replaces them takes the whole row */
+/* End session first, Discard session after it */
 .session-console-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2-5); padding-top: var(--space-5); border-top: 1px solid var(--workspace-divider); }
 .cancel-session-button { min-height: var(--control-sm); padding: 0 var(--space-3); border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--workspace-secondary); font: inherit; font-size: var(--text-xs); font-weight: var(--weight-medium); cursor: pointer; }
 .cancel-session-button:hover { border-color: var(--workspace-border); color: var(--workspace-secondary); }
 .cancel-session-button.danger { border-color: var(--workspace-danger-border); background: var(--workspace-danger-bg); color: var(--workspace-danger); }
 .cancel-session-button.danger:hover { border-color: var(--workspace-danger); color: var(--workspace-danger); }
-.session-exit-confirm { display: flex; flex: 1 1 100%; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); color: var(--workspace-secondary); font-size: var(--text-sm); }
-.session-exit-buttons { display: flex; gap: var(--space-1-5); }
+
+/* End and Discard ask in a small centred modal: the question, one line on what happens, then Keep going and the action. */
+dialog.session-exit-dialog { width: min(400px, calc(100vw / var(--ui-zoom) - var(--space-8))); padding: var(--space-5); border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); color: var(--workspace-text); box-shadow: var(--shadow-popover); text-align: left; }
+.session-exit-dialog::backdrop { background: var(--workspace-scrim); }
+.session-exit-dialog h2 { margin: 0; font-size: var(--text-md); font-weight: var(--weight-semibold); }
+.session-exit-dialog p { margin: var(--space-2) 0 var(--space-5); color: var(--workspace-secondary); font-size: var(--text-sm); line-height: 1.5; }
+.session-exit-dialog-buttons { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.session-exit-dialog-buttons > button { min-height: var(--control-md); }
 
 /* Wide: the band is one row, the clock, then the session beside a rule, then the actions in a column; commits are one line each. */
 @container session-frame (min-width: 800px) {
@@ -72,8 +79,8 @@
   .session-console-context { align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding: 0 0 0 var(--space-8); border-top: 0; border-left: 1px solid var(--workspace-divider); }
   .session-console-actions { flex-direction: column; align-items: stretch; padding-top: 0; border-top: 0; }
   .session-console-actions > * { justify-content: center; text-align: center; }
-  .session-exit-confirm, .session-exit-buttons { flex-direction: column; align-items: stretch; text-align: center; }
   .session-console-activity .session-commit-list-active .session-commit-row-main { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "message sha time"; column-gap: var(--space-6); }
+  .session-console-activity .session-commit-list-active .session-commit-row-main.has-branch { grid-template-columns: minmax(0, 1fr) auto auto auto; grid-template-areas: "message branch sha time"; column-gap: var(--space-6); }
   .session-console-activity .session-commit-row-main strong { font-size: var(--text-sm); }
 }
 
@@ -93,11 +100,8 @@
   .session-console-activity { padding: var(--space-5) var(--space-4) var(--space-1-5); border-radius: var(--radius-xl); }
   .session-console-repo { font-size: var(--text-sm); }
   .session-console-actions { flex-direction: column; align-items: stretch; }
-  .session-console-actions > .finish-session-button, .session-console-actions > .cancel-session-button, .session-exit-buttons > button { justify-content: center; min-height: 44px; }
-  .session-exit-confirm { flex-direction: column; align-items: stretch; text-align: center; }
-  .session-exit-buttons { flex-direction: column; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .session-console-status i, .session-console-sync i { animation: none; }
+  .session-console-actions > .finish-session-button, .session-console-actions > .cancel-session-button { justify-content: center; min-height: 44px; }
+  .session-exit-dialog-buttons { flex-direction: column-reverse; }
+  .session-exit-dialog-buttons > button { min-height: 44px; }
 }
 .cancel-session-button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }

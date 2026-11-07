@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import EditableGoal from '../../../../components/sessions/EditableGoal.jsx';
 import ScrollArea from '../../../../components/layout/ScrollArea.jsx';
 import SessionCommitList from '../../../../components/sessions/SessionCommitList.jsx';
@@ -15,40 +15,57 @@ function syncLabel(status, isEnding, checkedAt, now) {
   return 'Checking GitHub…';
 }
 
-// Ending stops the clock for good, and discarding deletes the session, so each asks first, in place. Only one question is
-// open at a time; "Keep going" takes focus, so Enter can't confirm by accident, and returns it to the button that asked.
+// Ending stops the clock for good, and discarding deletes the session, so each asks first in a modal. "Keep going" takes
+// focus, so Enter can't confirm by accident; Escape, a click outside, or Keep going closes it, and the browser returns focus
+// to the button that opened it.
+const EXIT_QUESTIONS = {
+  end: { title: 'End this session?', detail: 'The timer stops and the session’s GitHub activity is saved.', confirm: 'End session', className: 'finish-session-button' },
+  discard: { title: 'Discard this session?', detail: 'Nothing from this session will be saved.', confirm: 'Discard', className: 'cancel-session-button danger' },
+};
+
+function SessionExitDialog({ kind, onConfirm, onClose }) {
+  const dialogRef = useRef(null);
+  const titleId = useId();
+  const question = EXIT_QUESTIONS[kind];
+
+  // No close() on cleanup: its queued close event would unmount the dialog again after StrictMode's remount.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog.open) dialog.showModal();
+  }, []);
+
+  const close = () => dialogRef.current.close();
+  return (
+    <dialog
+      ref={dialogRef}
+      className="session-exit-dialog"
+      aria-labelledby={titleId}
+      onClose={onClose}
+      onClick={(event) => { if (event.target === event.currentTarget) close(); }}
+    >
+      <h2 id={titleId}>{question.title}</h2>
+      <p>{question.detail}</p>
+      <div className="session-exit-dialog-buttons">
+        <button className="cancel-session-button" type="button" autoFocus onClick={close}>Keep going</button>
+        <button className={question.className} type="button" onClick={() => { close(); onConfirm(); }}>{question.confirm}</button>
+      </div>
+    </dialog>
+  );
+}
+
 function SessionExit({ onFinish, onCancel, isEnding }) {
   const [asking, setAsking] = useState(null);
-  const keepGoing = useRef(null);
-  const triggers = useRef({});
-  const lastAsked = useRef(null);
-  useEffect(() => {
-    if (asking) {
-      lastAsked.current = asking;
-      keepGoing.current?.focus();
-    } else if (lastAsked.current) {
-      triggers.current[lastAsked.current]?.focus();
-      lastAsked.current = null;
-    }
-  }, [asking]);
-  const confirm = (action) => () => { setAsking(null); action(); };
-
-  if (asking) {
-    const ending = asking === 'end';
-    return (
-      <div className="session-exit-confirm" role="group" aria-label={ending ? 'Confirm ending this session' : 'Confirm discarding this session'}>
-        <span>{ending ? 'End this session?' : 'Discard without saving?'}</span>
-        <span className="session-exit-buttons">
-          <button className={ending ? 'finish-session-button' : 'cancel-session-button danger'} type="button" onClick={confirm(ending ? onFinish : onCancel)}>{ending ? 'End session' : 'Discard'}</button>
-          <button ref={keepGoing} className="cancel-session-button" type="button" onClick={() => setAsking(null)}>Keep going</button>
-        </span>
-      </div>
-    );
-  }
   return (
     <>
-      <button ref={(node) => { triggers.current.end = node; }} className="finish-session-button" type="button" onClick={() => setAsking('end')} disabled={isEnding}>{isEnding ? 'Ending…' : 'End session'}</button>
-      {onCancel && !isEnding && <button ref={(node) => { triggers.current.discard = node; }} className="cancel-session-button" type="button" onClick={() => setAsking('discard')}>Discard session</button>}
+      <button className="finish-session-button" type="button" onClick={() => setAsking('end')} disabled={isEnding}>{isEnding ? 'Ending…' : 'End session'}</button>
+      {onCancel && !isEnding && <button className="cancel-session-button" type="button" onClick={() => setAsking('discard')}>Discard session</button>}
+      {asking && (
+        <SessionExitDialog
+          kind={asking}
+          onConfirm={asking === 'end' ? onFinish : onCancel}
+          onClose={() => setAsking(null)}
+        />
+      )}
     </>
   );
 }
@@ -66,7 +83,7 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
       {/* Left: what you declared (the session and its controls). Right: what GitHub observed. */}
       <div className="session-console-panel">
         <div className="session-console-clock">
-          <span className="session-console-status"><i aria-hidden="true" /> ACTIVE SESSION</span>
+          <span className="session-console-status"><i aria-hidden="true" /> Active session</span>
           <div className="session-console-timer" role="timer" aria-label="Elapsed time">
             <span className="session-console-time">{elapsed}</span>
           </div>

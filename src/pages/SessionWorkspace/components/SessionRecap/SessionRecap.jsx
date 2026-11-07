@@ -47,7 +47,7 @@ export default function SessionRecap({ session, onViewSession, onStartAnother, o
     <article className="session-workspace-already-active session-recap" aria-label="Completed coding session">
       <div className="session-console-panel">
         <div className="session-console-clock">
-          <span className="session-console-status is-complete" role="status"><i aria-hidden="true">✓</i> SESSION ENDED</span>
+          <span className="session-console-status is-complete" role="status"><i aria-hidden="true">✓</i> Session ended</span>
           <div className="session-console-timer" role="group" aria-label="Session time">
             <span className="session-console-time">{duration}</span>
           </div>

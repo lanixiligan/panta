@@ -11,7 +11,7 @@
    what GitHub observed fills the page beneath it. Narrow, the band stacks in that order. The frame is the container its band lays out against. */
 .session-workspace-already-active { container: session-frame / inline-size; display: flex; flex-direction: column; gap: var(--space-6); }
 
-.session-console-panel { container-type: inline-size; display: flex; min-width: 0; flex-direction: column; gap: var(--space-6); padding: var(--space-7) var(--space-6); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-xl); background: var(--workspace-surface); box-shadow: inset 0 2px 0 var(--workspace-accent-line); }
+.session-console-panel { container-type: inline-size; display: flex; min-width: 0; flex-direction: column; gap: var(--space-6); padding: var(--space-7) var(--space-6); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-xl); background: var(--workspace-surface); }
 .session-console-clock { display: flex; min-width: 0; flex-direction: column; gap: var(--space-3); }
 .session-console-status { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--workspace-accent-soft); font: var(--text-2xs) var(--font-mono); letter-spacing: .14em; }
 .session-console-status i, .session-console-sync i { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 0 3px var(--workspace-accent-ring); animation: session-live-pulse 2.4s ease-in-out infinite; }

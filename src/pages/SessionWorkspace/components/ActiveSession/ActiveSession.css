@@ -13,9 +13,8 @@
 
 .session-console-panel { container-type: inline-size; display: flex; min-width: 0; flex-direction: column; gap: var(--space-6); padding: var(--space-7) var(--space-6); border: 1px solid var(--workspace-border-strong); border-radius: var(--radius-xl); background: var(--workspace-surface); }
 .session-console-clock { display: flex; min-width: 0; flex-direction: column; gap: var(--space-3); }
-.session-console-status { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--workspace-accent-soft); font: var(--text-2xs) var(--font-mono); letter-spacing: .14em; }
-.session-console-status i, .session-console-sync i { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 0 3px var(--workspace-accent-ring); animation: session-live-pulse 2.4s ease-in-out infinite; }
-@keyframes session-live-pulse { 50% { opacity: .45; } }
+.session-console-status { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--workspace-accent-soft); font-size: var(--text-xs); font-weight: var(--weight-medium); }
+.session-console-status i, .session-console-sync i { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: var(--workspace-accent); }
 
 .session-console-context { min-width: 0; padding-top: var(--space-6); border-top: 1px solid var(--workspace-divider); }
 .session-console-repo { margin: 0 0 var(--space-2-5); overflow: hidden; color: var(--workspace-secondary); font: var(--text-md) var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
@@ -27,9 +26,9 @@
 .session-console-timer { display: flex; flex-direction: column; }
 .session-console-time { color: var(--workspace-text); font: 400 clamp(40px, 21cqw, 76px) var(--font-mono); letter-spacing: -.05em; line-height: .95; font-variant-numeric: tabular-nums; }
 .session-console-sync { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1-5); color: var(--workspace-muted); font: var(--text-xs) var(--font-mono); letter-spacing: .02em; }
-.session-console-sync[data-status='loading'] i, .session-console-sync[data-status='syncing'] i, .session-console-sync[data-status='ending'] i { background: var(--workspace-muted); box-shadow: none; }
+.session-console-sync[data-status='loading'] i, .session-console-sync[data-status='syncing'] i, .session-console-sync[data-status='ending'] i { background: var(--workspace-muted); }
 .session-console-sync[data-status='error'] { color: var(--workspace-danger); }
-.session-console-sync[data-status='error'] i { background: var(--workspace-danger); box-shadow: none; animation: none; }
+.session-console-sync[data-status='error'] i { background: var(--workspace-danger); }
 
 /* GitHub activity: a card whose commit list takes the rest of the page */
 .session-console-activity { display: flex; min-width: 0; flex-direction: column; padding: var(--space-5) var(--space-6); border: 1px solid var(--workspace-border); border-radius: var(--radius-xl); background: var(--workspace-surface); }
@@ -96,8 +95,5 @@
   .session-console-actions > .finish-session-button, .session-console-actions > .cancel-session-button, .session-exit-buttons > button { justify-content: center; min-height: 44px; }
   .session-exit-confirm { flex-direction: column; align-items: stretch; text-align: center; }
   .session-exit-buttons { flex-direction: column; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .session-console-status i, .session-console-sync i { animation: none; }
 }
 .cancel-session-button:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: 2px; }

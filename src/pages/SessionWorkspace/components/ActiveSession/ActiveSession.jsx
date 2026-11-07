@@ -66,7 +66,7 @@ export default function ActiveSession({ session, now, onFinish, onCancel, onUpda
       {/* Left: what you declared (the session and its controls). Right: what GitHub observed. */}
       <div className="session-console-panel">
         <div className="session-console-clock">
-          <span className="session-console-status"><i aria-hidden="true" /> ACTIVE SESSION</span>
+          <span className="session-console-status"><i aria-hidden="true" /> Active session</span>
           <div className="session-console-timer" role="timer" aria-label="Elapsed time">
             <span className="session-console-time">{elapsed}</span>
           </div>

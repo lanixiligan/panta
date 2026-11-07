@@ -208,7 +208,7 @@ A monochrome green world: forest-black surfaces, pale green-grey ink, and one br
 - **Body** (400, 13–14px, 1.55): running text, controls, supporting copy.
 - **Figure** (DM Mono 400, 24px, −0.02em): prominent numbers on stat cards; 30px for the largest.
 - **Timer** (DM Mono 400, 40–84px by the width of its band, −0.05em): the running and finished session time in the Session Workspace. The session goal heading beside it runs 22–26px. Both are one-off display sizes and size from their container, so they never overflow a narrow panel.
-- **Label** (DM Mono 400, 12px, +0.05em): metadata, durations, badges, kickers.
+- **Label** (DM Mono 400, 12px, +0.05em): metadata, durations, and badges. Never as a kicker or eyebrow above a heading.
 
 ### Named Rules
 **The 12px Floor Rule.** Nothing people read is smaller than 12px (`--text-2xs`).
@@ -230,7 +230,6 @@ Flat by default, with depth carried by tonal layering: Forest Night → Sidebar 
 - **Popover** (`--shadow-popover`: `0 18px 40px` shadow): filter popovers and the date-range picker.
 - **Tooltip** (`--shadow-tooltip`: `0 6px 20px` shadow): chart and calendar tooltips.
 - **Focus halo** (`--shadow-focus`: `0 0 0 3px` translucent green): focused inputs and filter triggers.
-- **Live glow** (`0 0 8px` accent glow): only on the running-session dot.
 
 ### Named Rules
 **The Only Floaters Cast Shadows Rule.** If it isn't a menu, popover, or tooltip, it has no shadow.
@@ -265,7 +264,7 @@ Soft and tactile, never loud.
 - **Error:** inline one-line danger message on Danger Bg with a Danger border.
 
 ### Navigation
-Sidebar items are 40px tall, Ink Secondary at rest, Surface Pool on hover. The active item has no fill: Ink text at weight 500 and a Signal Green Soft icon. While a session runs, an Active session card with a glowing live dot appears at the foot of the sidebar. On phones, navigation becomes a floating pill tab bar whose active item is marked by a 4px green dot beneath the icon.
+Sidebar items are 40px tall, Ink Secondary at rest, Surface Pool on hover. The active item has no fill: Ink text at weight 500 and a Signal Green Soft icon. While a session runs, an Active session card with a solid live dot appears at the foot of the sidebar. On phones, navigation becomes a floating pill tab bar whose active item is marked by a 4px green dot beneath the icon.
 
 ### Badges
 Mono 12px labels with a 1px border and 4px radius. They mark exceptions only: `Private` (stronger border), `Example` (dashed border, muted text), or a non-completed status.
@@ -290,5 +289,8 @@ GitHub activity is a list of commits, newest first, in its own scroll area: mess
 - **Don't** add shadows to cards or sections.
 - **Don't** fill large areas with the accent or add new hues without proposing them first.
 - **Don't** add animated or WebGL backgrounds, or motion that survives `prefers-reduced-motion`.
+- **Don't** add decorative glows, gradient backdrops, dot grids, pulsing halos, or entrance sweeps. Status dots are solid fills.
+- **Don't** mark a card or a selected row with a coloured stripe along one edge; selection is a tinted fill plus its indicator.
+- **Don't** put a kicker or eyebrow above a heading, or set labels in monospace caps for flavour.
 - **Don't** use Ink Faint for words.
 - **Don't** add fonts beyond DM Sans and DM Mono.

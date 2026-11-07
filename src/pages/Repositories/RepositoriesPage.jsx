@@ -56,7 +56,7 @@ export default function RepositoriesPage({ repositories: realRepositories = [], 
     <div className="repositories-page" ref={pageRef}>
       <section className="page-intro">
         <h1>Repositories</h1>
-        <p>Every repository you’ve worked on through Panta, with the time you declared and what GitHub saw.</p>
+        <p>Every repository you’ve worked on through Panta.</p>
       </section>
 
       {notice}

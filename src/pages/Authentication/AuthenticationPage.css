@@ -1,7 +1,5 @@
 /* Sign-in: the wordmark, the tagline, and one button, centred on the app background. */
 .auth-screen { position: relative; display: grid; min-height: calc(100vh / var(--ui-zoom)); min-height: calc(100dvh / var(--ui-zoom)); grid-template-rows: auto 1fr auto; justify-items: center; padding: clamp(var(--space-7), calc(6vh / var(--ui-zoom)), var(--space-14)) var(--space-6); overflow-x: hidden; background: var(--workspace-bg); color: var(--workspace-text); }
-/* A soft green glow behind the wordmark. */
-.auth-background-canvas { position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 55% 45% at 50% 46%, var(--workspace-glow-strong) 0%, var(--workspace-glow-faint) 45%, transparent 75%), var(--workspace-bg); }
 .auth-motto, .auth-hero { position: relative; z-index: 1; }
 /* An empty third row balances the motto, so the hero sits in the true centre. */
 .auth-screen::after { height: 44px; content: ''; }

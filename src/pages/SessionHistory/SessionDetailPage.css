@@ -67,7 +67,7 @@
 .session-timeline li:last-child > *::before { bottom: calc(100% - 17px); }
 .session-timeline li:only-child > *::before { display: none; }
 .session-timeline time { padding-top: 1px; color: var(--workspace-muted); font: var(--text-xs) var(--font-mono); text-align: right; white-space: nowrap; }
-.session-timeline-dot { position: relative; z-index: 1; width: 12px; height: 12px; margin-top: var(--space-1); border: 2px solid var(--workspace-bg); border-radius: 50%; background: var(--workspace-level-2); transition: background var(--duration-base) ease, box-shadow var(--duration-base) ease, transform var(--duration-base) ease; }
+.session-timeline-dot { position: relative; z-index: 1; width: 12px; height: 12px; margin-top: var(--space-1); border: 2px solid var(--workspace-bg); border-radius: 50%; background: var(--workspace-level-2); transition: background var(--duration-base) ease; }
 .session-timeline-body { display: flex; min-width: 0; flex-direction: column; gap: var(--space-1); }
 .session-timeline-message { overflow: hidden; color: var(--workspace-text); font-size: var(--text-md); line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .session-timeline-meta { display: flex; flex-wrap: wrap; gap: var(--space-1-5); }
@@ -79,7 +79,7 @@
 .session-timeline a:hover { background: var(--workspace-hover-soft); }
 .session-timeline a:hover .session-timeline-message { color: var(--workspace-text); }
 /* The commit under the cursor (or keyboard focus) lights up its dot on the rail. */
-.session-timeline li > :hover .session-timeline-dot, .session-timeline a:focus-visible .session-timeline-dot { background: var(--workspace-accent); box-shadow: 0 0 0 3px var(--workspace-accent-ring), 0 0 12px 2px var(--workspace-accent-glow); transform: scale(1.15); }
+.session-timeline li > :hover .session-timeline-dot, .session-timeline a:focus-visible .session-timeline-dot { background: var(--workspace-accent); }
 .session-timeline a:focus-visible { outline: 2px solid var(--workspace-focus); outline-offset: -2px; }
 
 /* Files */

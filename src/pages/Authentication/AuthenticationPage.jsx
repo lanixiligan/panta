@@ -8,7 +8,6 @@ const FLOW_DOTS = [6, 22, 30, 52, 66, 78, 94];
 export default function AuthenticationPage({ identityError, onRetryIdentity }) {
   return (
     <main className="auth-screen">
-      <div className="auth-background-canvas" aria-hidden="true" />
       <header className="auth-motto">
         <span className="auth-flow" aria-hidden="true">
           {FLOW_DOTS.map((left, index) => <i key={left} style={{ left: `${left}%`, '--i': index }} />)}

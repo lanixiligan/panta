@@ -1,9 +1,4 @@
 /* Session Workspace: one environment for Setup → Active → Recap. */
-.workspace-main:has(.session-workspace-page) {
-  background-color: var(--workspace-bg);
-  background-image: radial-gradient(circle, var(--workspace-dots) 1px, transparent 1.2px);
-  background-size: 24px 24px;
-}
 .session-workspace-page { display: flex; flex-direction: column; gap: var(--space-6); }
 
 .session-workspace-header .page-intro { margin: 0; }

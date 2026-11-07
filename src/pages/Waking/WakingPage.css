@@ -1,5 +1,5 @@
-/* Waking: the Panta mark flowing above one title and one line, on the sign-in page's backdrop so the hand-off is seamless. */
-.waking-screen { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: var(--space-6) var(--space-4); background: radial-gradient(ellipse 55% 45% at 50% 46%, var(--workspace-glow-strong) 0%, var(--workspace-glow-faint) 45%, transparent 75%), var(--workspace-bg); color: var(--workspace-text); opacity: 1; transition: opacity var(--duration-fade) var(--ease-smooth); }
+/* Waking: the Panta mark flowing above one title and one line, on the sign-in page's background so the hand-off is seamless. */
+.waking-screen { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: var(--space-6) var(--space-4); background: var(--workspace-bg); color: var(--workspace-text); opacity: 1; transition: opacity var(--duration-fade) var(--ease-smooth); }
 .waking-screen.is-leaving { opacity: 0; pointer-events: none; }
 
 .waking-content { display: flex; max-width: 420px; flex-direction: column; align-items: center; gap: var(--space-5); text-align: center; }

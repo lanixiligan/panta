@@ -21,7 +21,6 @@ class AppErrorBoundary extends React.Component {
     if (this.state.failed) {
       return (
         <main className="app-render-error" role="alert">
-          <span className="section-kicker">PANTA</span>
           <h1>This view couldn’t load.</h1>
           <p>Reload Panta to try again. If it keeps happening, open the browser console and share the error.</p>
           <button type="button" onClick={() => window.location.reload()}>Reload Panta</button>

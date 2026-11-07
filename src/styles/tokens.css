@@ -40,13 +40,11 @@
   --workspace-accent-soft: #5FD394;
   --workspace-focus: #34C77B;
 
-  /* Translucent accent effects: glows, rings, tints, and the sign-in backdrop */
-  --workspace-accent-glow: #34C77B66;
+  /* Translucent accent effects: rings, tints, lines, and the focus halo */
   --workspace-accent-ring: #34C77B1F;
   --workspace-accent-tint: #34C77B0D;
   --workspace-accent-line: #34C77BB3;
   --workspace-focus-halo: #34C77B40;
-  --workspace-ghost: #34C77B07;
   --workspace-underline: #3D7A5266;
   --workspace-hover-overlay: #FFFFFF08;
   --workspace-shadow: #00000066;
@@ -199,12 +197,10 @@
   --workspace-accent-soft: #0F6036;
   --workspace-focus: #0F6036;
 
-  --workspace-accent-glow: #34C77B66;
   --workspace-accent-ring: #34C77B40;
   --workspace-accent-tint: #34C77B22;
   --workspace-accent-line: #34C77B;
   --workspace-focus-halo: #34C77B55;
-  --workspace-ghost: #34C77B14;
   --workspace-underline: #1B7A4766;
   --workspace-hover-overlay: #0F24180A;
   --workspace-shadow: #0F24181F;

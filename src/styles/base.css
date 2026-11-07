@@ -58,7 +58,6 @@ a { color: inherit; }
 .app-shell-dark.workspace-shell { display: flex; max-width: none; min-height: calc(100vh / var(--ui-zoom)); margin: 0; padding: 0; background: var(--workspace-bg); color: var(--workspace-text); }
 .workspace-main { display: flex; min-width: 0; flex: 1; flex-direction: column; height: calc(100vh / var(--ui-zoom)); overflow: auto; height: calc(100dvh / var(--ui-zoom)); }
 .workspace-main .app-main { width: 100%; max-width: 1600px; min-height: 100%; flex: 0 0 auto; margin: 0 auto; padding: var(--space-10) clamp(var(--space-6), calc(5vw / var(--ui-zoom)), var(--space-16)) var(--space-14); }
-.workspace-main .section-kicker { color: var(--workspace-secondary); }
 @media (max-width: 900px) {
   .workspace-main .app-main { padding-right: var(--space-8); padding-left: var(--space-8); }
 }

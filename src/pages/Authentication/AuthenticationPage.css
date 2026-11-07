@@ -1,19 +1,6 @@
 /* Sign-in: the wordmark, the tagline, and one button, centred on the app background. */
-.auth-screen { position: relative; display: grid; min-height: calc(100vh / var(--ui-zoom)); min-height: calc(100dvh / var(--ui-zoom)); grid-template-rows: auto 1fr auto; justify-items: center; padding: clamp(var(--space-7), calc(6vh / var(--ui-zoom)), var(--space-14)) var(--space-6); overflow-x: hidden; background: var(--workspace-bg); color: var(--workspace-text); }
-.auth-motto, .auth-hero { position: relative; z-index: 1; }
-/* An empty third row balances the motto, so the hero sits in the true centre. */
-.auth-screen::after { height: 44px; content: ''; }
-.auth-hero { display: flex; width: min(100%, 760px); align-self: center; flex-direction: column; align-items: center; text-align: center; }
-
-/* The motto at the top: the commit line, then "Panta rhei, everything flows" in small caps. */
-.auth-motto { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); }
-.auth-motto p { margin: 0; color: var(--workspace-secondary); font: var(--text-xs) var(--font-mono); letter-spacing: var(--tracking-label); text-transform: uppercase; }
-
-/* A tiny commit timeline above the wordmark; the dots light up in turn, like commits landing. */
-.auth-flow { position: relative; display: block; width: 156px; height: 10px; }
-.auth-flow::before { position: absolute; top: 50%; right: 0; left: 0; height: 1px; background: var(--workspace-border); content: ''; }
-.auth-flow i { position: absolute; top: 50%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: var(--workspace-accent); box-shadow: 0 0 8px var(--workspace-accent-glow); opacity: .3; animation: auth-flow-dot 5s ease-in-out infinite; animation-delay: calc(var(--i) * .6s); }
-@keyframes auth-flow-dot { 0%, 22%, 100% { opacity: .3; } 8% { opacity: 1; } }
+.auth-screen { display: grid; min-height: calc(100vh / var(--ui-zoom)); min-height: calc(100dvh / var(--ui-zoom)); place-items: center; padding: clamp(var(--space-7), calc(6vh / var(--ui-zoom)), var(--space-14)) var(--space-6); overflow-x: hidden; background: var(--workspace-bg); color: var(--workspace-text); }
+.auth-hero { display: flex; width: min(100%, 760px); flex-direction: column; align-items: center; text-align: center; }
 
 .auth-hero h1 { margin: 0; color: var(--workspace-text); font-size: clamp(84px, calc(15vw / var(--ui-zoom)), 176px); font-weight: 600; letter-spacing: -.05em; line-height: .9; }
 .auth-wordmark { display: block; width: clamp(260px, calc(46vw / var(--ui-zoom)), 560px); height: auto; }

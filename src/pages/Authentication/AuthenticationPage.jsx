@@ -2,19 +2,9 @@ import React from 'react';
 import AuthControl from '../../components/auth/AuthControl.jsx';
 import { PantaWordmark } from '../../components/brand/PantaLogo.jsx';
 
-// Commits land at uneven moments, so the dots on the brand line are spaced unevenly too.
-const FLOW_DOTS = [6, 22, 30, 52, 66, 78, 94];
-
 export default function AuthenticationPage({ identityError, onRetryIdentity }) {
   return (
     <main className="auth-screen">
-      <header className="auth-motto">
-        <span className="auth-flow" aria-hidden="true">
-          {FLOW_DOTS.map((left, index) => <i key={left} style={{ left: `${left}%`, '--i': index }} />)}
-        </span>
-        <p><span translate="no">Panta rhei</span>, everything flows</p>
-      </header>
-
       <section className="auth-hero" aria-labelledby="auth-heading">
         <h1 id="auth-heading"><PantaWordmark className="auth-wordmark" /></h1>
         <p className="auth-tagline">Your work, over time</p>

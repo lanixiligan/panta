@@ -339,8 +339,8 @@ export default function SessionHistoryPage({ sessions = [], notice = null, onSel
 
         {filteredSessions.length > 0 && (
           <div className="history-groups">
-            {groups.map((group) => (
-              <SessionHistoryGroup key={group.key} groupKey={group.key} {...group} collapsible={isChronological} onToggle={() => toggleMonth(group.key)} onSelectSession={selectSession} />
+            {groups.map(({ key, ...group }) => (
+              <SessionHistoryGroup key={key} groupKey={key} {...group} collapsible={isChronological} onToggle={() => toggleMonth(key)} onSelectSession={selectSession} />
             ))}
             <Pager page={currentPage} pageCount={pageCount} onChange={goToPage} label="Session history pages" />
             {filteredSessions.some((session) => session.isPlaceholder) && (
